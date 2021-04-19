@@ -1,7 +1,9 @@
 # FDTD Codes for EEE 190
 
 ### 1-D FDTD
-    * Plane wave propagation simulation using 1-D FDTD
+* Plane wave propagation simulation using 1-D FDTD 
+    -The current code can simulate plane wave propagation by injectin soft source and no absorbing boundary conditions.
+
 
 
 
