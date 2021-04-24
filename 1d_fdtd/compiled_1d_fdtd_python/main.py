@@ -39,6 +39,7 @@ delta_t = (n_bc*delta_z)/(2*c_0)
 t_prop = (n_r*N_z*delta_z)/c_0 #time it takes to propagate in the domain
 Esrc,Hsrc,t,N_t = gaussian_source(f_max,t_prop,delta_t,delta_z,c_0)
 injection_point = 100 #Set this before the device/model in the domain
+plot_single(t,Esrc,Hsrc,labels=["Time","Magnitude","Gaussian Pulse Source"])
 print("=====================================================================")
 print(f"Time step: {delta_t} seconds")
 print(f"Number of iterations: {N_t} steps")
