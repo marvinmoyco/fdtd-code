@@ -57,7 +57,7 @@ def plot_fields(E_plot,H_plot,N_t,injection_point,title="",save=False):
     plt.ylabel("Value")
     plt.axvline(x=injection_point, color = "grey", linestyle="--")
     plt.xlabel("z (Space)")
-
+    plt.ylim((-5,5))
     lineE, = ax.plot(E_plot[0,:])
     lineH, = ax.plot(H_plot[0,:])
     fig.show()
