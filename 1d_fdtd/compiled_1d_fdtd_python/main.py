@@ -67,11 +67,13 @@ h2 = 0
 E_plot = np.zeros((N_t,N_z))
 H_plot = np.zeros((N_t,N_z))
 
+plot_title = ""
 
 #Check here what mode to use...
 
 if mode == 1: #Basic Algorithm, No source excitation
     #Loop in time for Algorithm
+    plot_title = "No Source"
     for i in range(N_t):
         E,H = algo_no_source(E,H,N_z,m_E,m_H)
 
@@ -82,6 +84,7 @@ if mode == 1: #Basic Algorithm, No source excitation
         print(f"Successfully computed field values! iteration: {i}/{N_t}")
 
 elif mode == 2: #Algorithm with Hard Source
+    plot_title = "Hard Source"
     #Loop in time for Algorithm
     for i in range(N_t):
         E,H = algo_no_source(E,H,N_z,m_E,m_H)
@@ -94,6 +97,7 @@ elif mode == 2: #Algorithm with Hard Source
         print(f"Successfully computed field values! iteration: {i}/{N_t}")
 
 elif mode == 3: #Algorithm with Soft Source
+    plot_title = "Soft Source"
     #Loop in time for Algorithm
     for i in range(N_t):
         E,H = algo_no_source(E,H,N_z,m_E,m_H)
@@ -108,6 +112,7 @@ elif mode == 3: #Algorithm with Soft Source
         print(f"Successfully computed field values! iteration: {i}/{N_t}")
 
 elif mode == 4: #Algorithm with Soft Source (with PABC)
+    plot_title = "Soft Source with PABC"
     #Loop in time for Algorithm
     for i in range(N_t):
         E,H,z_low,z_high = algo_soft_pabc(E,H,N_z,m_E,m_H,z_low,z_high,e2,h2)
@@ -123,6 +128,7 @@ elif mode == 4: #Algorithm with Soft Source (with PABC)
 
 
 elif mode == 5: #Algorithm with TF/SF (with PABC)
+    plot_title = "TF/SF with PABC"
     #Loop in time for Algorithm
     for i in range(N_t):
         E,H = algo_no_source(E,H,N_z,m_E,m_H)
@@ -137,7 +143,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
 
 
 #Plotting the field values....
-plot_fields(E_plot,H_plot,N_t,injection_point,title="",save=False)
+plot_fields(E_plot,H_plot,N_t,injection_point,title=plot_title,save=False)
 
 
 
