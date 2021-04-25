@@ -147,7 +147,7 @@ elif mode == 4: #Algorithm with Soft Source (with PABC)
     for i in range(N_t):
         #Record H at Boundary
         h2 = z_low.pop(0)
-        z_low.append(H[1])
+        z_low.append(H[:,1])
 
         #Update H from E (loop in space)
         for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
@@ -173,7 +173,8 @@ elif mode == 4: #Algorithm with Soft Source (with PABC)
         H_plot[i,:] = H
         print("=====================================================================")
         print(f"FDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
-
+        print(f"z_low:{z_low}")
+        print(f"z_high:{z_high}")
 elif mode == 5: #Algorithm with TF/SF (with PABC)
     plot_title = "TF/SF with PABC"
     #Loop in time for Algorithm
@@ -181,7 +182,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
 
          #Record H at Boundary
         h2 = z_low.pop(0)
-        z_low.append(H[1])
+        z_low.append(H[:,1])
 
         #Update H from E (loop in space)
         for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
@@ -211,7 +212,8 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
         H_plot[i,:] = H
         print("=====================================================================")
         print(f"FDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
-
+        print(f"z_low:{z_low}")
+        print(f"z_high:{z_high}")
 
 #Plotting the field values....
 plot_fields(E_plot,H_plot,N_t,injection_point,title=plot_title,save=False)
