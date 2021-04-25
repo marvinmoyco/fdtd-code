@@ -232,9 +232,8 @@ elif mode == 2: #Algorithm with Hard Source
 
         print("=====================================================================")
 
-        print(f"Successfully computed field values! iteration: {i}/{N_t}")
+       print(f"FDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
 
-        print(f"E={E}, H={H}")
 
 
 
