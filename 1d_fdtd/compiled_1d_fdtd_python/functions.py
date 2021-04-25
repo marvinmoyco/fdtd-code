@@ -51,6 +51,11 @@ def plot_fields(E_plot,H_plot,N_t,injection_point,title="",save=False):
     ax = fig.add_subplot(111)
     plt.ylabel("Value")
     plt.axvline(x=injection_point, color = "grey", linestyle="--")
+    _,x = E_plot.shape
+    for x in range(x):
+        plt.axvline(x=x,ymin=0.4,ymax=0.6,color="forestgreen",linestyle = "-")
+    plt.axhline(y=0.2,color="forestgreen",linestyle = "-")
+    plt.axhline(y=-0.2,color="forestgreen",linestyle = "-")
     plt.xlabel("z (Space)")
     plt.ylim((-5,5))
     lineE, = ax.plot(E_plot[0,:])
