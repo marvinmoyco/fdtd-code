@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python3
 #Importing of necessary libraries
 from functions import *
 
