@@ -191,7 +191,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
         H[:,N_z-1] = H[:,N_z-1] + m_H[:,N_z-1]*(e2 - E[:,N_z-1])
 
         #Handling H source
-        H[:,injection_point-1] = H[:,injection_point-1] - m_H[:,injection_point-1]*Esrc[injection_point]
+        H[:,injection_point-1] = H[:,injection_point-1] - m_H[:,injection_point-1]*Esrc[i]
 
 
         #Record E at Boundary
@@ -205,7 +205,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
             E[:,k] = E[:,k] + m_E[:,k]*(H[:,k]-H[:,k-1])
 
         #Handling E source
-        E[:,injection_point] = E[:,injection_point] - m_E[:,injection_point]*Hsrc[:,injection_point-1]
+        E[:,injection_point] = E[:,injection_point] - m_E[:,injection_point]*Hsrc[:,i]
 
         #Save into matrix
         E_plot[i,:] = E
