@@ -205,7 +205,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
             E[:,k] = E[:,k] + m_E[:,k]*(H[:,k]-H[:,k-1])
 
         #Handling E source
-        E[:,injection_point] = E[:,injection_point] - m_E[:,injection_point]*Hsrc[:,i]
+        E[:,injection_point] = E[:,injection_point] - m_E[:,injection_point]*Hsrc[i]
 
         #Save into matrix
         E_plot[i,:] = E
