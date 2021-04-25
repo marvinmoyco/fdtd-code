@@ -147,7 +147,7 @@ elif mode == 4: #Algorithm with Soft Source (with PABC)
     for i in range(N_t):
         #Record H at Boundary
         h2 = z_low.pop(0)
-        z_low.append(H[:,1])
+        z_low.append(H[:,0])
 
         #Update H from E (loop in space)
         for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
@@ -182,7 +182,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
 
          #Record H at Boundary
         h2 = z_low.pop(0)
-        z_low.append(H[:,1])
+        z_low.append(H[:,0])
 
         #Update H from E (loop in space)
         for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
