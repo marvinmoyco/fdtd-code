@@ -17,7 +17,7 @@ def gaussian_source(f_max,t_prop,delta_t,delta_z,c_0):
 
     #Computing source parameters
     tau = 0.5/f_max
-    t_0 = 6*tau
+    t_0 = 2*tau
     T = 12*tau + 5*t_prop #Total time of simulation
     N_t = math.ceil(T/delta_t) #Number of time steps
     t = np.linspace(0,N_t*delta_t,N_t)
