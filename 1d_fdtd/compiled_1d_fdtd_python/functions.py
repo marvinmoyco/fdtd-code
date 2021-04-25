@@ -50,14 +50,16 @@ def plot_fields(E_plot,H_plot,N_t,injection_point,title="",save=False):
     fig = plt.figure(1,[10,6])
     ax = fig.add_subplot(111)
     plt.ylabel("Value")
-    plt.axvline(x=injection_point, color = "grey", linestyle="--")
+    
     _,x = E_plot.shape
     for x in range(x):
-        plt.axvline(x=x,ymin=0.4,ymax=0.6,color="forestgreen",linestyle = "-")
-    plt.axhline(y=0.2,color="forestgreen",linestyle = "-")
-    plt.axhline(y=-0.2,color="forestgreen",linestyle = "-")
+        plt.axvline(x=x,ymin=0.3,ymax=0.7,color="forestgreen",linestyle = "-")
+    plt.axhline(y=2,color="forestgreen",linestyle = "-")
+    plt.axhline(y=-2,color="forestgreen",linestyle = "-")
+    plt.axvline(x=injection_point, color = "grey", linestyle="--")
     plt.xlabel("z (Space)")
     plt.ylim((-5,5))
+    plt.xlim((0,x))
     lineE, = ax.plot(E_plot[0,:])
     lineH, = ax.plot(H_plot[0,:])
     fig.show()
