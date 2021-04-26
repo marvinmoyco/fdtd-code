@@ -56,8 +56,8 @@ print(f"Update coefficients: m_E = {m_E.shape}, m_H = {m_H.shape}")
 print(f"Field vectors: Ey: {E.shape}, Hx: {H.shape}")
 
 #Initialize Boundary Terms (For Perfect Absorbing Boundary Conditions)
-z_low = [0,0,0]
-z_high = [0,0,0]
+z_low = [0,0]
+z_high = [0,0]
 e2 = 0
 h2 = 0
 
