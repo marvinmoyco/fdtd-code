@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #Importing of necessary libraries
 from functions import *
+import time 
 
 #User Input
 f_max = float(input("Enter the max frequency of the source excitation (in Hz): "))
@@ -25,9 +26,9 @@ print("=====================================================================")
 print(f"Number of Yee cells: {N_z} cells\nLength of each cell (Delta_z): {delta_z} m")
 
 #Computing material properties
-mu_r = np.ones((1,N_z))    #Due to free space
-epsilon_r = np.ones((1,N_z))
-n_r = np.sqrt(mu_r[:,0]*epsilon_r[:,0])
+mu_r = np.ones((N_z))    #Due to free space
+epsilon_r = np.ones((N_z))
+n_r = np.sqrt(mu_r[0]*epsilon_r[0])
 
 #Computing Time step and source excitation
 n_bc = 1 #Refractive index at the boundaries (assume free space)
@@ -48,15 +49,15 @@ m_E = c_0*delta_t/(epsilon_r*delta_z) #This is assuming that every cell is in fr
 m_H = c_0*delta_t/(mu_r*delta_z)
 
 #Field initialization
-E = np.zeros((1,N_z))
-H = np.zeros((1,N_z))
+E = np.zeros((N_z))
+H = np.zeros((N_z))
 print("=====================================================================")
 print(f"Update coefficients: m_E = {m_E.shape}, m_H = {m_H.shape}")
 print(f"Field vectors: Ey: {E.shape}, Hx: {H.shape}")
 
 #Initialize Boundary Terms (For Perfect Absorbing Boundary Conditions)
-z_low = [0,0]
-z_high = [0,0]
+z_low = [0,0,0]
+z_high = [0,0,0]
 e2 = 0
 h2 = 0
 
@@ -74,19 +75,19 @@ if mode == 1: #Basic Algorithm, No source excitation
 
         #Update H from E (loop in space)
         for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
-            H[:,k] = H[:,k] + m_H[:,k]*(E[:,k+1] - E[:,k])
+            H[k] = H[k] + m_H[k]*(E[k+1] - E[k])
         #Dirichlet Boundary Condition for H at the end of the grid
-        H[:,N_z-1] = H[:,N_z-1] + m_H[:,N_z-1]*(0 - E[:,N_z-1])
+        H[N_z-1] = H[N_z-1] + m_H[N_z-1]*(0 - E[N_z-1])
 
         #Dirichlet Boundary Condition for E at the start of the grid
-        E[:,0] = E[:,0] + m_E[:,0]*(H[:,0]-0)
+        E[0] = E[0] + m_E[0]*(H[0]-0)
         #Update E from H (loop in space)
         for k in range(1,N_z):
-            E[:,k] = E[:,k] + m_E[:,k]*(H[:,k]-H[:,k-1])
+            E[k] = E[k] + m_E[k]*(H[k]-H[k-1])
 
         #Save into matrix
-        E_plot[i,:] = E
-        H_plot[i,:] = H
+        E_plot[i,:] = E.reshape((1,N_z))
+        H_plot[i,:] = H.reshape((1,N_z))
         print("=====================================================================")
         print(f"FDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
 
@@ -97,22 +98,22 @@ elif mode == 2: #Algorithm with Hard Source
     for i in range(N_t):
         #Update H from E (loop in space)
         for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
-            H[:,k] = H[:,k] + m_H[:,k]*(E[:,k+1] - E[:,k])
+            H[k] = H[k] + m_H[k]*(E[k+1] - E[k])
         #Dirichlet Boundary Condition for H at the end of the grid
-        H[:,N_z-1] = H[:,N_z-1] + m_H[:,N_z-1]*(0 - E[:,N_z-1])
+        H[N_z-1] = H[N_z-1] + m_H[N_z-1]*(0 - E[N_z-1])
 
         #Dirichlet Boundary Condition for E at the start of the grid
-        E[:,0] = E[:,0] + m_E[:,0]*(H[:,0]-0)
+        E[0] = E[0] + m_E[0]*(H[0]-0)
         #Update E from H (loop in space)
         for k in range(1,N_z):
-            E[:,k] = E[:,k] + m_E[:,k]*(H[:,k]-H[:,k-1])
+            E[k] = E[k] + m_E[k]*(H[k]-H[k-1])
 
         #Insert Source Excitation (Hard Source)
-        E[:,injection_point] = Esrc[i]
+        E[injection_point] = Esrc[i]
 
         #Save into matrix
-        E_plot[i,:] = E
-        H_plot[i,:] = H
+        E_plot[i,:] = E.reshape((1,N_z))
+        H_plot[i,:] = H.reshape((1,N_z))
         print("=====================================================================")
         print(f"FDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
 
@@ -122,22 +123,22 @@ elif mode == 3: #Algorithm with Soft Source
     for i in range(N_t):
         #Update H from E (loop in space)
         for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
-            H[:,k] = H[:,k] + m_H[:,k]*(E[:,k+1] - E[:,k])
+            H[k] = H[k] + m_H[k]*(E[k+1] - E[k])
         #Dirichlet Boundary Condition for H at the end of the grid
-        H[:,N_z-1] = H[:,N_z-1] + m_H[:,N_z-1]*(0 - E[:,N_z-1])
+        H[N_z-1] = H[N_z-1] + m_H[N_z-1]*(0 - E[N_z-1])
 
         #Dirichlet Boundary Condition for E at the start of the grid
-        E[:,0] = E[:,0] + m_E[:,0]*(H[:,0]-0)
+        E[0] = E[0] + m_E[0]*(H[0]-0)
         #Update E from H (loop in space)
         for k in range(1,N_z):
-            E[:,k] = E[:,k] + m_E[:,k]*(H[:,k]-H[:,k-1])
+            E[k] = E[k] + m_E[k]*(H[k]-H[k-1])
 
         #Inserting source excitation (Soft Source)
-        E[:,injection_point] = E[:,injection_point] + Esrc[i]
+        E[injection_point] = E[injection_point] + Esrc[i]
 
         #Save into matrix
-        E_plot[i,:] = E
-        H_plot[i,:] = H
+        E_plot[i,:] = E.reshape((1,N_z))
+        H_plot[i,:] = H.reshape((1,N_z))
         print("=====================================================================")
         print(f"FDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
 
@@ -147,34 +148,35 @@ elif mode == 4: #Algorithm with Soft Source (with PABC)
     for i in range(N_t):
         #Record H at Boundary
         h2 = z_low.pop(0)
-        z_low.append(H[:,0])
+        z_low.append(H[0])
 
         #Update H from E (loop in space)
         for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
-            H[:,k] = H[:,k] + m_H[:,k]*(E[:,k+1] - E[:,k])
+            H[k] = H[k] + m_H[k]*(E[k+1] - E[k])
         # Perfect Absorbing Boundary Condition for H at the end of the grid
-        H[:,N_z-1] = H[:,N_z-1] + m_H[:,N_z-1]*(e2 - E[:,N_z-1])
+        H[N_z-1] = H[N_z-1] + m_H[N_z-1]*(e2 - E[N_z-1])
 
         #Record E at Boundary
         e2 = z_high.pop(0)
-        z_high.append(E[:,N_z-1])
+        z_high.append(E[N_z-1])
 
         # Perfect Absorbing Boundary Condition for E at the start of the grid
-        E[:,0] = E[:,0] + m_E[:,0]*(H[:,0]-h2)
+        E[0] = E[0] + m_E[0]*(H[0]-h2)
         #Update E from H (loop in space)
         for k in range(1,N_z):
-            E[:,k] = E[:,k] + m_E[:,k]*(H[:,k]-H[:,k-1])
+            E[k] = E[k] + m_E[k]*(H[k]-H[k-1])
 
         #Inserting source excitation (Soft Source)
-        E[:,injection_point] = E[:,injection_point] + Esrc[i]
+        E[injection_point] = E[injection_point] + Esrc[i]
 
         #Save into matrix
-        E_plot[i,:] = E
-        H_plot[i,:] = H
+        E_plot[i,:] = E.reshape((1,N_z))
+        H_plot[i,:] = H.reshape((1,N_z))
         print("=====================================================================")
         print(f"FDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
         print(f"z_low:{z_low}")
         print(f"z_high:{z_high}")
+        #time.sleep(1)
 elif mode == 5: #Algorithm with TF/SF (with PABC)
     plot_title = "TF/SF with PABC"
     #Loop in time for Algorithm
@@ -182,34 +184,34 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
 
          #Record H at Boundary
         h2 = z_low.pop(0)
-        z_low.append(H[:,0])
+        z_low.append(H[0])
 
         #Update H from E (loop in space)
         for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
-            H[:,k] = H[:,k] + m_H[:,k]*(E[:,k+1] - E[:,k])
+            H[k] = H[k] + m_H[k]*(E[k+1] - E[k])
             if k == injection_point:#Handling H source
-                H[:,k-1] = H[:,k-1] - m_H[:,k-1]*Esrc[i]
+                H[k-1] = H[k-1] - m_H[k-1]*Esrc[i]
         # Perfect Absorbing Boundary Condition for H at the end of the grid
-        H[:,N_z-1] = H[:,N_z-1] + m_H[:,N_z-1]*(e2 - E[:,N_z-1])
+        H[N_z-1] = H[N_z-1] + m_H[N_z-1]*(e2 - E[N_z-1])
 
         
 
 
         #Record E at Boundary
         e2 = z_high.pop(0)
-        z_high.append(E[:,N_z-1])
+        z_high.append(E[N_z-1])
 
         # Perfect Absorbing Boundary Condition for E at the start of the grid
-        E[:,0] = E[:,0] + m_E[:,0]*(H[:,0]-h2)
+        E[0] = E[0] + m_E[0]*(H[0]-h2)
         #Update E from H (loop in space)
         for k in range(1,N_z):
-            E[:,k] = E[:,k] + m_E[:,k]*(H[:,k]-H[:,k-1])
+            E[k] = E[k] + m_E[k]*(H[k]-H[k-1])
             if k == injection_point: #Handling E source
-                E[:,k] = E[:,k] - m_E[:,k]*Hsrc[i]
+                E[k] = E[k] - m_E[k]*Hsrc[i]
 
         #Save into matrix
-        E_plot[i,:] = E
-        H_plot[i,:] = H
+        E_plot[i,:] = E.reshape((1,N_z))
+        H_plot[i,:] = H.reshape((1,N_z))
         print("=====================================================================")
         print(f"FDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
         print(f"z_low:{z_low}")
