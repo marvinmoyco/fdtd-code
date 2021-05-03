@@ -38,7 +38,7 @@ t_prop = (n_r*N_z*delta_z)/c_0 #time it takes to propagate in the domain
 if source == 1:
     Esrc,Hsrc,t,N_t = gaussian_source(f_max,t_prop,delta_t,delta_z,c_0)
 elif source == 2:
-    Esrc,Hsrc,t,N_t = sinusoidal_source(f_max, t_prop,delta_t, delta_z, c_0)(f_max,t_prop,delta_t,delta_z,c_0)
+    Esrc,Hsrc,t,N_t = sinusoidal_source(f_max,t_prop,delta_t, delta_z, c_0)
 
 
 injection_point = 100 #Set this before the device/model in the domain

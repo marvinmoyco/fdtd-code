@@ -25,10 +25,10 @@ def sinusoidal_source(f_max,t_prop,delta_t,delta_z,c_0):
 
     A = -np.sqrt(epsilon_src/mu_src)
 
-
+    n, = t.shape
     Esrc = np.zeros((t.shape))
     Hsrc = np.zeros((t.shape))
-    for i in t:
+    for i in range(n):
         x_E = (i - t_0)/tau
         x_H = (i-t_0 + deltaT)/tau
         if i < t_0:
