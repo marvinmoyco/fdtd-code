@@ -34,11 +34,11 @@ def sinusoidal_source(f_max,t_prop,delta_t,delta_z,c_0):
         if i < t_0:
             AmpE = np.exp(-np.power(x_E,2))
             AmpH = np.exp(-np.power(x_H,2))
-            Esrc[i] = (AmpE*sin(2*np.pi*f_max*i))
-            Hsrc[i] = A*(AmpH*sin(2*np.pi*f_max*i))
+            Esrc[i] = (AmpE*np.sin(2*np.pi*f_max*i))
+            Hsrc[i] = A*(AmpH*np.sin(2*np.pi*f_max*i))
         else:
-            Esrc[i] = (sin(2*np.pi*f_max*i))
-            Hsrc[i] = A*(sin(2*np.pi*f_max*i))
+            Esrc[i] = (np.sin(2*np.pi*f_max*i))
+            Hsrc[i] = A*(np.sin(2*np.pi*f_max*i))
     return Esrc,Hsrc,t,N_t
 
 def gaussian_source(f_max,t_prop,delta_t,delta_z,c_0):
