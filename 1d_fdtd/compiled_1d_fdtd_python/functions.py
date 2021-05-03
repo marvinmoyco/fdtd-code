@@ -8,7 +8,7 @@ mu_0 = constants.mu_0
 epsilon_0 = constants.epsilon_0
 
 
-def sinusoidal_source(f_max,t_prop_delta_t,delta_z,c_0):
+def sinusoidal_source(f_max,t_prop,delta_t,delta_z,c_0):
     #Set source permittivity and permeability
     mu_src =1 #these parameters should be the material permittivity/permeability at the grid position of the source injection
     epsilon_src = 1
