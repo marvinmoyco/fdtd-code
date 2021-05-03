@@ -6,6 +6,7 @@ import time
 #User Input
 f_max = float(input("Enter the max frequency of the source excitation (in Hz): "))
 mode = int(input("Enter the mode of FDTD Algorithm: \n(1) Basic Algorithm, No source excitation\n(2) Algorithm with Hard Source\n(3) Algorithm with Soft Source\n(4) Algorithm with Soft Source (with PABC)\n(5) Algorithm with TF/SF (with PABC):"))
+source = int(input("Enter what source excitation to use: (1) Gaussian Pulse\n(2) Sinusoidal Source: "))
 #NOTE: The assumption in this code is that the computational domain is composed of free-space
 #There is no other material present in the domain so the material properties are that of the free space
 
@@ -34,7 +35,12 @@ n_r = np.sqrt(mu_r[0]*epsilon_r[0])
 n_bc = 1 #Refractive index at the boundaries (assume free space)
 delta_t = (n_bc*delta_z)/(2*c_0)
 t_prop = (n_r*N_z*delta_z)/c_0 #time it takes to propagate in the domain
-Esrc,Hsrc,t,N_t = gaussian_source(f_max,t_prop,delta_t,delta_z,c_0)
+if source == 1:
+    Esrc,Hsrc,t,N_t = gaussian_source(f_max,t_prop,delta_t,delta_z,c_0)
+elif source == 2:
+    Esrc,Hsrc,t,N_t = sinusoidal_source(f_max, t_prop_delta_t, delta_z, c_0)(f_max,t_prop,delta_t,delta_z,c_0)
+
+
 injection_point = 100 #Set this before the device/model in the domain
 print("=====================================================================")
 print(f"Time step: {delta_t} seconds")
