@@ -1,0 +1,1 @@
+Enter the max frequency for the source excitation: The max frequency selected is 1e+09

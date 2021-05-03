@@ -7,6 +7,40 @@ c_0 = constants.speed_of_light
 mu_0 = constants.mu_0
 epsilon_0 = constants.epsilon_0
 
+
+def sinusoidal_source(f_max,t_prop_delta_t,delta_z,c_0):
+    #Set source permittivity and permeability
+    mu_src =1 #these parameters should be the material permittivity/permeability at the grid position of the source injection
+    epsilon_src = 1
+
+    #Computing source parameters
+    tau = 3/f_max
+    t_0 = 3*tau
+    T = 12*tau + 5*t_prop #Total time of simulation
+    N_t = math.ceil(T/delta_t) #Number of time steps
+    t = np.linspace(0,N_t*delta_t,N_t)
+
+    n_src = np.sqrt(epsilon_src*mu_src)
+    deltaT = (n_src*delta_z/2*c_0)+(delta_t/2)
+
+    A = -np.sqrt(epsilon_src/mu_src)
+
+
+    Esrc = np.zeros((t.shape))
+    Hsrc = np.zeros((t.shape))
+    for i in t:
+        x_E = (i - t_0)/tau
+        x_H = (i-t_0 + deltaT)/tau
+        if i < t_0:
+            AmpE = np.exp(-np.power(x_E,2))
+            AmpH = np.exp(-np.power(x_H,2))
+            Esrc[i] = (AmpE*sin(2*np.pi*f_max*i))
+            Hsrc[i] = A*(AmpH*sin(2*np.pi*f_max*i))
+        else:
+            Esrc[i] = (sin(2*np.pi*f_max*i))
+            Hsrc[i] = A*(sin(2*np.pi*f_max*i))
+    return Esrc,Hsrc,t,N_t
+
 def gaussian_source(f_max,t_prop,delta_t,delta_z,c_0):
     """
     Gaussian Pulse Source that is used for injecting source in 1D FDTD.
