@@ -23,6 +23,7 @@ spacers = 15
 d_critical = 0.7
 N_z = math.ceil(d_critical/delta_init) + spacers
 delta_z = d_critical/N_z
+z = np.linspace(0,N_z*delta_z,N_z)
 print("=====================================================================")
 print(f"Number of Yee cells: {N_z} cells\nLength of each cell (Delta_z): {delta_z} m")
 
@@ -224,7 +225,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
         print(f"z_high:{z_high}")
 
 #Plotting the field values....
-plot_fields(E_plot,H_plot,N_t,injection_point,title=plot_title,save=False)
+plot_fields(z,E_plot,H_plot,N_t,injection_point,title=plot_title,save=False)
 
 
 

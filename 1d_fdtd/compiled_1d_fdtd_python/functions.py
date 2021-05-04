@@ -29,16 +29,16 @@ def sinusoidal_source(f_max,t_prop,delta_t,delta_z,c_0):
     Esrc = np.zeros((t.shape))
     Hsrc = np.zeros((t.shape))
     for i in range(n):
-        x_E = (i - t_0)/tau
-        x_H = (i-t_0 + deltaT)/tau
-        if i < t_0:
+        x_E = (t[i] - t_0)/tau
+        x_H = (t[i]-t_0 + deltaT)/tau
+        if t[i] < t_0:
             AmpE = np.exp(-np.power(x_E,2))
             AmpH = np.exp(-np.power(x_H,2))
-            Esrc[i] = (AmpE*np.sin(2*np.pi*f_max*i))
-            Hsrc[i] = A*(AmpH*np.sin(2*np.pi*f_max*i))
+            Esrc[i] = AmpE*(np.sin(2*np.pi*f_max*t[i]))
+            Hsrc[i] = AmpH*A*(np.sin(2*np.pi*f_max*t[i]))
         else:
-            Esrc[i] = (np.sin(2*np.pi*f_max*i))
-            Hsrc[i] = A*(np.sin(2*np.pi*f_max*i))
+            Esrc[i] = AmpE*(np.sin(2*np.pi*f_max*t[i]))
+            Hsrc[i] = AmpH*A*(np.sin(2*np.pi*f_max*t[i]))
     return Esrc,Hsrc,t,N_t
 
 def gaussian_source(f_max,t_prop,delta_t,delta_z,c_0):
@@ -79,7 +79,7 @@ def plot_single(x=0,y1=0,y2=0,size=[20,13],labels=["X-Axis","Y-Axis","Title"]):
     plt.plot(x,y2)
     plt.show()
 
-def plot_fields(E_plot,H_plot,N_t,injection_point,title="",save=False):
+def plot_fields(z,E_plot,H_plot,N_t,injection_point,title="",save=False):
     plt.ion()
     fig = plt.figure(1,[10,6])
     ax = fig.add_subplot(111)
