@@ -42,7 +42,7 @@ elif source == 2:
     Esrc,Hsrc,t,N_t = sinusoidal_source(f_max,t_prop,delta_t, delta_z, c_0)
 
 
-injection_point = 100 #Set this before the device/model in the domain
+injection_point = math.floor(N_z/2) #Set this before the device/model in the domain
 print("=====================================================================")
 print(f"Time step: {delta_t} seconds")
 print(f"Number of iterations: {N_t} steps")
@@ -195,14 +195,18 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
 
         #Update H from E (loop in space)
         for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
-            H[k] = H[k] + m_H[k]*(E[k+1] - E[k])
-            if k == injection_point:#Handling H source
-                H[k-1] = H[k-1] - m_H[k-1]*Esrc[i]
+            
+            #if k == injection_point-1:#Handling H source
+               #Handle source(Magnetic Field)
+               #H[k-1] = H[k-1] + m_H[k-1]*((E[k] - Esrc[k]) - E[k-1])
+               #H[k] = H[k] + m_H[k]*((E[k+1] - E[k])-Esrc[i])
+           #else:
+           H[k] = H[k] + m_H[k]*(E[k+1] - E[k])
         # Perfect Absorbing Boundary Condition for H at the end of the grid
         H[N_z-1] = H[N_z-1] + m_H[N_z-1]*(e2 - E[N_z-1])
-
+        H[injection_point-1] = H[injection_point-1] + m_H[injection_point-1]*((E[injection_point] - E[injection_point-1])-Esrc[i])
         
-
+        H[injection_point] += Hsrc[i] 
 
         #Record E at Boundary
         e2 = z_high.pop(0)
@@ -212,11 +216,17 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
         E[0] = E[0] + m_E[0]*(H[0]-h2)
         #Update E from H (loop in space)
         for k in range(1,N_z):
+            #if k == injection_point: 
+            	#Handling E source
+            	#E[k] = E[k] + m_E[k]*(H[k] - (H[k -1] + Hsrc[k - 1]))
+            	#E[k] = E[k] + m_E[k]*((H[k] - H[k-1]) - Hsrc[i])
+            #else:
             E[k] = E[k] + m_E[k]*(H[k]-H[k-1])
-            if k == injection_point: #Handling E source
-                E[k] = E[k] - m_E[k]*Hsrc[i]
-
-        #Save into matrix
+        
+        E[injection_point] = E[injection_point] + m_E[injection_point]*((H[injection_point] - H[injection_point-1]) - Hsrc[i])
+        E[injection_point] += Esrc[i]
+        
+	#Save into matrix
         E_plot[i,:] = E.reshape((1,N_z))
         H_plot[i,:] = H.reshape((1,N_z))
         print("=====================================================================")
@@ -225,7 +235,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
         print(f"z_high:{z_high}")
 
 #Plotting the field values....
-plot_fields(z,E_plot,H_plot,N_t,injection_point,title=plot_title,save=False)
+plot_fields(z,E_plot,H_plot,N_t,injection_point,title=plot_title,save=True)
 
 
 

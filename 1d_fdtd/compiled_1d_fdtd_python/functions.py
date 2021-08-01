@@ -51,11 +51,12 @@ def gaussian_source(f_max,t_prop,delta_t,delta_z,c_0):
 
     #Computing source parameters
     tau = 0.5/f_max
-    t_0 = 2*tau
+    t_0 = 5*tau
     T = 12*tau + 5*t_prop #Total time of simulation
     N_t = math.ceil(T/delta_t) #Number of time steps
     t = np.linspace(0,N_t*delta_t,N_t)
-
+    print("=======================================================================")
+    print(f"t_0 = {t_0} m, tau = {tau} m ")
     n_src = np.sqrt(epsilon_src*mu_src)
     deltaT = (n_src*delta_z/2*c_0)+(delta_t/2)
 
@@ -104,7 +105,7 @@ def plot_fields(z,E_plot,H_plot,N_t,injection_point,title="",save=False):
         print(f"Currently plotting Iteration step: {i}/{N_t}")
         plt.title(f'FDTD 1-D {title} | Iteration step: {i}/{N_t}')
         if save == True:
-            plt.savefig(f"photos/1d-fdtd{i}.jpeg")
+            plt.savefig("/home/user/Desktop/photos/1d-fdtd{num:07d}.jpeg".format(num=i))
         lineE.set_ydata(E_plot[i,:])
         lineH.set_ydata(H_plot[i,:])
         fig.canvas.draw()
