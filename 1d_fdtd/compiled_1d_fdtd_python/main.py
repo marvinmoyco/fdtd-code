@@ -195,13 +195,13 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
         #Update H from E (loop in space)
         for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
             H[k] = H[k] + m_H[k]*(E[k+1] - E[k])
-            if k == injection_point:#Handling H source
-                H[k-1] = H[k-1] - m_H[k-1]*Esrc[i]
+            
+        #Adjustments for TF/SF
+
+        H[injection_point-1] -= m_H[injection_point-1]*Esrc[i]
+
         # Perfect Absorbing Boundary Condition for H at the end of the grid
         H[N_z-1] = H[N_z-1] + m_H[N_z-1]*(e2 - E[N_z-1])
-
-        
-
 
         #Record E at Boundary
         e2 = z_high.pop(0)
@@ -212,8 +212,9 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
         #Update E from H (loop in space)
         for k in range(1,N_z):
             E[k] = E[k] + m_E[k]*(H[k]-H[k-1])
-            if k == injection_point: #Handling E source
-                E[k] = E[k] - m_E[k]*Hsrc[i]
+
+        #Adjustment for the TF/SF
+        E[injection_point] -= m_E[injection_point]*Hsrc[i]
 
         #Save into matrix
         E_plot[i,:] = E.reshape((1,N_z))
