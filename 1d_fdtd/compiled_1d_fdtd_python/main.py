@@ -23,6 +23,7 @@ spacers = 15
 d_critical = 0.7
 N_z = math.ceil(d_critical/delta_init) + spacers
 delta_z = d_critical/N_z
+z = np.linspace(0,N_z*delta_z,N_z)
 print("=====================================================================")
 print(f"Number of Yee cells: {N_z} cells\nLength of each cell (Delta_z): {delta_z} m")
 
@@ -41,7 +42,7 @@ elif source == 2:
     Esrc,Hsrc,t,N_t = sinusoidal_source(f_max,t_prop,delta_t, delta_z, c_0)
 
 
-injection_point = 100 #Set this before the device/model in the domain
+injection_point = math.floor(N_z/2) #Set this before the device/model in the domain
 print("=====================================================================")
 print(f"Time step: {delta_t} seconds")
 print(f"Number of iterations: {N_t} steps")
@@ -211,6 +212,11 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
         E[0] = E[0] + m_E[0]*(H[0]-h2)
         #Update E from H (loop in space)
         for k in range(1,N_z):
+            #if k == injection_point: 
+            	#Handling E source
+            	#E[k] = E[k] + m_E[k]*(H[k] - (H[k -1] + Hsrc[k - 1]))
+            	#E[k] = E[k] + m_E[k]*((H[k] - H[k-1]) - Hsrc[i])
+            #else:
             E[k] = E[k] + m_E[k]*(H[k]-H[k-1])
 
         #Adjustment for the TF/SF
@@ -225,7 +231,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
         print(f"z_high:{z_high}")
 
 #Plotting the field values....
-plot_fields(E_plot,H_plot,N_t,injection_point,title=plot_title,save=False)
+plot_fields(z,E_plot,H_plot,N_t,injection_point,title=plot_title,save=True)
 
 
 

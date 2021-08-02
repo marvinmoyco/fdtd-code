@@ -29,16 +29,16 @@ def sinusoidal_source(f_max,t_prop,delta_t,delta_z,c_0):
     Esrc = np.zeros((t.shape))
     Hsrc = np.zeros((t.shape))
     for i in range(n):
-        x_E = (i - t_0)/tau
-        x_H = (i-t_0 + deltaT)/tau
-        if i < t_0:
+        x_E = (t[i] - t_0)/tau
+        x_H = (t[i]-t_0 + deltaT)/tau
+        if t[i] < t_0:
             AmpE = np.exp(-np.power(x_E,2))
             AmpH = np.exp(-np.power(x_H,2))
-            Esrc[i] = (AmpE*np.sin(2*np.pi*f_max*i))
-            Hsrc[i] = A*(AmpH*np.sin(2*np.pi*f_max*i))
+            Esrc[i] = AmpE*(np.sin(2*np.pi*f_max*t[i]))
+            Hsrc[i] = AmpH*A*(np.sin(2*np.pi*f_max*t[i]))
         else:
-            Esrc[i] = (np.sin(2*np.pi*f_max*i))
-            Hsrc[i] = A*(np.sin(2*np.pi*f_max*i))
+            Esrc[i] = AmpE*(np.sin(2*np.pi*f_max*t[i]))
+            Hsrc[i] = AmpH*A*(np.sin(2*np.pi*f_max*t[i]))
     return Esrc,Hsrc,t,N_t
 
 def gaussian_source(f_max,t_prop,delta_t,delta_z,c_0):
@@ -51,11 +51,12 @@ def gaussian_source(f_max,t_prop,delta_t,delta_z,c_0):
 
     #Computing source parameters
     tau = 0.5/f_max
-    t_0 = 2*tau
+    t_0 = 5*tau
     T = 12*tau + 5*t_prop #Total time of simulation
     N_t = math.ceil(T/delta_t) #Number of time steps
     t = np.linspace(0,N_t*delta_t,N_t)
-
+    print("=======================================================================")
+    print(f"t_0 = {t_0} m, tau = {tau} m ")
     n_src = np.sqrt(epsilon_src*mu_src)
     deltaT = (n_src*delta_z/2*c_0)+(delta_t/2)
 
@@ -79,7 +80,7 @@ def plot_single(x=0,y1=0,y2=0,size=[20,13],labels=["X-Axis","Y-Axis","Title"]):
     plt.plot(x,y2)
     plt.show()
 
-def plot_fields(E_plot,H_plot,N_t,injection_point,title="",save=False):
+def plot_fields(z,E_plot,H_plot,N_t,injection_point,title="",save=False):
     plt.ion()
     fig = plt.figure(1,[10,6])
     ax = fig.add_subplot(111)
@@ -104,7 +105,7 @@ def plot_fields(E_plot,H_plot,N_t,injection_point,title="",save=False):
         print(f"Currently plotting Iteration step: {i}/{N_t}")
         plt.title(f'FDTD 1-D {title} | Iteration step: {i}/{N_t}')
         if save == True:
-            plt.savefig(f"photos/1d-fdtd{i}.jpeg")
+            plt.savefig("/home/user/Desktop/photos/1d-fdtd{num:07d}.jpeg".format(num=i))
         lineE.set_ydata(E_plot[i,:])
         lineH.set_ydata(H_plot[i,:])
         fig.canvas.draw()
