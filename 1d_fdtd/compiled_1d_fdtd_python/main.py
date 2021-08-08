@@ -199,7 +199,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
             
         #Adjustments for TF/SF
 
-        H[injection_point-1] -= m_H[injection_point-1]*Esrc[i]
+        H[injection_point-1] = H[injection_point-1] - m_H[injection_point-1]*Esrc[i]
 
         # Perfect Absorbing Boundary Condition for H at the end of the grid
         H[N_z-1] = H[N_z-1] + m_H[N_z-1]*(e2 - E[N_z-1])
@@ -220,7 +220,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
             E[k] = E[k] + m_E[k]*(H[k]-H[k-1])
 
         #Adjustment for the TF/SF
-        E[injection_point] -= m_E[injection_point]*Hsrc[i]
+        E[injection_point] = E[injection_point] - m_E[injection_point]*Hsrc[i-1]
 
         #Save into matrix
         E_plot[i,:] = E.reshape((1,N_z))
