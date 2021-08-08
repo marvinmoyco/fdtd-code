@@ -230,6 +230,42 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
         print(f"z_low:{z_low}")
         print(f"z_high:{z_high}")
 
+elif mode == 6:
+    plot_title = "TFSF No Space Loop"
+    #Loop in time for Algorithm
+    for i in range(N_t):
+        #Update H from E (loop in space)
+        #for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
+        #    H[k] = H[k] + m_H[k]*(E[k+1] - E[k])
+            
+        H[:-1] = H[:-1] + m_H[:-1]*(E[1:]-E[:-1])
+        
+        #Dirichlet Boundary Condition for H at the end of the grid
+        H[N_z-1] = H[N_z-1] + m_H[N_z-1]*(0 - E[N_z-1])
+        
+        #H[injection_point-1] += Hsrc[i] 
+        #H[injection_point-1] -= Hsrc[i]
+        
+        #Dirichlet Boundary Condition for E at the start of the grid
+        E[0] = E[0] + m_E[0]*(H[0]-0)
+        #Update E from H (loop in space)
+        #for k in range(1,N_z):
+        #    E[k] = E[k] + m_E[k]*(H[k]-H[k-1])
+
+        E[1:] = E[1:] + m_E[1:]*(H[1:]-H[:-1])
+        
+        #Inserting source excitation (Soft Source)
+        E[injection_point] -= Esrc[i]
+
+        #Save into matrix
+        E_plot[i,:] = E.reshape((1,N_z))
+        H_plot[i,:] = H.reshape((1,N_z))
+        print("=====================================================================")
+        print(f"FDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
+        
+
+
+
 #Plotting the field values....
 plot_fields(z,E_plot,H_plot,N_t,injection_point,title=plot_title,save=True)
 
