@@ -11,7 +11,7 @@ source = int(input("Enter what source excitation to use: (1) Gaussian Pulse\n(2)
 #There is no other material present in the domain so the material properties are that of the free space
 
 #Computing Grid Resolution
-n_max = 1 #Due to free space
+n_max = np.sqrt(8*(3/8)) #Due to free space
 lambda_min = c_0/(f_max*n_max)
 N_lambda = 10
 delta_lambda = lambda_min/N_lambda
@@ -26,11 +26,15 @@ delta_z = d_critical/N_z
 z = np.linspace(0,N_z*delta_z,N_z)
 print("=====================================================================")
 print(f"Number of Yee cells: {N_z} cells\nLength of each cell (Delta_z): {delta_z} m")
-
+injection_point = math.floor(N_z/4) #Set this before the device/model in the domain
 #Computing material properties
 mu_r = np.ones((N_z))    #Due to free space
 epsilon_r = np.ones((N_z))
 n_r = np.sqrt(mu_r[0]*epsilon_r[0])
+
+#Glass material property
+mu_r[injection_point + 50 :N_z-50] = 3/8
+epsilon_r[injection_point + 50 :N_z-50]=8
 
 #Computing Time step and source excitation
 n_bc = 1 #Refractive index at the boundaries (assume free space)
@@ -42,7 +46,7 @@ elif source == 2:
     Esrc,Hsrc,t,N_t = sinusoidal_source(f_max,t_prop,delta_t, delta_z, c_0)
 
 
-injection_point = math.floor(N_z/2) #Set this before the device/model in the domain
+
 print("=====================================================================")
 print(f"Time step: {delta_t} seconds")
 print(f"Number of iterations: {N_t} steps")
@@ -234,28 +238,24 @@ elif mode == 6:
     plot_title = "TFSF No Space Loop"
     #Loop in time for Algorithm
     for i in range(N_t):
+
         #Update H from E (loop in space)
-        #for k in range(N_z -1): #Leave out the last cell @ index=N_z-1 for the boundary condition
-        #    H[k] = H[k] + m_H[k]*(E[k+1] - E[k])
-            
         H[:-1] = H[:-1] + m_H[:-1]*(E[1:]-E[:-1])
         
         #Dirichlet Boundary Condition for H at the end of the grid
         H[N_z-1] = H[N_z-1] + m_H[N_z-1]*(0 - E[N_z-1])
         
         #H[injection_point-1] += Hsrc[i] 
-        #H[injection_point-1] -= Hsrc[i]
+        H[injection_point-1] += m_H[injection_point -1]*Hsrc[i]
         
         #Dirichlet Boundary Condition for E at the start of the grid
         E[0] = E[0] + m_E[0]*(H[0]-0)
-        #Update E from H (loop in space)
-        #for k in range(1,N_z):
-        #    E[k] = E[k] + m_E[k]*(H[k]-H[k-1])
 
+        #Update E from H (loop in space)
         E[1:] = E[1:] + m_E[1:]*(H[1:]-H[:-1])
         
         #Inserting source excitation (Soft Source)
-        E[injection_point] -= Esrc[i]
+        E[injection_point] -= m_E[injection_point]*Esrc[i]
 
         #Save into matrix
         E_plot[i,:] = E.reshape((1,N_z))
