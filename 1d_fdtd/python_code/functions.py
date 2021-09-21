@@ -56,14 +56,14 @@ def gaussian_source(f_max,t_prop,delta_t,delta_z,c_0):
     N_t = math.ceil(T/delta_t) #Number of time steps
     t = np.linspace(0,N_t*delta_t,N_t)
     print("=======================================================================")
-    print(f"t_0 = {t_0} m, tau = {tau} m ")
+    print(f"t_0 = {t_0} m, \ntau = {tau} m, Nt: {N_t} \n T: {T}")
     n_src = np.sqrt(epsilon_src*mu_src)
     deltaT = (n_src*delta_z/2*c_0)+(delta_t/2)
-
+    print(f"t: {t}")
     A = -np.sqrt(epsilon_src/mu_src)
     x_E = (t - t_0)/tau
     x_H = (t-t_0 + deltaT)/tau
-
+    print(f"x_E: {x_E}")
     Esrc = np.exp(-np.power(x_E,2))
     Hsrc = A*np.exp(-np.power(x_H,2))
     return Esrc,Hsrc,t,N_t

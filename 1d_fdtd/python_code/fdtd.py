@@ -21,14 +21,23 @@ class Simulation:
         At object creation, the input file (csv) where the simulation parameters are set should be included.
         """
         #Initialization of relevant variables
-        self.sim_param = {"dz":0,"dt":0,"Nz":0,"Nt":0,"fmax":0,"sim_time":0,"source_type":"no_source"}
+        self.sim_param = {"dz":0,
+                          "dt":0,
+                          "Nz":0,
+                          "Nt":0,
+                          "fmax":0,
+                          "sim_time":0,
+                          "source_type":"no_source",
+                          "boundary_type":"dirichlet",
+                          "excitation_method":"hard_source"
+                          }
         #Storage variable for the input file parameters
         self.input = {}
         self.comp_domain = {}
         self.spacer_cells = 0
         self.source = None
 
-    def init(self,input_path=None,spacers=0,injection_point=0): 
+    def initialize(self,input_path=None,spacers=0,injection_point=0): 
         """
         This function will read the input file and calculate dz and dt of the whole computational domain as well as the creation of the computational domain.
         """
@@ -70,6 +79,7 @@ class Simulation:
 
         #Computing dz and Nz
         n_max = np.sqrt(np.array(self.input['magnetic permeability'])*np.array(self.input['electric permittivity'])).max(axis=0)
+        print(f"nmax: {n_max}\n")
         lambda_min = c_0/(self.input['simulation parameters'][0]*n_max)
         #Computing cell size based on smallest wavelength
         delta_lambda = lambda_min/25
@@ -84,6 +94,7 @@ class Simulation:
         for layer in self.input['layer size']:
             model_ncells.append(int(np.ceil(layer/self.sim_param['dz'])))
         model_cells = sum(model_ncells)
+        print(f"model_cells: {model_cells}")
         self.sim_param['Nz'] = model_cells
         #Check if there is a specified spacer regions
         if spacers != 0: #If there is a specified spacer region
@@ -96,7 +107,7 @@ class Simulation:
         #Check if it is divisible by two
         while self.sim_param['Nz'] % 2 != 0: #If the total cell size is not divisible by 2...
             self.sim_param['Nz'] += 1 #Add 1 cell until it is divisble by 2
-
+        print(f"Final Nz: {self.sim_param['Nz']}")
         #Check to make sure that the injection point is located inside the spacer region (left side)
         try:
             assert injection_point < self.spacer_cells and injection_point > 0
@@ -119,7 +130,7 @@ class Simulation:
         
         #Create computational domain
         #Every cell that is not in the simulation model is assumed to be vacuum
-        self.comp_domain['z'] = np.linspace(0,self.sim_param['Nz']*self.sim_param['dz'],int(self.sim_param['Nz']))
+        self.comp_domain['z'] = np.arange(0,self.sim_param['Nz']*self.sim_param['dz'],self.sim_param['dz'])
         self.comp_domain['mu'] = np.ones(self.comp_domain['z'].size)
         self.comp_domain['epsilon'] = np.ones(self.comp_domain['z'].size)
 
@@ -140,7 +151,7 @@ class Simulation:
             start = end
         #print(f"{self.comp_domain['epsilon'][0:self.spacer_cells]}->{self.comp_domain['epsilon'][self.spacer_cells:self.spacer_cells+model_ncells[0]]} -> {self.comp_domain['epsilon'][self.spacer_cells+model_ncells[0]:self.spacer_cells+model_ncells[0]+model_ncells[1]]}->{self.comp_domain['epsilon'][self.spacer_cells+model_ncells[0]+model_ncells[1]:self.spacer_cells+model_ncells[0]+model_ncells[1]+model_ncells[2]]} -> {self.comp_domain['epsilon'][self.spacer_cells + model_cells:]}")
         #print(f"{self.comp_domain['epsilon'][0:self.spacer_cells].shape}->{self.comp_domain['epsilon'][self.spacer_cells:self.spacer_cells+model_ncells[0]].shape} -> {self.comp_domain['epsilon'][self.spacer_cells+model_ncells[0]:self.spacer_cells+model_ncells[0]+model_ncells[1]].shape}->{self.comp_domain['epsilon'][self.spacer_cells+model_ncells[0]+model_ncells[1]:self.spacer_cells+model_ncells[0]+model_ncells[1]+model_ncells[2]].shape} -> {self.comp_domain['epsilon'][self.spacer_cells + model_cells:].shape}")
-        
+        print(f"z: {self.comp_domain['z']}")
         #Creating refractive index vector
         self.comp_domain['n'] = np.sqrt(self.comp_domain['mu']*self.comp_domain['epsilon'])
 
@@ -175,8 +186,11 @@ class Simulation:
         if self.input['simulation parameters'][1] == 0: #If the source type is Gaussian...
             self.sim_param['source_type'] = "gaussian"
             
-        elif self.input['simulation parameters'][1] == 0: #If it is sinusoidal...
+        elif self.input['simulation parameters'][1] == 1: #If it is sinusoidal...
             self.sim_param['source_type'] = "sinusoidal"
+        
+        #Initialize source object
+        self.computeSource()
 
         return self.comp_domain,self.sim_param
 
@@ -187,9 +201,12 @@ class Simulation:
             self.source.GaussianSource(show_plot=True,comp_domain=self.comp_domain)
         elif self.sim_param['source_type'] == 'sinusoidal':
             #Call SinusoidalSource() to calculate the needed values to insert a sine wave
-            self.source.SinusoidalSource(comp_domain=self.comp_domain)
+            self.source.SinusoidalSource(show_plot=True,comp_domain=self.comp_domain)
         else:
             return None
+
+    def simulate(self,boundary_condition="dirichlet",source_excitation="hard"):
+        pass
 
     def __str__(self):
         return f"Value of x: {self.x}"
@@ -210,13 +227,14 @@ class Source:
         self.source_param = {"tau":0,
                             "t0":0,
                             "Nt":0,
+                            "type":"",
                             "fmax":sim_param['fmax'],
                             "dt":sim_param['dt'],
                             "dz":sim_param['dz'],
                             "Nz":sim_param['Nz'],
                             "sim_time":sim_param['sim_time'] #sim_time
                             }
-        self.output = {"t":0,
+        self.source_output = {"t":0,
                               "Esrc":0,
                               "Hsrc":0
                              }
@@ -227,29 +245,58 @@ class Source:
         plt.xlabel(labels[0])
         plt.ylabel(labels[1])
         plt.title(labels[2])
-        plt.plot(self.output['t'],self.output['Esrc'])
-        plt.plot(self.output['t'],self.output['Hsrc'])
+        plt.plot(self.source_output['t'],self.source_output['Esrc'])
+        plt.plot(self.source_output['t'],self.source_output['Hsrc'])
         plt.show()
+        if save == True:
+            plt.savefig(filename + ".jpeg")
 
-
-    def GaussianSource(self,show_plot=False,t0_coeff=10,tau_coeff=15,comp_domain=None):
-        """
-        Generates a Gaussian pulse that will be inserted into the computational domain.
-        """
+    def __initialize(self,type='',show_plot=False,t0_coeff=1,prop_coeff=1,tau_coeff=1,comp_domain=None):
         try:
             assert comp_domain != None
         except AssertionError:
             print("comp_domain dict is missing. ")
-        
-        #Computing the initial parameters for the source
-        self.source_param['tau'] = 0.5/self.source_param['fmax'] #should be bandwidth
-        self.source_param['t0'] = t0_coeff*self.source_param['tau']
-        t_propagation = (np.amax(comp_domain['n'])*self.source_param['Nz']*self.source_param['dz'])/c_0
-        total_time_initial = tau_coeff*self.source_param['tau'] + t0_coeff*t_propagation
-        if self.source_param['sim_time'] < total_time_initial:
-            total_time = self.source_param['sim_time']
+
+        if self.source_param['type'] == 'gaussian':
+
+            #Computing the initial parameters for the source
+            self.source_param['tau'] = 0.5/self.source_param['fmax'] #should be bandwidth
+            self.source_param['t0'] = t0_coeff*self.source_param['tau']
+            t_propagation = (np.amax(comp_domain['n'])*self.source_param['Nz']*self.source_param['dz'])/c_0
+            total_time_initial = tau_coeff*self.source_param['tau'] + prop_coeff*t_propagation
+            if self.source_param['sim_time'] < total_time_initial:
+                total_time = self.source_param['sim_time']
+            else:
+                total_time = total_time_initial
+
+        elif self.source_param['type'] == 'sinusoidal':
+
+            #Computing the initial parameters for the source
+            self.source_param['tau'] = 3/self.source_param['fmax'] #should be bandwidth
+            self.source_param['t0'] = t0_coeff*self.source_param['tau']
+            t_propagation = (np.amax(comp_domain['n'])*self.source_param['Nz']*self.source_param['dz'])/c_0
+            total_time_initial = tau_coeff*self.source_param['tau'] + prop_coeff*t_propagation
+            if self.source_param['sim_time'] < total_time_initial:
+                total_time = self.source_param['sim_time']
+            else:
+                total_time = total_time_initial
         else:
-            total_time = total_time_initial
+            print("Error: initialize function independently access from Source class. Do not use this function, instead, use GaussianSource() or SinusoidalSource()")
+
+        return total_time, t_propagation
+
+    def GaussianSource(self,show_plot=False,t0_coeff=5,prop_coeff=3,tau_coeff=12,comp_domain=None):
+        """
+        Generates a Gaussian pulse that will be inserted into the computational domain.
+        """
+
+        self.source_param['type'] = "gaussian"
+
+        total_time, t_propagation = self.__initialize(t0_coeff=5,
+                                                       prop_coeff=3,
+                                                       tau_coeff=12,
+                                                       comp_domain=comp_domain
+                                                     )
         print(f"Total time: {total_time} seconds")
         #Compute the total steps needed in the simulation 
         self.source_param['Nt'] = np.ceil(total_time/self.source_param['dt'])
@@ -260,46 +307,42 @@ class Source:
         prod = int(np.ceil(self.source_param['dt']*self.source_param['Nt']))
         print(f"prod={prod}")
         #Generating the time vector
-        self.output['t'] = np.linspace(0,np.ceil(self.source_param['dt']*self.source_param['Nt']),int(np.ceil(self.source_param['Nt'])))
-
+        self.source_output['t'] = np.linspace(0,self.source_param['dt']*self.source_param['Nt'],int(np.ceil(self.source_param['Nt'])))
+        print(f"t_0: {self.source_param['t0']}, tau: {self.source_param['tau']}")
         #Computing for the electric field component of the source
-        t_E = (self.output['t']-self.source_param['t0'])/self.source_param['tau']
-        
-        self.output['Esrc'] = np.exp(-np.power(t_E,2))
-
+        t_E = (self.source_output['t']-self.source_param['t0'])/self.source_param['tau']
+        print(f"t_E: {t_E}\n t: {self.source_output['t']}")
+        self.source_output['Esrc'] = np.exp(-np.power(t_E,2))
+        print(f"Esrc: {self.source_output['Esrc']}")
         #Computing the magnetic field component of the source
         #Computing the adjustment term for the time step in magnetic field (due to staggered nature of FDTD)
         adj_H = (n_src*self.source_param['dz'])/(2*c_0) + (self.source_param['dt']/2)
-        t_H = ((self.output['t']-self.source_param['t0']) + adj_H)/self.source_param['tau']
+        t_H = ((self.source_output['t']-self.source_param['t0']) + adj_H)/self.source_param['tau']
 
-        self.output['Hsrc'] = -np.exp(-np.power(t_H,2))
+        self.source_output['Hsrc'] = -np.exp(-np.power(t_H,2))
 
 
         if show_plot == True:
-            self.plot(["Time (in seconds)","Value","Gaussian Source"],save=True,filename="")
+            self.plot(labels=["Time (in seconds)","Value","Gaussian Source"],save=True)
 
-        return self.output['t'],self.output['Esrc'],self.output['Hsrc']
+        return self.source_output['t'],self.source_output['Esrc'],self.source_output['Hsrc']
 
    
 
-    def SinusoidalSource(self,show_plot=False,t0_coeff=3,tau_coeff=12,comp_domain=None):
+    def SinusoidalSource(self,show_plot=False,t0_coeff=.5,prop_coeff=3,tau_coeff=.5,comp_domain=None):
         """
         Generates a Sinusoidal signal enveloped initially with an exponential function that will be inserted into the computational domain.
         """
-        try:
-            assert comp_domain != None
-        except AssertionError:
-            print("comp_domain dict is missing. ")
+
+        self.source_param['type'] = "sinusoidal"
+
+        total_time, t_propagation = self.__initialize(t0_coeff=.5,
+                                                       prop_coeff=3,
+                                                       tau_coeff=12,
+                                                       comp_domain=comp_domain
+                                                     )
         
-        #Computing the initial parameters for the source
-        self.source_param['tau'] = 3/self.source_param['fmax'] #should be bandwidth
-        self.source_param['t0'] = t0_coeff*self.source_param['tau']
-        t_propagation = (np.amax(comp_domain['n'])*self.source_param['Nz']*self.source_param['dz'])/c_0
-        total_time_initial = tau_coeff*self.source_param['tau'] + t0_coeff*t_propagation
-        if self.source_param['sim_time'] < total_time_initial:
-            total_time = self.source_param['sim_time']
-        else:
-            total_time = total_time_initial
+        print(f"T: {total_time} seconds")
         #Compute the total steps needed in the simulation 
         self.source_param['Nt'] = np.ceil(total_time/self.source_param['dt'])
         
@@ -307,44 +350,51 @@ class Source:
         n_src = comp_domain['n'][comp_domain['injection_point']]
 
         #Generating the time vector
-        self.output['t'] = np.linspace(0,np.ceil(self.source_param['dt']*self.source_param['Nt']),np.ceil(self.source_param['Nt']))
+        self.source_output['t'] = np.linspace(0,self.source_param['dt']*self.source_param['Nt'],int(np.ceil(self.source_param['Nt'])))
+        print(f"t shape: {self.source_output['t'].shape} \n t: {self.source_output['t']}")
         #Initialize source vectors
-        self.output['Esrc'] = np.zeros((self.output['t'].shape))
-        self.output['Hsrc'] = np.zeros((self.output['t'].shape))
-
+        self.source_output['Esrc'] = np.zeros((self.source_output['t'].shape))
+        self.source_output['Hsrc'] = np.zeros((self.source_output['t'].shape))
+        print(f"Esrc shape: {self.source_output['Esrc'].shape}, Hsrc shape: {self.source_output['Hsrc'].shape}")
         #Selecting a sub-array inside time vector to apply exponential function
-        t_condition = self.output['t'] <= self.source_param['t0']
-        t_initial = self.output['t'][t_condition]
-        t_initial_size = self.output['t'][t_condition].size
+        t_condition = self.source_output['t'] <= self.source_param['t0']
+        t_initial = self.source_output['t'][t_condition]
+        t_initial_size = self.source_output['t'][t_condition].size
 
         #Computing input time vector for both source components
-        t_E = (self.output['t']-self.source_param['t0'])/self.source_param['tau']
+        t_E = (self.source_output['t']-self.source_param['t0'])/self.source_param['tau']
         t_E_initial = t_E[:t_initial_size]
         adj_H = (n_src*self.source_param['dz'])/(2*c_0) + (self.source_param['dt']/2)
-        t_H = ((self.output['t']-self.source_param['t0'])+adj_H)/self.source_param['tau']
+        t_H = ((self.source_output['t']-self.source_param['t0'])+adj_H)/self.source_param['tau']
         t_H_initial = t_H[:t_initial_size]
 
         #Compute the source when the sine wave is enveloped
-        self.output['Esrc'][:t_initial_size] = np.exp(-np.power(t_E_initial,2))*(np.sin(2*np.pi*self.source_param['fmax']*t_initial))
-        self.output['Hsrc'][:t_initial_size] = -np.exp(-np.power(t_H_initial,2))*(np.sin(2*np.pi*self.source_param['fmax']*t_initial))
+        self.source_output['Esrc'][:t_initial_size] = np.exp(-np.power(t_E_initial,2))*(np.sin(2*np.pi*self.source_param['fmax']*t_initial))
+        self.source_output['Hsrc'][:t_initial_size] = -np.exp(-np.power(t_H_initial,2))*(np.sin(2*np.pi*self.source_param['fmax']*t_initial))
 
         #Compute the source components after the enveloping period
-        self.output['Esrc'][t_initial_size:] = (np.sin(2*np.pi*self.source_param['fmax']*self.output['t'][t_initial_size:]))
-        self.output['Hsrc'] = -(np.sin(2*np.pi*self.source_param['fmax']*self.output['t'][t_initial_size:]))
-
+        self.source_output['Esrc'][t_initial_size:] = (np.sin(2*np.pi*self.source_param['fmax']*self.source_output['t'][t_initial_size:]))
+        self.source_output['Hsrc'][t_initial_size:] = -(np.sin(2*np.pi*self.source_param['fmax']*self.source_output['t'][t_initial_size:]))
+        print(f"Esrc shape: {self.source_output['Esrc'].shape}, Hsrc shape: {self.source_output['Hsrc'].shape}")
+        
 
         if show_plot == True:
-            self.plot(["Time (in seconds)","Value","Gaussian Source"],save=True,filename="")
+            self.plot(["Time (in seconds)","Value","Sinusoidal Source"],save=True,filename="source_plot_s")
 
-        return self.output['t'],self.output['Esrc'],self.output['Hsrc']
+        return self.source_output['t'],self.source_output['Esrc'],self.source_output['Hsrc']
+
+   
+
 
        
 
 
 def main():
     sim = Simulation()
-    sim.init(input_path='sample_input.csv',injection_point=15)
+    sim.initialize(input_path='sample_input.csv',injection_point=15)
     sim.computeSource()
-
+    print(f"comp_domain: {sim.comp_domain.keys()}")
+    for i in sim.input.keys():
+        print(f"key: {i} value: {type(sim.input[i])}")
 if __name__ == "__main__":
     main()
