@@ -1,21 +1,21 @@
-#include <iostream>
-#include "xtensor/xarray.hpp"
-#include "xtensor/xio.hpp"
-#include "xtensor/xview.hpp"
+/*
+    1D FDTD C++ Code
+    
+    A simple 1-dimensional FDTD simulator in Free space using Gaussian Pulse as source excitation.
 
-int main(int argc, char* argv[])
+    Based on the lecture videos of Dr. Rumpf (link: https://empossible.net/academics/emp5304/)
+    and the book "ELECTROMAGNETIC SIMULATION USING THE FDTD METHOD WITH PYTHON"
+
+
+*/
+#include "fdtd.hpp"
+
+ 
+int main()
 {
-    xt::xarray<double> arr1
-      {{1.0, 2.0, 3.0},
-       {2.0, 5.0, 7.0},
-       {2.0, 5.0, 7.0}};
+  Simulation sim;
+  sim.create_comp_domain(0,-88);
+  return 0;
+  
 
-    xt::xarray<double> arr2
-      {5.0, 6.0, 7.0};
-
-    xt::xarray<double> res = xt::view(arr1, 1) + arr2;
-
-    std::cout << res << std::endl;
-
-    return 0;
 }
