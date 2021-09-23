@@ -14,7 +14,7 @@
 int main()
 {
   Simulation sim("input.csv");
-  //sim.create_comp_domain(0,-88);
+  sim.create_comp_domain(0,0);
   return 0;
   
 

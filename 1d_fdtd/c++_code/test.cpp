@@ -10,7 +10,7 @@
 #include "xtensor/xio.hpp"
 #include "xtensor/xview.hpp"
 #include <xtensor/xcsv.hpp>
-
+#include <xtensor/xindex_view.hpp>
 
 using namespace std;
 using namespace xt;
@@ -43,15 +43,11 @@ int main(){
     cout << sum(az) << endl;
     cout << typeid(sum(az)(0)).name() << endl;
     cout <<  d << endl;*/
-
-    ifstream input_stream;
-    input_stream.open("input.csv");
-    auto data = load_csv<double>(input_stream,',',1);
-
-    cout << data << endl;
-    for(auto i: col(data,3))
-    {
-        cout << i << endl;
-    }
+    //xtensor<double,1> b {-1,44,55,66,877,888};
+    xtensor<double,1> a {1,2,3,4,5,6,7,8,9,10};
+    auto b = filter(a,a<=5);
+    //auto c = view(a,b);
+    cout << a << endl << endl;
+    cout << b << endl;
     return 0;
 }
