@@ -109,46 +109,6 @@ class Simulation
         Simulation(string input_file="")
         {
 
-            process_input_file(input_file);
-
-            for(int i =0; i<input.simulation_parameters.at(2);i++)
-            {
-                double l_size {0};
-                double l_mu {0};
-                double l_epsilon {0};
-                cout << "========================================================================" << endl;
-                cout << "Layer " << i+1 << " size (in meters): ";
-                cin >> l_size;
-                cout << "Layer " << i+1 << " magnetic permeability 'mu' (relative mu): ";
-                cin >> l_mu;
-                cout << "Layer " << i+1 << " electric permittivity 'epsilon' (relative epsilon): ";
-                cin >> l_epsilon;
-                input.layer_size(i) = l_size;
-                input.magnetic_permeability(i) = l_mu;
-                input.electric_permittivity(i) = l_epsilon;
-            }
-            cout << "========================================================================" << endl;
-            cout << "Input Layer sizes: ";
-            for(auto i: input.layer_size){
-                cout << i << " ";
-            }
-            cout << endl;
-            cout << "Input Layer relative magnetic permeability: ";
-            for(auto i: input.magnetic_permeability){
-                cout << i << " ";
-            }
-            cout << endl;
-            cout << "Input Layer electric permittivity: ";
-            for(auto i: input.electric_permittivity){
-                cout << i << " ";
-            }
-            cout << endl;
-            
-        }
-        
-
-        auto process_input_file(string input_file)
-        {
             if(input_file.empty())  // If there is no input file path, use terminal or stdin/stdout for input/
             {
                 /*
@@ -182,15 +142,91 @@ class Simulation
                 input.layer_size.resize({n_model});
                 input.magnetic_permeability.resize({n_model});
                 input.electric_permittivity.resize({n_model});
+
+                for(int i =0; i<input.simulation_parameters.at(2);i++)
+                {
+                    double l_size {0};
+                    double l_mu {0};
+                    double l_epsilon {0};
+                    cout << "========================================================================" << endl;
+                    cout << "Layer " << i+1 << " size (in meters): ";
+                    cin >> l_size;
+                    cout << "Layer " << i+1 << " magnetic permeability 'mu' (relative mu): ";
+                    cin >> l_mu;
+                    cout << "Layer " << i+1 << " electric permittivity 'epsilon' (relative epsilon): ";
+                    cin >> l_epsilon;
+                    input.layer_size(i) = l_size;
+                    input.magnetic_permeability(i) = l_mu;
+                    input.electric_permittivity(i) = l_epsilon;
+                }
+                cout << "========================================================================" << endl;
+                cout << "Input Layer sizes: ";
+                for(auto i: input.layer_size){
+                    cout << i << " ";
+                }
+                cout << endl;
+                cout << "Input Layer relative magnetic permeability: ";
+                for(auto i: input.magnetic_permeability){
+                    cout << i << " ";
+                }
+                cout << endl;
+                cout << "Input Layer electric permittivity: ";
+                for(auto i: input.electric_permittivity){
+                    cout << i << " ";
+                }
+                cout << endl;
                 
-                return true;
 
             }
             else{ //If there is a filename, process it by load_csv()
                 ifstream input_stream;
                 input_stream.open(input_file);
+                auto input_data = load_csv<double>(input_stream,',',1);
+                
+                //Store the data into the intialized vectors
+                //For simulation parameters
+                auto temp_sim_param = col(input_data,3);
+                cout << "========================================================================" << endl;
+                cout << "Simulation parameters:" << temp_sim_param(0) << endl << "fmax,\t source_type,\t n_model,\t t_sim" << endl;
+                for(int i=0; i < 4; i++)
+                {
+                    input.simulation_parameters.push_back(temp_sim_param(i));
+                    cout << input.simulation_parameters.at(i) << "\t";
+                }
+                cout << endl;
+
+                unsigned long int n_models = input.simulation_parameters.at(2);
+
+                //Getting the columns for layer size, mu, and epsilon.
+                auto temp_l_size = col(input_data,0);
+                auto temp_mu = col(input_data,1);
+                auto temp_epsilon = col(input_data,2);
+
+                //Resizing the different xtensors
+                input.layer_size.resize({n_models});
+                input.magnetic_permeability.resize({n_models});
+                input.electric_permittivity.resize({n_models});
+
+                //Saving each layer into the vectors
+                //For loop is necessary to truncate initial xarray and cutoff excess rows
+                cout << "Layer # \t Layer size \t Layer mu \t Layer epsilon" << endl;
+                for (int i =0; i<n_models;i++)
+                {
+                    cout << "Layer " << i+1 << ": ";
+                    input.layer_size(i) = temp_l_size(i);
+                    input.magnetic_permeability(i)= temp_mu(i);
+                    input.electric_permittivity(i) = temp_epsilon(i);
+                    cout << input.layer_size(i) << " \t " << input.magnetic_permeability(i) << " \t " << input.electric_permittivity(i) << " \t " << endl;
+                    
+                }
+
             }   
+
+            
+            
         }
+        
+
 
 
         //Creating computational domain

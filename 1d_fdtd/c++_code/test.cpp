@@ -49,5 +49,9 @@ int main(){
     auto data = load_csv<double>(input_stream,',',1);
 
     cout << data << endl;
+    for(auto i: col(data,3))
+    {
+        cout << i << endl;
+    }
     return 0;
 }

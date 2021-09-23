@@ -13,8 +13,8 @@
  
 int main()
 {
-  Simulation sim;
-  sim.create_comp_domain(0,-88);
+  Simulation sim("input.csv");
+  //sim.create_comp_domain(0,-88);
   return 0;
   
 
