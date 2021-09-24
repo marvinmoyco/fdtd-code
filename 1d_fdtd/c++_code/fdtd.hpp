@@ -9,6 +9,11 @@
 #include <vector>
 #include <cmath>
 #include <string>
+#include <chrono>
+#include <thread>
+#include <list>
+
+//Xtensor preprocessor directives
 #include "xtensor/xarray.hpp"
 #include "xtensor/xio.hpp"
 #include "xtensor/xview.hpp"
@@ -24,6 +29,8 @@ g++ -std=c++14 main.cpp -I ../../../libs/xtensor/include -I ../../../libs/xtl/in
 
 using namespace std;
 using namespace xt;
+using namespace std::this_thread;
+using namespace std::chrono;
 
 //Global variables declaration
 double c_0 = 299792458;
@@ -93,8 +100,24 @@ typedef struct Simulation_Fields{
     xtensor<double,1> H;
     xtensor<double,1> Reflectance;
     xtensor<double,1> Transmittance;
+    xtensor<double,1> m_E;
+    xtensor<double,1> m_H;
+    list<double> E_end {0,0};
+    list<double> H_start {0,0};
+
     
 } fields;
+
+typedef struct Save_Data{
+    xtensor<double,2> E;
+    xtensor<double,2> H;
+    xtensor<double,2> Reflectance;
+    xtensor<double,2> Transmittance;
+    xtensor<double,2> R_T_Sum;
+
+} save_data;
+
+
 //Class declarations
 
 class Source{
@@ -139,8 +162,8 @@ class Source{
             //Computing the magnetic field component of the source
             source_output.Hsrc = -sqrt(1)*exp(-pow(source_output.t_H,2));
 
-            cout << "Sizes of the electric and magnetic field component:" << endl;
-            cout << "Esrc: " << source_output.Esrc.size() << " | Hsrc: " << source_output.Hsrc.size() << endl;
+            //cout << "Sizes of the electric and magnetic field component:" << endl;
+            //cout << "Esrc: " << source_output.Esrc.size() << " | Hsrc: " << source_output.Hsrc.size() << endl;
             return 0;
         }
         
@@ -183,8 +206,6 @@ class Source{
             view(source_output.Esrc,range(t_condition_size,source_param.Nt)) = (sin(2*numeric_constants<double>::PI*source_param.fmax*view(source_output.t,range(t_condition_size,source_param.Nt))));
             view(source_output.Esrc,range(t_condition_size,source_param.Nt)) = (sin(2*numeric_constants<double>::PI*source_param.fmax*view(source_output.t,range(t_condition_size,source_param.Nt))));
 
-            cout << "Sizes of the electric and magnetic field component:" << endl;
-            cout << "Esrc: " << source_output.Esrc.size() << " | Hsrc: " << source_output.Hsrc.size() << endl;
             return 0;
         }
 
@@ -218,7 +239,7 @@ class Source{
             source_param.t0 = t0_coeff*source_param.tau;
             source_param.t_prop = (nmax*source_param.Nz*source_param.dz)/c_0;
             double initial_total_time = tau_coeff*source_param.tau +(prop_coeff*source_param.t_prop);
-            cout << "initial_total: " << initial_total_time << " vs. simparam_sim_time: " << source_param.sim_time << endl;
+            //cout << "initial_total: " << initial_total_time << " vs. simparam_sim_time: " << source_param.sim_time << endl;
             //Get the smaller total sim time to save memory
             if (source_param.sim_time > initial_total_time)
             {
@@ -249,7 +270,7 @@ class Simulation
         int spacer_cells;
         Source* sim_source;
         source_output_d sim_source_fields;
-
+        save_data csv_output;
         //Initializing variables in the constructor
         Simulation(string input_file="")
         {
@@ -554,6 +575,31 @@ class Simulation
             //Compute the source that will be used in the project.
             compute_source();
 
+            //Resize the fields
+            sim_fields.E.resize(comp_domain.z.shape());
+            sim_fields.H.resize(comp_domain.z.shape());
+            sim_fields.m_E.resize(comp_domain.z.shape());
+            sim_fields.m_H.resize(comp_domain.z.shape());
+
+            //Initialize fields to 0
+            view(sim_fields.E,range(0,sim_fields.E.size())) = 0;
+            view(sim_fields.H,range(0,sim_fields.E.size())) = 0;
+
+            //Compute the update coefficients
+            sim_fields.m_E = (c_0*sim_param.dt)/(comp_domain.epsilon*sim_param.dz);
+            sim_fields.m_H = (c_0*sim_param.dt)/(comp_domain.mu*sim_param.dz);
+
+            unsigned long int row = sim_param.Nt;
+            unsigned long int col = sim_param.Nz;
+            //Resize the different save matrices
+            csv_output.E.resize({row,col});
+            csv_output.H.resize({row,col});
+
+            //Print shape
+            //for (auto& el : csv_output.E.shape()) {cout << el << ", ";}
+            //cout << csv_output.E.size() <<endl;
+
+            //cout << comp_domain.z.size() << "   " << comp_domain.mu.size() << endl;
             return 0;
         }
         
@@ -562,24 +608,130 @@ class Simulation
         {
             //Create a new Source object
             sim_source = new Source(sim_param);
+            cout << "========================================================================" << endl;
+            cout << "Computing source. | Selected source: " << sim_param.source_type << endl;
             if(sim_param.source_type == "gaussian")
             {
-                cout << "In Gaussian" << endl;
                 sim_source->GaussianSource(6,3,12,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "sinusoidal")
             {
-                cout << "In Sinusoidal" << endl;
                 sim_source->SinusoidalSource(3,3,3,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
 
-            cout << "Getting the output. FInished computing!" << endl;
-
+            //Transfer Nt to sim_param
+            sim_param.Nt = sim_source->source_param.Nt;
             sim_source_fields = sim_source->get_computed_source();
-
+            cout << "Sizes of the electric and magnetic field component:" << endl;
             cout << "Esrc size: " << sim_source_fields.Esrc.size() << " | Hsrc size: " << sim_source_fields.Hsrc.size() << endl;
             return 0;
         }
 
+
+
+        save_data simulate(string boundary_condition = "", string excitation = "")
+        {
+            
+            cout << "========================================================================" << endl;
+            cout << "Starting 1-D FDTD Simulation..." << endl;
+            cout << "Boundary Condition: " << boundary_condition << " | Source Excitation Method: " << excitation << endl;
+           
+            //Initialize variables used for outside boundary terms
+            double E_bounds = 0;
+            double H_bounds = 0;
+         
+            cout << "Start of simulation." << sim_param.Nt << endl;
+            //FDTD Time Loop
+            for(int curr_iteration = 0;curr_iteration < sim_param.Nt; curr_iteration++)
+            {
+                
+                //H field computations
+                //Store H boundary terms
+                if (boundary_condition == "pabc")
+                {
+                    //Get the front of the list
+                    H_bounds = sim_fields.H_start.front();
+                    //Remove the front element from the list
+                    sim_fields.H_start.pop_front();
+                    //Add H[0] at the end of the list
+                    sim_fields.H_start.push_back(sim_fields.H(0));
+                }
+                else if(boundary_condition == "dirichlet")
+                {
+                    H_bounds = 0;
+                }
+
+
+                //Update H from E (FDTD Space Loop for H field)
+                view(sim_fields.H,range(0,sim_fields.H.size()-1)) = view(sim_fields.H,range(0,sim_fields.H.size()-1)) + (view(sim_fields.m_H,range(0,sim_fields.m_H.size()-1))*(view(sim_fields.E,range(1,sim_fields.E.size())) - view(sim_fields.E,range(0,sim_fields.E.size()-1))));
+
+
+                //Inject the H source component
+                if(excitation == "hard")
+                {
+                    sim_fields.H(comp_domain.injection_point) = sim_source_fields.Hsrc(curr_iteration);
+                }
+                else if(excitation == "soft")
+                {
+                    sim_fields.H(comp_domain.injection_point) += sim_source_fields.Hsrc(curr_iteration);
+                }
+                else if(excitation == "tfsf")
+                {
+                    sim_fields.H(comp_domain.injection_point) -= (sim_fields.m_H(comp_domain.injection_point)*sim_source_fields.Hsrc(curr_iteration));
+                }
+
+                //E field computations
+                //Store E boundary terms
+                if (boundary_condition == "pabc")
+                {
+                    //Get the front of the list
+                    E_bounds = sim_fields.E_end.front();
+                    //Remove the front element from the list
+                    sim_fields.E_end.pop_front();
+                    //Add H[0] at the end of the list
+                    sim_fields.E_end.push_back(sim_fields.E(sim_fields.E.size()-1));
+                }
+                else if(boundary_condition == "dirichlet")
+                {
+                    E_bounds = 0;
+                }
+
+
+                //Update E from H (FDTD Space Loop for E field)
+                view(sim_fields.E,range(1,sim_fields.E.size())) =  view(sim_fields.E,range(1,sim_fields.E.size())) + (view(sim_fields.m_E,range(1,sim_fields.m_E.size()))*(view(sim_fields.H,range(1,sim_fields.H.size()))-view(sim_fields.H,range(0,sim_fields.H.size()-1))));
+
+                //Inject the E source component
+                if(excitation == "hard")
+                {
+                    sim_fields.E(comp_domain.injection_point) = sim_source_fields.Esrc(curr_iteration);
+                }
+                else if(excitation == "soft")
+                {
+                    sim_fields.E(comp_domain.injection_point) += sim_source_fields.Esrc(curr_iteration);
+                }
+                else if(excitation == "tfsf")
+                {
+                    sim_fields.E(comp_domain.injection_point) -= (sim_fields.m_E(comp_domain.injection_point)*sim_source_fields.Esrc(curr_iteration));
+                }
+                
+
+
+                //Save the computed fields into the save matrix
+                row(csv_output.E,curr_iteration) = sim_fields.E;
+                row(csv_output.H,curr_iteration) = sim_fields.H;
+
+                cout << "\rCurrent Iteration: "<<curr_iteration + 1<<"/"<<sim_param.Nt ;
+            }
+            cout << endl << "End of simulation." << endl;
+                
+            return csv_output;
+        }
+
+        /*int write_to_csv(string output_file = "output.csv", xtensor<double,2> data)
+        {
+            ofstream out_stream;
+            out_stream.open(output_file);
+            dump_csv(out_stream,data);
+        }*/
 };
 #endif
