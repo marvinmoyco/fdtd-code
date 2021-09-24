@@ -14,3 +14,7 @@
 * Currently using numpy and matplotlib for ease of use. The code will be migrated to C++ once the code is complete.
 
 #### Libraries Used:
+
+**C++ Libraries:**
+* [xtensor](https://github.com/xtensor-stack/xtensor)
+* [xtl](https://github.com/xtensor-stack/xtl)
