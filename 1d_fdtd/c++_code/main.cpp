@@ -16,18 +16,21 @@ int main()
   Simulation sim("./csv/input.csv");
   sim.create_comp_domain(0,0);
   output = sim.simulate("dirichlet","no source");
-  unsigned long int row_i = 2;
-  unsigned long int col = sim.sim_param.Nt+1;
+  unsigned long int row_i = 3;
+  unsigned long int col = sim.sim_param.Nt;
   //Create 2D xtensor for source
+
   xtensor<double,2> source;
   source.resize({row_i,col});
-  row(source,0) = sim.sim_source_fields.Esrc;
-  row(source,1) = sim.sim_source_fields.Hsrc;
-
+  row(source,0) = sim.sim_source_fields.t;
+  row(source,1) = sim.sim_source_fields.Esrc;
+  row(source,2) = sim.sim_source_fields.Hsrc;
+  
    //Write to csv the source H component
   ofstream out_source;
   out_source.open("./csv/source.csv");
   dump_csv(out_source,source);
+
 
   //Write to csv the E fields
   ofstream out_stream;
@@ -38,6 +41,8 @@ int main()
   out_stream2.open("./csv/magnetic_field.csv");
   dump_csv(out_stream2,output.H);
   return 0;
+
+  int x = 0;
   
 
 }

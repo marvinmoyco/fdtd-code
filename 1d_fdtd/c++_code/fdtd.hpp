@@ -135,7 +135,7 @@ class Source{
             source_param.source_type = sim_param.source_type;
         }
 
-        int GaussianSource(double t0_coeff = 6.0,double prop_coeff = 3.0,double tau_coeff = 12.0,double nmax = 1,double nsrc = 1)
+        int GaussianSource(double t0_coeff = 2.0,double prop_coeff = 3.0,double tau_coeff = 12.0,double nmax = 1,double nsrc = 1)
         {
             //Calculate the necessary variables
             initialize(t0_coeff,prop_coeff,tau_coeff,nmax);
@@ -146,7 +146,9 @@ class Source{
             source_param.Nt = ceil(source_param.sim_time/source_param.dt);
             cout << "dt: " << source_param.dt << " seconds" << " | Nt: " << source_param.Nt << " iterations"<< endl;
 
-            source_output.t = arange(0.0,source_param.Nt*source_param.dt,source_param.dt);
+            source_output.t = arange(0.0,(source_param.Nt*source_param.dt) ,source_param.dt);
+
+            //source_output.t = linspace<double>(0,source_param.Nt*source_param.dt,source_param.Nt);
 
             //Computing the time input for electric field component
             source_output.t_E = (source_output.t - source_param.t0)/source_param.tau;
@@ -178,9 +180,10 @@ class Source{
             source_param.Nt = ceil(source_param.sim_time/source_param.dt);
             cout << "dt: " << source_param.dt << " seconds" << " | Nt: " << source_param.Nt << " iterations"<< endl;
 
-            source_output.t = arange(0.0,source_param.Nt*source_param.dt,source_param.dt);
+            //source_output.t = arange(0.0,source_param.Nt*source_param.dt,source_param.dt);
 
-
+            source_output.t = linspace<double>(0,source_param.Nt*source_param.dt,source_param.Nt);
+            
             //Selecting a sub array inside time-vector to apply exp()
             auto t_condition = filter(source_output.t,source_output.t < source_param.t0);
             long unsigned int t_condition_size = t_condition.size();
@@ -204,7 +207,7 @@ class Source{
 
             //Computing the electric field and magnetic field component of the source after t0
             view(source_output.Esrc,range(t_condition_size,source_param.Nt)) = (sin(2*numeric_constants<double>::PI*source_param.fmax*view(source_output.t,range(t_condition_size,source_param.Nt))));
-            view(source_output.Esrc,range(t_condition_size,source_param.Nt)) = (sin(2*numeric_constants<double>::PI*source_param.fmax*view(source_output.t,range(t_condition_size,source_param.Nt))));
+            view(source_output.Hsrc,range(t_condition_size,source_param.Nt)) = (sin(2*numeric_constants<double>::PI*source_param.fmax*view(source_output.t,range(t_condition_size,source_param.Nt))));
 
             return 0;
         }
@@ -612,11 +615,11 @@ class Simulation
             cout << "Computing source. | Selected source: " << sim_param.source_type << endl;
             if(sim_param.source_type == "gaussian")
             {
-                sim_source->GaussianSource(6,3,12,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->GaussianSource(2,2,8,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "sinusoidal")
             {
-                sim_source->SinusoidalSource(3,3,3,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->SinusoidalSource(1,3,3,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
 
             //Transfer Nt to sim_param
