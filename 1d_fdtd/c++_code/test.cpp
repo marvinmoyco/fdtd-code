@@ -67,9 +67,8 @@ int main(){
         sleep_for(milliseconds(100));
     }
     cout << endl;*/
-    cout << row(d,0) << endl << endl << row(d,1) << endl;
-    row(d,0) = row(d,0) -2;
-    row(d,1) = c;
-    cout << row(d,0) << endl << endl << row(d,1) << endl;
+    //cout << a <<endl;
+    cout << a.size() << endl;
+    cout << a.size() -1 << endl;
     return 0;
 }

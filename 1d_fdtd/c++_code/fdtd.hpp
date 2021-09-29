@@ -10,6 +10,7 @@
 #include <cmath>
 #include <string>
 #include <chrono>
+#include <ctime>
 #include <thread>
 #include <list>
 
@@ -32,7 +33,7 @@ using namespace xt;
 using namespace std::this_thread;
 using namespace std::chrono;
 
-//Global variables declaration
+//Global variables declaration 
 double c_0 = 299792458;
 double  epsilon_0 = 8.8541878128E-12;
 double  mu_0 = 1.25663706212E-6;
@@ -114,6 +115,7 @@ typedef struct Save_Data{
     xtensor<double,2> Reflectance;
     xtensor<double,2> Transmittance;
     xtensor<double,2> R_T_Sum;
+    xtensor<double,2> Source;
 
 } save_data;
 
@@ -135,7 +137,7 @@ class Source{
             source_param.source_type = sim_param.source_type;
         }
 
-        int GaussianSource(double t0_coeff = 2.0,double prop_coeff = 3.0,double tau_coeff = 12.0,double nmax = 1,double nsrc = 1)
+        int GaussianSource(double t0_coeff = 3.0,double prop_coeff = 6.0,double tau_coeff = 12.0,double nmax = 1,double nsrc = 1)
         {
             //Calculate the necessary variables
             initialize(t0_coeff,prop_coeff,tau_coeff,nmax);
@@ -180,9 +182,9 @@ class Source{
             source_param.Nt = ceil(source_param.sim_time/source_param.dt);
             cout << "dt: " << source_param.dt << " seconds" << " | Nt: " << source_param.Nt << " iterations"<< endl;
 
-            //source_output.t = arange(0.0,source_param.Nt*source_param.dt,source_param.dt);
+            source_output.t = arange(0.0,source_param.Nt*source_param.dt,source_param.dt);
 
-            source_output.t = linspace<double>(0,source_param.Nt*source_param.dt,source_param.Nt);
+            //source_output.t = linspace<double>(0,source_param.Nt*source_param.dt,source_param.Nt);
             
             //Selecting a sub array inside time-vector to apply exp()
             auto t_condition = filter(source_output.t,source_output.t < source_param.t0);
@@ -222,7 +224,7 @@ class Source{
 
     private:
 
-        int initialize(double t0_coeff = 1.0,double prop_coeff = 1.0,double tau_coeff = 1.0,double nmax = 1)
+        int initialize(double t0_coeff = 3,double prop_coeff = 1.0,double tau_coeff = 1.0,double nmax = 1)
         {
             if(source_param.source_type == "gaussian")
             {
@@ -244,7 +246,7 @@ class Source{
             double initial_total_time = tau_coeff*source_param.tau +(prop_coeff*source_param.t_prop);
             //cout << "initial_total: " << initial_total_time << " vs. simparam_sim_time: " << source_param.sim_time << endl;
             //Get the smaller total sim time to save memory
-            if (source_param.sim_time > initial_total_time)
+            if (source_param.sim_time < initial_total_time)
             {
                 source_param.sim_time = initial_total_time;
             }
@@ -420,6 +422,7 @@ class Simulation
             catch(...)
             {
                 cout << "Error: Input are not yet entered." << endl;
+                return -1;
             }
 
             //Computing dz and Nz...
@@ -478,7 +481,8 @@ class Simulation
             else{
                 if(injection_point == 0)
                 {
-                    sim_param.injection_point = (int) ceil(sim_param.spacers/5);
+                   
+                    sim_param.injection_point = (int) ceil(sim_param.spacers/2);
                 }
                 else
                 {
@@ -585,8 +589,8 @@ class Simulation
             sim_fields.m_H.resize(comp_domain.z.shape());
 
             //Initialize fields to 0
-            view(sim_fields.E,range(0,sim_fields.E.size())) = 0;
-            view(sim_fields.H,range(0,sim_fields.E.size())) = 0;
+            view(sim_fields.E,range(0,sim_fields.E.size()-1)) = 0;
+            view(sim_fields.H,range(0,sim_fields.E.size()-1)) = 0;
 
             //Compute the update coefficients
             sim_fields.m_E = (c_0*sim_param.dt)/(comp_domain.epsilon*sim_param.dz);
@@ -619,12 +623,24 @@ class Simulation
             }
             else if(sim_param.source_type == "sinusoidal")
             {
-                sim_source->SinusoidalSource(1,3,3,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->SinusoidalSource(1,3,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
 
             //Transfer Nt to sim_param
             sim_param.Nt = sim_source->source_param.Nt;
             sim_source_fields = sim_source->get_computed_source();
+
+            unsigned long int row_s = 3;
+            unsigned long int col_s = sim_param.Nt;
+            //Resize Source xtensor
+            csv_output.Source.resize({row_s,col_s});
+
+            //Add source to output_csv
+            row(csv_output.Source,0) = sim_source->source_output.t;
+            row(csv_output.Source,1) = sim_source->source_output.Esrc;
+            row(csv_output.Source,2) = sim_source->source_output.Hsrc;
+
+            //Print the details
             cout << "Sizes of the electric and magnetic field component:" << endl;
             cout << "Esrc size: " << sim_source_fields.Esrc.size() << " | Hsrc size: " << sim_source_fields.Hsrc.size() << endl;
             return 0;
@@ -642,8 +658,8 @@ class Simulation
             //Initialize variables used for outside boundary terms
             double E_bounds = 0;
             double H_bounds = 0;
-         
-            cout << "Start of simulation." << sim_param.Nt << endl;
+            comp_domain.injection_point = ceil(sim_param.Nz/2);
+            cout << "Start of simulation." << endl;
             //FDTD Time Loop
             for(int curr_iteration = 0;curr_iteration < sim_param.Nt; curr_iteration++)
             {
@@ -652,15 +668,24 @@ class Simulation
                 //Store H boundary terms
                 if (boundary_condition == "pabc")
                 {
+                    cout << " H-pabc ";
                     //Get the front of the list
                     H_bounds = sim_fields.H_start.front();
                     //Remove the front element from the list
                     sim_fields.H_start.pop_front();
                     //Add H[0] at the end of the list
                     sim_fields.H_start.push_back(sim_fields.H(0));
+                    //Printing the contents of E_end:
+                    /*cout << "z_low: [";
+                    for (auto iter : sim_fields.H_start)
+                    {
+                        cout << iter << ",";
+                    }
+                    cout << "]" << endl;*/
                 }
                 else if(boundary_condition == "dirichlet")
                 {
+                    cout << " H-dirichlet ";
                     H_bounds = 0;
                 }
 
@@ -672,32 +697,55 @@ class Simulation
                 //Inject the H source component
                 if(excitation == "hard")
                 {
+                    cout << "H-hard ";
                     sim_fields.H(comp_domain.injection_point) = sim_source_fields.Hsrc(curr_iteration);
                 }
                 else if(excitation == "soft")
                 {
-                    sim_fields.H(comp_domain.injection_point) += sim_source_fields.Hsrc(curr_iteration);
+                    cout << "H-soft ";
+                    //sim_fields.H(comp_domain.injection_point) += sim_source_fields.Hsrc(curr_iteration);
                 }
                 else if(excitation == "tfsf")
                 {
-                    sim_fields.H(comp_domain.injection_point) -= (sim_fields.m_H(comp_domain.injection_point)*sim_source_fields.Hsrc(curr_iteration));
+                    cout << "H-tfsf ";
+                    sim_fields.H(comp_domain.injection_point-1) -= (sim_fields.m_H(comp_domain.injection_point-1)*sim_source_fields.Hsrc(curr_iteration));
                 }
+
+                cout << "E_bounds: " << E_bounds << endl;
+                //Boundary conditions for H (at the end of the comp. domain)
+                sim_fields.H(sim_fields.H.size()-1) = sim_fields.H(sim_fields.H.size()-1) + (sim_fields.m_H(sim_fields.m_H.size()-1) * (E_bounds - sim_fields.E(sim_fields.E.size()-1)));
+
+
+
 
                 //E field computations
                 //Store E boundary terms
                 if (boundary_condition == "pabc")
                 {
+                    cout << "E-pabc ";
                     //Get the front of the list
                     E_bounds = sim_fields.E_end.front();
                     //Remove the front element from the list
                     sim_fields.E_end.pop_front();
-                    //Add H[0] at the end of the list
-                    sim_fields.E_end.push_back(sim_fields.E(sim_fields.E.size()-1));
+                    //Add E[Nz] at the end of the list
+                    sim_fields.E_end.push_back(sim_fields.E(sim_param.Nz-1));
+                    //Printing the contents of E_end:
+                    /*cout << "z_high: [";
+                    for (auto iter : sim_fields.E_end)
+                    {
+                        cout << iter << ",";
+                    }
+                    cout << "]" << endl;*/
                 }
                 else if(boundary_condition == "dirichlet")
                 {
+                    cout << "E-dirichlet ";
                     E_bounds = 0;
                 }
+
+                cout << "H_bounds: " << H_bounds << endl;
+                //Boundary condition for E (at the start of the comp.domain)
+                sim_fields.E(0) = sim_fields.E(0) + (sim_fields.m_E(0)*(sim_fields.H(0) - H_bounds));
 
 
                 //Update E from H (FDTD Space Loop for E field)
@@ -706,14 +754,17 @@ class Simulation
                 //Inject the E source component
                 if(excitation == "hard")
                 {
+                    cout << "E-hard ";
                     sim_fields.E(comp_domain.injection_point) = sim_source_fields.Esrc(curr_iteration);
                 }
                 else if(excitation == "soft")
                 {
+                    cout << "E-soft";
                     sim_fields.E(comp_domain.injection_point) += sim_source_fields.Esrc(curr_iteration);
                 }
                 else if(excitation == "tfsf")
                 {
+                    cout << "E-tfsf ";
                     sim_fields.E(comp_domain.injection_point) -= (sim_fields.m_E(comp_domain.injection_point)*sim_source_fields.Esrc(curr_iteration));
                 }
                 
@@ -722,7 +773,7 @@ class Simulation
                 //Save the computed fields into the save matrix
                 row(csv_output.E,curr_iteration) = sim_fields.E;
                 row(csv_output.H,curr_iteration) = sim_fields.H;
-
+                cout << endl;
                 cout << "\rCurrent Iteration: "<<curr_iteration + 1<<"/"<<sim_param.Nt ;
             }
             cout << endl << "End of simulation." << endl;
@@ -730,11 +781,69 @@ class Simulation
             return csv_output;
         }
 
-        /*int write_to_csv(string output_file = "output.csv", xtensor<double,2> data)
+        int write_to_csv(string output_file = "",xtensor<double,2> data = {{0,0},{0,0}})
         {
             ofstream out_stream;
             out_stream.open(output_file);
             dump_csv(out_stream,data);
-        }*/
+            return 0;
+        }
+
+        int save_to_file(string name = "")
+        {
+
+            string names [6] = {"source.csv","e_field.csv","h_field.csv","refl.csv","trans.csv","refl_trans.csv"};
+            //get the current date
+            auto now = chrono::system_clock::now();
+            auto today = chrono::system_clock::to_time_t(now);
+            stringstream string_stream;
+            string_stream << put_time(localtime(&today),"%Y-%m-%d"); 
+            string date_string = string_stream.str();
+            //cout << date_string + "_" + names[0] << endl;
+            cout << "========================================================================" << endl;
+            cout << "Saving data to csv files" << endl;
+            cout << " Current Date: " << date_string << endl;
+            string curr_dir = "./csv/";
+
+
+
+
+            //Save all data
+            for(int i =0; i< 3;i++) //no reflectance and transmittance at the moment
+            {
+                
+                //Concatenate the strings
+                string file_name = curr_dir + date_string + "_";
+                if(name.empty())
+                {
+                    file_name += names[i];
+                }
+                else{
+                    file_name += name + "_" + names[i];
+                }
+                cout << "Filename: " << file_name ;
+
+                switch(i)
+                {
+                    case 0: //for sources
+                        //call write_to_csv
+                        write_to_csv(file_name,csv_output.Source);
+                        break;
+
+                    case 1: //for E-fields
+                        //call write_to_csv
+                        write_to_csv(file_name,csv_output.E);
+                        break;
+
+                    case 2: //for H-fields
+                        //call write_to_csv
+                        write_to_csv(file_name,csv_output.H);
+                        break;
+                }
+                cout << "-----> Successfully saved" << endl;
+                
+            }
+            return 0;
+        }
 };
 #endif
