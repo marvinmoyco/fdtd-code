@@ -13,14 +13,15 @@
 #include <ctime>
 #include <thread>
 #include <list>
+#include <complex>
 
 //Xtensor preprocessor directives
 #include "xtensor/xarray.hpp"
 #include "xtensor/xio.hpp"
 #include "xtensor/xview.hpp"
-#include <xtensor/xcsv.hpp>
-#include <xtensor/xindex_view.hpp>
-
+#include "xtensor/xcsv.hpp"
+#include "xtensor/xindex_view.hpp"
+#include "xtensor/xcomplex.hpp"
 
 /*
 Temporary g++ command
@@ -32,12 +33,13 @@ using namespace std;
 using namespace xt;
 using namespace std::this_thread;
 using namespace std::chrono;
+using namespace std::complex_literals;
 
 //Global variables declaration 
 double c_0 = 299792458;
 double  epsilon_0 = 8.8541878128E-12;
 double  mu_0 = 1.25663706212E-6;
-
+double pi = numeric_constants<double>::PI;
 
 //Struct declarations...
 
@@ -47,15 +49,19 @@ typedef struct Simulation_parameters{
     double Nz = 0;
     double Nt = 0;
     double fmax = 0;
+    double df = 0; // for the Fourier Transform
     double sim_time = 0;
+    double n_freq = 0; //For Fourier Transform, indicates how many points
     int spacers = 0;
     int injection_point = 0;
+
     string source_type = "";
 
 } simulation_parameters;
 
 typedef struct Comp_domain{
     int injection_point = 0;
+    int check = 0;
     xtensor<double,1> z; //Computational domain base vector. Basis for other vectors
     xtensor<double,1> mu; //Magnetic permeability vector
     xtensor<double,1> epsilon; // Electric permittivity vector
@@ -99,8 +105,12 @@ typedef struct Source_output{
 typedef struct Simulation_Fields{
     xtensor<double,1> E;
     xtensor<double,1> H;
-    xtensor<double,1> Reflectance;
-    xtensor<double,1> Transmittance;
+    xtensor<complex<double>,1> Reflectance;
+    xtensor<complex<double>,1> Transmittance;
+    xtensor<complex<double>,1> Con_of_Energy;
+    xtensor<complex<double>,1> Kernel_Freq;
+    xtensor<complex<double>,1> Source_FFT;
+    xtensor<double,1> Freq_range;
     xtensor<double,1> m_E;
     xtensor<double,1> m_H;
     list<double> E_end {0,0};
@@ -148,7 +158,7 @@ class Source{
             source_param.Nt = ceil(source_param.sim_time/source_param.dt);
             cout << "dt: " << source_param.dt << " seconds" << " | Nt: " << source_param.Nt << " iterations"<< endl;
 
-            source_output.t = arange(0.0,(source_param.Nt*source_param.dt) ,source_param.dt);
+            source_output.t = arange<double>(0.0,(source_param.Nt*source_param.dt) ,source_param.dt);
 
             //source_output.t = linspace<double>(0,source_param.Nt*source_param.dt,source_param.Nt);
 
@@ -383,7 +393,7 @@ class Simulation
                 //For loop is necessary to truncate initial xarray and cutoff excess rows
                 cout << endl <<"Device Model Configuration" << endl;
                 cout << "Layer # \t Layer size \t Layer mu \t Layer epsilon" << endl;
-                for (int i =0; i<n_models;i++)
+                for (int i =0; i<(int) n_models;i++)
                 {
                     cout << "Layer " << i+1 << ": \t";
                     input.layer_size(i) = temp_l_size(i);
@@ -403,7 +413,7 @@ class Simulation
 
 
         //Creating computational domain
-        int create_comp_domain(int spacer_cells = 0,int injection_point = 0)
+        computational_domain create_comp_domain(int spacer_cells = 0,int injection_point = 0, double n_freq = 0)
         {
             //Try catch here to make sure that the input struct is not empty
             cout << "========================================================================" << endl;
@@ -422,7 +432,9 @@ class Simulation
             catch(...)
             {
                 cout << "Error: Input are not yet entered." << endl;
-                return -1;
+                comp_domain.check = -1;
+
+                exit(EXIT_FAILURE);
             }
 
             //Computing dz and Nz...
@@ -434,12 +446,12 @@ class Simulation
             
             //Computing cell size based on the smallest layer size (min. dimension)
             double d_min = amin(input.layer_size)(0);
-            double delta_size = d_min/25;  //denominator is the amount of cells that can resolve the smallest dimension
+            double delta_size = d_min/10;  //denominator is the amount of cells that can resolve the smallest dimension
             
             //The final cell size is obtained by getting the smallest of delta_lambda and delta_size 
             //to make sure that the comp domain can resolve all the necessary features (wavelength or dimension)
             
-            sim_param.dz = min(delta_lambda,delta_size)/2; //Dividing by 2 further decreases the cell size to make the resolution finer
+            sim_param.dz = min(delta_lambda,delta_size); //Dividing by 2 further decreases the cell size to make the resolution finer
             
             //Get the total number cells needed for the device model
             xtensor<double,1> model_ncells = ceil((input.layer_size/sim_param.dz));
@@ -471,12 +483,14 @@ class Simulation
             if(injection_point < 0)
             {
                 cout << "Error detected: Injection point is invalid" << endl;
-                return -1;
+                comp_domain.check = -1;
+                exit(EXIT_FAILURE);
             }
             else if(injection_point > sim_param.spacers)
             {
                 cout << "Error detected: Injection point is inside the device model" <<endl;
-                return -1;
+                comp_domain.check = -1;
+                exit(EXIT_FAILURE);
             }
             else{
                 if(injection_point == 0)
@@ -549,7 +563,7 @@ class Simulation
             cout << "---" << sim_param.spacers << " cells---|" << endl;
 
             //Computing dt or CFL Condition
-            sim_param.dt = (comp_domain.n(0)*sim_param.dz)/(2*c_0);
+            sim_param.dt = (1*sim_param.dz)/(2*c_0);
             //Check the sim_time input in the csv file
             if (input.simulation_parameters.at(3) == 0)
             {
@@ -576,7 +590,8 @@ class Simulation
             }
             else{
                 cout << "ERROR: Invalid source type!";
-                return -1;
+                comp_domain.check = -1;
+                exit(EXIT_FAILURE);
             }
 
             //Compute the source that will be used in the project.
@@ -607,7 +622,44 @@ class Simulation
             //cout << csv_output.E.size() <<endl;
 
             //cout << comp_domain.z.size() << "   " << comp_domain.mu.size() << endl;
-            return 0;
+
+            //Computing df - frequency step in Freq. Response 
+            
+            sim_param.df = 1/(sim_param.dt*sim_param.Nt);
+            
+            //Initialize the frequency vector for Fourier Transform
+            sim_param.n_freq = n_freq;
+            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax,sim_param.n_freq);
+
+            //Initialize the sizes of refl,trans, and kernal vectors
+            sim_fields.Kernel_Freq = exp(-1i*2.0*pi*sim_param.dt*sim_fields.Freq_range);
+            
+
+            //Initialize all related tensors for FFT
+            sim_fields.Reflectance.resize(sim_fields.Kernel_Freq.shape());
+            sim_fields.Transmittance.resize(sim_fields.Kernel_Freq.shape());
+            sim_fields.Con_of_Energy.resize(sim_fields.Kernel_Freq.shape());
+            sim_fields.Source_FFT.resize(sim_fields.Kernel_Freq.shape());
+
+            //Initialize the values to 0
+            view(sim_fields.Reflectance,all()) = 0;
+            view(sim_fields.Transmittance,all()) = 0;
+            view(sim_fields.Con_of_Energy,all()) = 0;
+            view(sim_fields.Source_FFT,all()) = 0;
+
+
+            //Initialize save matrices for FFT;
+            unsigned long col_f = sim_param.n_freq;
+            csv_output.Reflectance.resize({row,col_f});
+            csv_output.Transmittance.resize({row,col_f});
+            csv_output.R_T_Sum.resize({row,col_f});
+
+            //Print the information computed
+            cout << "========================================================================" << endl;
+            cout << "df: " << sim_param.df << " | Frequency range: " << sim_fields.Freq_range.size() << " | Kernel: " << sim_fields.Kernel_Freq.size() << endl;
+            cout << "Save Matrices Sizes:" << endl;
+            cout << "Reflectance: " << csv_output.Reflectance.size() << " | Transmittance: " << csv_output.Transmittance.size() << " | Conservation of Energy: " << csv_output.R_T_Sum.size() << endl;
+            return comp_domain;
         }
         
 
@@ -654,7 +706,7 @@ class Simulation
             cout << "========================================================================" << endl;
             cout << "Starting 1-D FDTD Simulation..." << endl;
             cout << "Boundary Condition: " << boundary_condition << " | Source Excitation Method: " << excitation << endl;
-           
+            unsigned int end_index = sim_param.Nz;
             //Initialize variables used for outside boundary terms
             double E_bounds = 0;
             double H_bounds = 0;
@@ -668,13 +720,13 @@ class Simulation
                 //Store H boundary terms
                 if (boundary_condition == "pabc")
                 {
-                    cout << " H-pabc ";
+                    //cout << " H-pabc ";
                     //Get the front of the list
-                    H_bounds = sim_fields.H_start.front();
+                    sim_fields.H(0) = sim_fields.H_start.front();
                     //Remove the front element from the list
                     sim_fields.H_start.pop_front();
                     //Add H[0] at the end of the list
-                    sim_fields.H_start.push_back(sim_fields.H(0));
+                    sim_fields.H_start.push_back(sim_fields.E(1));
                     //Printing the contents of E_end:
                     /*cout << "z_low: [";
                     for (auto iter : sim_fields.H_start)
@@ -685,35 +737,35 @@ class Simulation
                 }
                 else if(boundary_condition == "dirichlet")
                 {
-                    cout << " H-dirichlet ";
+                    //cout << " H-dirichlet ";
                     H_bounds = 0;
                 }
 
-
+   
                 //Update H from E (FDTD Space Loop for H field)
-                view(sim_fields.H,range(0,sim_fields.H.size()-1)) = view(sim_fields.H,range(0,sim_fields.H.size()-1)) + (view(sim_fields.m_H,range(0,sim_fields.m_H.size()-1))*(view(sim_fields.E,range(1,sim_fields.E.size())) - view(sim_fields.E,range(0,sim_fields.E.size()-1))));
-
+                view(sim_fields.H,range(0,end_index-1)) = view(sim_fields.H,range(0,end_index-1)) + (view(sim_fields.m_H,range(0,end_index-1)))*(view(sim_fields.E,range(1,end_index)) - view(sim_fields.E,range(0,end_index-1)));
+    
 
                 //Inject the H source component
                 if(excitation == "hard")
                 {
-                    cout << "H-hard ";
+                    //cout << "H-hard ";
                     sim_fields.H(comp_domain.injection_point) = sim_source_fields.Hsrc(curr_iteration);
                 }
                 else if(excitation == "soft")
                 {
-                    cout << "H-soft ";
-                    //sim_fields.H(comp_domain.injection_point) += sim_source_fields.Hsrc(curr_iteration);
+                    //cout << "H-soft ";
+                    sim_fields.H(comp_domain.injection_point) += sim_source_fields.Hsrc(curr_iteration);
                 }
                 else if(excitation == "tfsf")
                 {
-                    cout << "H-tfsf ";
+                    //cout << "H-tfsf ";
                     sim_fields.H(comp_domain.injection_point-1) -= (sim_fields.m_H(comp_domain.injection_point-1)*sim_source_fields.Hsrc(curr_iteration));
                 }
 
-                cout << "E_bounds: " << E_bounds << endl;
+                //cout << "E_bounds: " << E_bounds << endl;
                 //Boundary conditions for H (at the end of the comp. domain)
-                sim_fields.H(sim_fields.H.size()-1) = sim_fields.H(sim_fields.H.size()-1) + (sim_fields.m_H(sim_fields.m_H.size()-1) * (E_bounds - sim_fields.E(sim_fields.E.size()-1)));
+                sim_fields.H(end_index-1) = sim_fields.H(end_index-1) + (sim_fields.m_H(end_index-1) * (E_bounds - sim_fields.E(end_index-1)));
 
 
 
@@ -722,13 +774,13 @@ class Simulation
                 //Store E boundary terms
                 if (boundary_condition == "pabc")
                 {
-                    cout << "E-pabc ";
+                    //cout << "E-pabc ";
                     //Get the front of the list
-                    E_bounds = sim_fields.E_end.front();
+                    sim_fields.H(end_index-1) = sim_fields.E_end.front();
                     //Remove the front element from the list
                     sim_fields.E_end.pop_front();
                     //Add E[Nz] at the end of the list
-                    sim_fields.E_end.push_back(sim_fields.E(sim_param.Nz-1));
+                    sim_fields.E_end.push_back(sim_fields.H(end_index-2));
                     //Printing the contents of E_end:
                     /*cout << "z_high: [";
                     for (auto iter : sim_fields.E_end)
@@ -739,49 +791,84 @@ class Simulation
                 }
                 else if(boundary_condition == "dirichlet")
                 {
-                    cout << "E-dirichlet ";
+                    //cout << "E-dirichlet ";
                     E_bounds = 0;
                 }
 
-                cout << "H_bounds: " << H_bounds << endl;
+                //cout << "H_bounds: " << H_bounds << endl;
                 //Boundary condition for E (at the start of the comp.domain)
                 sim_fields.E(0) = sim_fields.E(0) + (sim_fields.m_E(0)*(sim_fields.H(0) - H_bounds));
 
 
                 //Update E from H (FDTD Space Loop for E field)
-                view(sim_fields.E,range(1,sim_fields.E.size())) =  view(sim_fields.E,range(1,sim_fields.E.size())) + (view(sim_fields.m_E,range(1,sim_fields.m_E.size()))*(view(sim_fields.H,range(1,sim_fields.H.size()))-view(sim_fields.H,range(0,sim_fields.H.size()-1))));
+                view(sim_fields.E,range(1,end_index)) =  view(sim_fields.E,range(1,end_index)) + (view(sim_fields.m_E,range(1,end_index))*(view(sim_fields.H,range(1,end_index))-view(sim_fields.H,range(0,end_index-1))));
 
                 //Inject the E source component
                 if(excitation == "hard")
                 {
-                    cout << "E-hard ";
+                    //cout << "E-hard ";
                     sim_fields.E(comp_domain.injection_point) = sim_source_fields.Esrc(curr_iteration);
                 }
                 else if(excitation == "soft")
                 {
-                    cout << "E-soft";
+                    //cout << "E-soft";
                     sim_fields.E(comp_domain.injection_point) += sim_source_fields.Esrc(curr_iteration);
                 }
                 else if(excitation == "tfsf")
                 {
-                    cout << "E-tfsf ";
+                    //cout << "E-tfsf ";
                     sim_fields.E(comp_domain.injection_point) -= (sim_fields.m_E(comp_domain.injection_point)*sim_source_fields.Esrc(curr_iteration));
                 }
                 
 
+                //Compute for the Fourier Transform of the current simulation window
+                //More cheaper than saving all the data, it will compute at each iteration
+                for(int freq_index=0;freq_index < sim_param.n_freq;freq_index++)
+                {
+                    //Convert time-domain to freq. domain
+                    sim_fields.Reflectance(freq_index) = sim_fields.Reflectance(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_fields.E(0) );
+                    sim_fields.Transmittance(freq_index) = sim_fields.Transmittance(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_fields.E(sim_fields.E.size()-1));
+                    sim_fields.Source_FFT(freq_index) = sim_fields.Source_FFT(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_source_fields.Esrc(curr_iteration));
+                
+                    //Adjust the values to take into account the decreasing power inputted by the source
+                    sim_fields.Reflectance(freq_index) = pow(abs(sim_fields.Reflectance(freq_index)/sim_fields.Source_FFT(freq_index)),2);
+                    sim_fields.Transmittance(freq_index) = pow(abs(sim_fields.Transmittance(freq_index)/sim_fields.Source_FFT(freq_index)),2);
+                    sim_fields.Con_of_Energy(freq_index) = sim_fields.Reflectance(freq_index) + sim_fields.Transmittance(freq_index);
+                
+                }
+
 
                 //Save the computed fields into the save matrix
+                //For the fields...
                 row(csv_output.E,curr_iteration) = sim_fields.E;
                 row(csv_output.H,curr_iteration) = sim_fields.H;
-                cout << endl;
+                
+                //for the Fourier Transform
+                row(csv_output.Reflectance,curr_iteration) = real(sim_fields.Reflectance);
+                row(csv_output.Transmittance,curr_iteration) = real(sim_fields.Transmittance);
+                row(csv_output.R_T_Sum,curr_iteration) = real(sim_fields.Con_of_Energy);
+
+                //cout << endl;
                 cout << "\rCurrent Iteration: "<<curr_iteration + 1<<"/"<<sim_param.Nt ;
             }
+            //cout << endl << "Post-processing Fourier Transform" << endl;
+            //sim_fields.Reflectance = pow(abs(sim_fields.Reflectance/sim_fields.Source_FFT),2);
+            //sim_fields.Transmittance = pow(abs(sim_fields.Transmittance/sim_fields.Source_FFT),2);
+            //sim_fields.Con_of_Energy = sim_fields.Reflectance + sim_fields.Transmittance;
             cout << endl << "End of simulation." << endl;
                 
             return csv_output;
         }
 
-        int write_to_csv(string output_file = "",xtensor<double,2> data = {{0,0},{0,0}})
+        int write_to_csv(string output_file = "",xtensor<double,2> data ={{0,0,0},{0,0,0}})
+        {
+            ofstream out_stream;
+            out_stream.open(output_file);
+            dump_csv(out_stream,data);
+            return 0;
+        }
+        //Overloading the write_to_csv function to accept 2D complex data type
+        int write_to_csv(string output_file = "", xtensor<complex<double>,2> data = {{0,0,0},{0,0,0}})
         {
             ofstream out_stream;
             out_stream.open(output_file);
@@ -792,7 +879,7 @@ class Simulation
         int save_to_file(string name = "")
         {
 
-            string names [6] = {"source.csv","e_field.csv","h_field.csv","refl.csv","trans.csv","refl_trans.csv"};
+            vector<string> names = {"source.csv","e_field.csv","h_field.csv","refl.csv","trans.csv","refl_trans.csv"};
             //get the current date
             auto now = chrono::system_clock::now();
             auto today = chrono::system_clock::to_time_t(now);
@@ -804,12 +891,12 @@ class Simulation
             cout << "Saving data to csv files" << endl;
             cout << " Current Date: " << date_string << endl;
             string curr_dir = "./csv/";
-
+            
 
 
 
             //Save all data
-            for(int i =0; i< 3;i++) //no reflectance and transmittance at the moment
+            for(int i =0; i< (int)names.size();i++) //no reflectance and transmittance at the moment
             {
                 
                 //Concatenate the strings
@@ -838,6 +925,18 @@ class Simulation
                     case 2: //for H-fields
                         //call write_to_csv
                         write_to_csv(file_name,csv_output.H);
+                        break;
+
+                    case 3: //for the reflectance
+                        write_to_csv(file_name,csv_output.Reflectance);
+                        break;
+                    
+                    case 4: //for the transmittance 
+                        write_to_csv(file_name,csv_output.Transmittance);
+                        break;
+
+                    case 5:
+                        write_to_csv(file_name,csv_output.R_T_Sum);
                         break;
                 }
                 cout << "-----> Successfully saved" << endl;
