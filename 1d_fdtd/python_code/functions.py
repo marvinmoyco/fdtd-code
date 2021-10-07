@@ -102,10 +102,10 @@ def plot_fields(z,E_plot,H_plot,N_t,injection_point,title="",save=False):
     for i in range(1,N_t):
         plt.ylim(-5,5)
         plt.legend(handles = [lineE,lineH],labels=["Electric Field","Magnetic Field"])
-        print(f"Currently plotting Iteration step: {i}/{N_t}")
+        print(f"\rCurrently plotting Iteration step: {i}/{N_t}")
         plt.title(f'FDTD 1-D {title} | Iteration step: {i}/{N_t}')
         if save == True:
-            plt.savefig("/home/user/Desktop/photos/1d-fdtd{num:07d}.jpeg".format(num=i))
+            plt.savefig("/home/user1/Desktop/photos/1d-fdtd{num:07d}.jpeg".format(num=i))
         lineE.set_ydata(E_plot[i,:])
         lineH.set_ydata(H_plot[i,:])
         fig.canvas.draw()

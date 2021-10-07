@@ -1,4 +1,4 @@
-# FDTD Codes for EEE 190
+# FDTD Codes for ECE 198
 
 ### 1-D FDTD
 * Plane wave propagation simulation using 1-D FDTD 
@@ -8,10 +8,17 @@
 
 
 
-
 ##### Notes:
-* The package manager used in installing the different libraries used in this repo is CMake. The instructions in installing CMake in Ubuntu 20.4 is shown [here](https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line).
-* Currently using numpy and matplotlib for ease of use. The code will be migrated to C++ once the code is complete.
+* Libraries used are header-only type so no need to compile them. Just include the directories of the necessary libraries in the makefile before compiling.
+* Migrated the FDTD Code to C++ but still currently using matplotlib for the plotting.
+
+##### Current Issues:
+
+###### FDTD
+1. Sinusoidal source propagate backwards (towards the left).
+2. Grid dispersion (I think) is present since weird oscillations in the grid is observed to start at the end of the computational domain.
+3. PABC still reflects some energy and do propagate all of the energy outside the computational domain.
+4. Integration of gnuplot to the current code is still underway.
 
 #### Libraries Used:
 

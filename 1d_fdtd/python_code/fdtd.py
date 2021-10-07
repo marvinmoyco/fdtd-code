@@ -147,6 +147,7 @@ class Simulation:
         end = self.spacer_cells
         for layer in range(int(self.input['simulation parameters'][2])):
             end += model_ncells[layer]
+            
             self.comp_domain['epsilon'][start:end] = self.input['electric permittivity'][layer]
             start = end
         #print(f"{self.comp_domain['epsilon'][0:self.spacer_cells]}->{self.comp_domain['epsilon'][self.spacer_cells:self.spacer_cells+model_ncells[0]]} -> {self.comp_domain['epsilon'][self.spacer_cells+model_ncells[0]:self.spacer_cells+model_ncells[0]+model_ncells[1]]}->{self.comp_domain['epsilon'][self.spacer_cells+model_ncells[0]+model_ncells[1]:self.spacer_cells+model_ncells[0]+model_ncells[1]+model_ncells[2]]} -> {self.comp_domain['epsilon'][self.spacer_cells + model_cells:]}")
@@ -298,22 +299,27 @@ class Source:
                                                        comp_domain=comp_domain
                                                      )
         print(f"Total time: {total_time} seconds")
+        
         #Compute the total steps needed in the simulation 
         self.source_param['Nt'] = np.ceil(total_time/self.source_param['dt'])
         print(f"Nt_before={self.source_param['Nt']} with dtype={self.source_param['Nt'].dtype}")
+        
         #Computing the refractive index at the injection point
         n_src = comp_domain['n'][comp_domain['injection_point']]
         print(f"dt={self.source_param['dt']}      Nt={self.source_param['Nt']}")
         prod = int(np.ceil(self.source_param['dt']*self.source_param['Nt']))
         print(f"prod={prod}")
+
         #Generating the time vector
         self.source_output['t'] = np.linspace(0,self.source_param['dt']*self.source_param['Nt'],int(np.ceil(self.source_param['Nt'])))
         print(f"t_0: {self.source_param['t0']}, tau: {self.source_param['tau']}")
+        
         #Computing for the electric field component of the source
         t_E = (self.source_output['t']-self.source_param['t0'])/self.source_param['tau']
         print(f"t_E: {t_E}\n t: {self.source_output['t']}")
         self.source_output['Esrc'] = np.exp(-np.power(t_E,2))
         print(f"Esrc: {self.source_output['Esrc']}")
+        
         #Computing the magnetic field component of the source
         #Computing the adjustment term for the time step in magnetic field (due to staggered nature of FDTD)
         adj_H = (n_src*self.source_param['dz'])/(2*c_0) + (self.source_param['dt']/2)
@@ -356,6 +362,9 @@ class Source:
         self.source_output['Esrc'] = np.zeros((self.source_output['t'].shape))
         self.source_output['Hsrc'] = np.zeros((self.source_output['t'].shape))
         print(f"Esrc shape: {self.source_output['Esrc'].shape}, Hsrc shape: {self.source_output['Hsrc'].shape}")
+        
+        
+        
         #Selecting a sub-array inside time vector to apply exponential function
         t_condition = self.source_output['t'] <= self.source_param['t0']
         t_initial = self.source_output['t'][t_condition]

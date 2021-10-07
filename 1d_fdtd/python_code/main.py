@@ -34,8 +34,8 @@ epsilon_r = np.ones((N_z))
 n_r = np.sqrt(mu_r[0]*epsilon_r[0])
 
 #Glass material property
-mu_r[injection_point + 50 :N_z-50] = 3/8
-epsilon_r[injection_point + 50 :N_z-50]=8
+#mu_r[injection_point + 50 :N_z-50] = 3/8
+#epsilon_r[injection_point + 50 :N_z-50]=8
 
 #Computing Time step and source excitation
 n_bc = 1 #Refractive index at the boundaries (assume free space)
@@ -127,7 +127,7 @@ elif mode == 2: #Algorithm with Hard Source
         E_plot[i,:] = E.reshape((1,N_z))
         H_plot[i,:] = H.reshape((1,N_z))
         print("=====================================================================")
-        print(f"FDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
+        print(f"\rFDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
 
 elif mode == 3: #Algorithm with Soft Source
     plot_title = "Soft Source"
@@ -231,7 +231,7 @@ elif mode == 5: #Algorithm with TF/SF (with PABC)
         E_plot[i,:] = E.reshape((1,N_z))
         H_plot[i,:] = H.reshape((1,N_z))
         print("=====================================================================")
-        print(f"FDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
+        print(f"\rFDTD Algorithm {plot_title}: Successfully computed field values! iteration: {i}/{N_t}")
         print(f"z_low:{z_low}")
         print(f"z_high:{z_high}")
 
