@@ -420,7 +420,7 @@ class Simulation
                 simulation is done. The simulate() can be used after this function successfully finished.
             */
 
-           
+
             //Try catch here to make sure that the input struct is not empty
             cout << "========================================================================" << endl;
             try
@@ -730,11 +730,11 @@ class Simulation
                 {
                     //cout << " H-pabc ";
                     //Get the front of the list
-                    sim_fields.H(0) = sim_fields.H_start.front();
+                    //sim_fields.H(0) = sim_fields.H_start.front();
                     //Remove the front element from the list
-                    sim_fields.H_start.pop_front();
+                    //sim_fields.H_start.pop_front();
                     //Add H[0] at the end of the list
-                    sim_fields.H_start.push_back(sim_fields.E(1));
+                    //sim_fields.H_start.push_back(sim_fields.E(1));
                     //Printing the contents of E_end:
                     /*cout << "z_low: [";
                     for (auto iter : sim_fields.H_start)
@@ -742,6 +742,8 @@ class Simulation
                         cout << iter << ",";
                     }
                     cout << "]" << endl;*/
+
+                    H_bounds = sim_fields.H(0);
                 }
                 else if(boundary_condition == "dirichlet")
                 {
