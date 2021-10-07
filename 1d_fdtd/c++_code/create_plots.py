@@ -29,8 +29,8 @@ def plot_source(fname,row):
             i += 1
 
 
-    ax.plot(x[0,:],x[1,:])
-    ax.plot(x[0,:],x[2,:])
+    ax.plot(x[1,:])
+    ax.plot(x[2,:])
 
 
     plt.savefig("./plots/source.jpeg")
@@ -100,7 +100,7 @@ def plot_field(field = "", fname=["","",""],row = 0,col=0,col_fft = 0):
     lineR, = ax[1].plot(refl[0,:])
     lineT, = ax[1].plot(trans[0,:])
     lineC, = ax[1].plot(con[0,:])
-    ax[0].set_ylim([-3,3])
+    ax[0].set_ylim([-1,1])
     ax[1].set_ylim([0,2])
     
     for k in range(1,iteration):
@@ -132,8 +132,8 @@ def plot_field(field = "", fname=["","",""],row = 0,col=0,col_fft = 0):
 
 def main():
     #Get the current date
-    row = 2316
-    col = 336
+    row = 8617
+    col = 1336
     col_fft = 1000
     date_str = datetime.today().strftime('%Y-%m-%d')
     name = "marvin"

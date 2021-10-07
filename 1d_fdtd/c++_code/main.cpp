@@ -10,7 +10,9 @@
 */
 #include "fdtd.hpp"
 save_data output;
- 
+
+//Arguments (1) file_path of input csv (2) Boundary condition (3) source excitation (4) filename output
+
 int main(int argc, char* argv[])
 {
   //cout << " Argc: " << argc << endl;
@@ -25,6 +27,8 @@ int main(int argc, char* argv[])
     sim.save_to_file(argv[4]);
     return 0;
   }
+
+
   return 0;
   
 

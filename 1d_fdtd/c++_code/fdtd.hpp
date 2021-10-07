@@ -442,11 +442,11 @@ class Simulation
             
             //Computing cell size based on the smallest wavelength (lambda_min)
             double lambda_min = c_0/(n_max*input.simulation_parameters.at(0));
-            double delta_lambda = lambda_min/25; //denominator is  dependent on how many samples you want for a whole wave
+            double delta_lambda = lambda_min/50; //denominator is  dependent on how many samples you want for a whole wave
             
             //Computing cell size based on the smallest layer size (min. dimension)
             double d_min = amin(input.layer_size)(0);
-            double delta_size = d_min/10;  //denominator is the amount of cells that can resolve the smallest dimension
+            double delta_size = d_min/25;  //denominator is the amount of cells that can resolve the smallest dimension
             
             //The final cell size is obtained by getting the smallest of delta_lambda and delta_size 
             //to make sure that the comp domain can resolve all the necessary features (wavelength or dimension)
@@ -675,7 +675,7 @@ class Simulation
             }
             else if(sim_param.source_type == "sinusoidal")
             {
-                sim_source->SinusoidalSource(1,3,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->SinusoidalSource(3,3,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
 
             //Transfer Nt to sim_param
@@ -712,6 +712,8 @@ class Simulation
             double H_bounds = 0;
             comp_domain.injection_point = ceil(sim_param.Nz/2);
             cout << "Start of simulation." << endl;
+            cout << "m_E: " << sim_fields.m_E << endl;
+            cout << "m_H: " << sim_fields.m_H << endl;
             //FDTD Time Loop
             for(int curr_iteration = 0;curr_iteration < sim_param.Nt; curr_iteration++)
             {
@@ -827,7 +829,7 @@ class Simulation
                 {
                     //Convert time-domain to freq. domain
                     sim_fields.Reflectance(freq_index) = sim_fields.Reflectance(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_fields.E(0) );
-                    sim_fields.Transmittance(freq_index) = sim_fields.Transmittance(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_fields.E(sim_fields.E.size()-1));
+                    sim_fields.Transmittance(freq_index) = sim_fields.Transmittance(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*E_bounds);
                     sim_fields.Source_FFT(freq_index) = sim_fields.Source_FFT(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_source_fields.Esrc(curr_iteration));
                 
                     //Adjust the values to take into account the decreasing power inputted by the source
