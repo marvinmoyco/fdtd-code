@@ -203,11 +203,11 @@ class Source{
 
             //Computing the time input for electric field component
             source_output.t_E = (source_output.t - source_param.t0)/source_param.tau;
-            auto t_E_initial = view(source_output.t_E,range(0,t_condition_size));
+            auto t_E_initial = view(source_output.t_E,range(0,t_condition_size+1));
             //Computing the time input for the magnetic field component
             double adj_H = (nsrc*source_param.dz/(2*c_0)) + (source_param.dt/2);
             source_output.t_H = ((source_output.t - source_param.t0)+adj_H)/source_param.tau;
-            auto t_H_initial = view(source_output.t_H,range(0,t_condition_size));
+            auto t_H_initial = view(source_output.t_H,range(0,t_condition_size+1));
 
             //Resize the source field components 
             source_output.Esrc.resize(source_output.t.shape());
@@ -415,6 +415,12 @@ class Simulation
         //Creating computational domain
         computational_domain create_comp_domain(int spacer_cells = 0,int injection_point = 0, double n_freq = 0)
         {
+            /*
+                This function is the "pre-processing" stage of the simulation. All of the needed pre-requisite computations are done before the actual
+                simulation is done. The simulate() can be used after this function successfully finished.
+            */
+
+           
             //Try catch here to make sure that the input struct is not empty
             cout << "========================================================================" << endl;
             try
@@ -604,8 +610,8 @@ class Simulation
             sim_fields.m_H.resize(comp_domain.z.shape());
 
             //Initialize fields to 0
-            view(sim_fields.E,range(0,sim_fields.E.size()-1)) = 0;
-            view(sim_fields.H,range(0,sim_fields.E.size()-1)) = 0;
+            view(sim_fields.E,range(0,sim_fields.E.size())) = 0;
+            view(sim_fields.H,range(0,sim_fields.E.size())) = 0;
 
             //Compute the update coefficients
             sim_fields.m_E = (c_0*sim_param.dt)/(comp_domain.epsilon*sim_param.dz);
