@@ -16,7 +16,7 @@
 
 ###### FDTD
 1. Sinusoidal source propagate backwards (towards the left).
-2. Grid dispersion (I think) is present since weird oscillations in the grid is observed to start at the end of the computational domain.
+2. Grid dispersion (I think) is present since weird oscillations in the grid is observed to start at the end of the computational domain. (SOLVED)
 3. PABC still reflects some energy and do propagate all of the energy outside the computational domain.
 4. Integration of gnuplot to the current code is still underway.
 
