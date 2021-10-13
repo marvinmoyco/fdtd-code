@@ -410,8 +410,6 @@ class Simulation
         }
         
 
-
-
         //Creating computational domain
         computational_domain create_comp_domain(int spacer_cells = 0,int injection_point = 0, double n_freq = 0)
         {
@@ -705,7 +703,6 @@ class Simulation
         }
 
 
-
         save_data simulate(string boundary_condition = "", string excitation = "")
         {
             
@@ -730,11 +727,11 @@ class Simulation
                 {
                     //cout << " H-pabc ";
                     //Get the front of the list
-                    //sim_fields.H(0) = sim_fields.H_start.front();
+                    sim_fields.H(0) = sim_fields.H_start.front();
                     //Remove the front element from the list
-                    //sim_fields.H_start.pop_front();
+                    sim_fields.H_start.pop_front();
                     //Add H[0] at the end of the list
-                    //sim_fields.H_start.push_back(sim_fields.E(1));
+                    sim_fields.H_start.push_back(sim_fields.E(1));
                     //Printing the contents of E_end:
                     /*cout << "z_low: [";
                     for (auto iter : sim_fields.H_start)
@@ -743,12 +740,14 @@ class Simulation
                     }
                     cout << "]" << endl;*/
 
-                    H_bounds = sim_fields.H(0);
+                    //H_bounds = sim_fields.H(0);
+                    //sim_fields.H(0) = sim_fields.H(1);
                 }
                 else if(boundary_condition == "dirichlet")
                 {
                     //cout << " H-dirichlet ";
-                    H_bounds = 0;
+                    //H_bounds = 0;
+                    sim_fields.E(0) = 0;
                 }
 
    
@@ -775,7 +774,7 @@ class Simulation
 
                 //cout << "E_bounds: " << E_bounds << endl;
                 //Boundary conditions for H (at the end of the comp. domain)
-                sim_fields.H(end_index-1) = sim_fields.H(end_index-1) + (sim_fields.m_H(end_index-1) * (E_bounds - sim_fields.E(end_index-1)));
+                //sim_fields.H(end_index-1) = sim_fields.H(end_index-1) + (sim_fields.m_H(end_index-1) * (E_bounds - sim_fields.E(end_index-1)));
 
 
 
@@ -798,16 +797,19 @@ class Simulation
                         cout << iter << ",";
                     }
                     cout << "]" << endl;*/
+                    //E_bounds = sim_fields.E(end_index -1);
+                    //sim_fields.E(end_index-1) = sim_fields.E(end_index-2);
                 }
                 else if(boundary_condition == "dirichlet")
                 {
                     //cout << "E-dirichlet ";
-                    E_bounds = 0;
+                    //E_bounds = 0;
+                    sim_fields.H(end_index-1) = 0;
                 }
 
                 //cout << "H_bounds: " << H_bounds << endl;
                 //Boundary condition for E (at the start of the comp.domain)
-                sim_fields.E(0) = sim_fields.E(0) + (sim_fields.m_E(0)*(sim_fields.H(0) - H_bounds));
+                //sim_fields.E(0) = sim_fields.E(0) + (sim_fields.m_E(0)*(sim_fields.H(0) - H_bounds));
 
 
                 //Update E from H (FDTD Space Loop for E field)
@@ -841,9 +843,9 @@ class Simulation
                     sim_fields.Source_FFT(freq_index) = sim_fields.Source_FFT(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_source_fields.Esrc(curr_iteration));
                 
                     //Adjust the values to take into account the decreasing power inputted by the source
-                    sim_fields.Reflectance(freq_index) = pow(abs(sim_fields.Reflectance(freq_index)/sim_fields.Source_FFT(freq_index)),2);
-                    sim_fields.Transmittance(freq_index) = pow(abs(sim_fields.Transmittance(freq_index)/sim_fields.Source_FFT(freq_index)),2);
-                    sim_fields.Con_of_Energy(freq_index) = sim_fields.Reflectance(freq_index) + sim_fields.Transmittance(freq_index);
+                    //sim_fields.Reflectance(freq_index) = pow(abs(sim_fields.Reflectance(freq_index)/sim_fields.Source_FFT(freq_index)),2);
+                    //sim_fields.Transmittance(freq_index) = pow(abs(sim_fields.Transmittance(freq_index)/sim_fields.Source_FFT(freq_index)),2);
+                    //sim_fields.Con_of_Energy(freq_index) = sim_fields.Reflectance(freq_index) + sim_fields.Transmittance(freq_index);
                 
                 }
 
@@ -886,72 +888,106 @@ class Simulation
             return 0;
         }
 
-        int save_to_file(string name = "")
+        int write_to_npy(string output_filCree = "", xtensor<double,3> data = {{{0,0,0},{0,0,0}},{{0,0,0},{0,0,0}}})
         {
+            return 0;
+        }
 
-            vector<string> names = {"source.csv","e_field.csv","h_field.csv","refl.csv","trans.csv","refl_trans.csv"};
-            //get the current date
-            auto now = chrono::system_clock::now();
-            auto today = chrono::system_clock::to_time_t(now);
-            stringstream string_stream;
-            string_stream << put_time(localtime(&today),"%Y-%m-%d"); 
-            string date_string = string_stream.str();
-            //cout << date_string + "_" + names[0] << endl;
-            cout << "========================================================================" << endl;
-            cout << "Saving data to csv files" << endl;
-            cout << " Current Date: " << date_string << endl;
-            string curr_dir = "./csv/";
+        int save_to_file(string name = "",string type = "npy")
+        {
+            /*
             
-
-
-
-            //Save all data
-            for(int i =0; i< (int)names.size();i++) //no reflectance and transmittance at the moment
+                CSV - produces multiple files while NPY produces a single file output.
+            */
+            if (type == "csv")
             {
+                vector<string> names = {"source.csv","e_field.csv","h_field.csv","refl.csv","trans.csv","refl_trans.csv"};
+                //get the current date
+                auto now = chrono::system_clock::now();
+                auto today = chrono::system_clock::to_time_t(now);
+                stringstream string_stream;
+                string_stream << put_time(localtime(&today),"%Y-%m-%d"); 
+                string date_string = string_stream.str();
+                //cout << date_string + "_" + names[0] << endl;
+                cout << "========================================================================" << endl;
+                cout << "Saving data to csv files" << endl;
+                cout << " Current Date: " << date_string << endl;
+                string curr_dir = "./input_output/";
                 
-                //Concatenate the strings
-                string file_name = curr_dir + date_string + "_";
-                if(name.empty())
+
+
+
+                //Save all data
+                for(int i =0; i< (int)names.size();i++) //no reflectance and transmittance at the moment
                 {
-                    file_name += names[i];
-                }
-                else{
-                    file_name += name + "_" + names[i];
-                }
-                cout << "Filename: " << file_name ;
-
-                switch(i)
-                {
-                    case 0: //for sources
-                        //call write_to_csv
-                        write_to_csv(file_name,csv_output.Source);
-                        break;
-
-                    case 1: //for E-fields
-                        //call write_to_csv
-                        write_to_csv(file_name,csv_output.E);
-                        break;
-
-                    case 2: //for H-fields
-                        //call write_to_csv
-                        write_to_csv(file_name,csv_output.H);
-                        break;
-
-                    case 3: //for the reflectance
-                        write_to_csv(file_name,csv_output.Reflectance);
-                        break;
                     
-                    case 4: //for the transmittance 
-                        write_to_csv(file_name,csv_output.Transmittance);
-                        break;
+                    //Concatenate the strings
+                    string file_name = curr_dir + date_string + "_";
+                    if(name.empty())
+                    {
+                        file_name += names[i];
+                    }
+                    else{
+                        file_name += name + "_" + names[i];
+                    }
+                    cout << "Filename: " << file_name ;
 
-                    case 5:
-                        write_to_csv(file_name,csv_output.R_T_Sum);
-                        break;
+                    switch(i)
+                    {
+                        case 0: //for sources
+                            //call write_to_csv
+                            write_to_csv(file_name,csv_output.Source);
+                            break;
+
+                        case 1: //for E-fields
+                            //call write_to_csv
+                            write_to_csv(file_name,csv_output.E);
+                            break;
+
+                        case 2: //for H-fields
+                            //call write_to_csv
+                            write_to_csv(file_name,csv_output.H);
+                            break;
+
+                        case 3: //for the reflectance
+                            write_to_csv(file_name,csv_output.Reflectance);
+                            break;
+                        
+                        case 4: //for the transmittance 
+                            write_to_csv(file_name,csv_output.Transmittance);
+                            break;
+
+                        case 5:
+                            write_to_csv(file_name,csv_output.R_T_Sum);
+                            break;
+                    }
+                    cout << "-----> Successfully saved" << endl;
+                    
                 }
-                cout << "-----> Successfully saved" << endl;
                 
             }
+            else if(type == "npy")
+            {
+                /*
+                    3D matrix total size: (face,row,col) = (5,Nz,Nt)
+                    npy file will save a 3D matrix containing everything from the simulation parameter to the simulated data.
+                    1st 2D matrix (output[0,:,:]) will contain the simulation parameters (Nz, dz, etc.) and the time and source vectors.
+                    2nd 2D matrix will contain E field simulation data
+                    3rd 2D matrix will contain H field simulation data
+                    4th 2D matrix will contain Reflectance simulation data
+                    5th 2D matrix will contain Transmittance simulation data.
+                */
+
+
+
+            }
+            else
+            {
+                cout << "========================================================================" << endl;
+                cout << "Invalid file type. Data will not be saved.";
+            }
+            
+            
             return 0;
         }
 };

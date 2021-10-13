@@ -101,9 +101,9 @@ def plot_field(field = "", fname=["","",""],row = 0,col=0,col_fft = 0):
     lineT, = ax[1].plot(trans[0,:])
     lineC, = ax[1].plot(con[0,:])
     ax[0].set_ylim([-1,1])
-    ax[1].set_ylim([0,2])
+    ax[1].set_ylim([-5,5])
     
-    for k in range(1,iteration):
+    for k in range(1300,iteration):
         ax[0].set(xlabel="Cells",ylabel="Levels",title = f"FDTD Simulation Iteration: {k}/{iteration}")
         ax[1].set(xlabel="Frequency",ylabel="Levels",title="FFT ")
         #Only for ax[0]
@@ -132,7 +132,7 @@ def plot_field(field = "", fname=["","",""],row = 0,col=0,col_fft = 0):
 
 def main():
     #Get the current date
-    row = 8617
+    row = 5744
     col = 1336
     col_fft = 1000
     date_str = datetime.today().strftime('%Y-%m-%d')

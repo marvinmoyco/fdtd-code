@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     //output = sim.simulate("pabc","tfsf");
     //sim.save_to_file("marvin");
     output = sim.simulate(argv[2],argv[3]);
-    sim.save_to_file(argv[4]);
+    sim.save_to_file(argv[4],argv[5]);
     return 0;
   }
 
