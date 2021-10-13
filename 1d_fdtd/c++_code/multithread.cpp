@@ -1,10 +1,8 @@
 #include <iostream>
 #include <omp.h>
-
 #define N_THREADS 5
 
 using namespace std;
-
 
 int main() 
 {
@@ -32,10 +30,8 @@ int main()
         {
             cout << "This is the main thread!" << endl;
         }
-
         //Access the array variable and edit (1) element
         array[thread_id] = thread_id;
-
     }
     cout << "=================================================================" << endl;
     cout << "End of parallel threads...." << endl;

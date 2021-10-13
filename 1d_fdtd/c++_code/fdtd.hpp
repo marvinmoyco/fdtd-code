@@ -22,6 +22,7 @@
 #include "xtensor/xcsv.hpp"
 #include "xtensor/xindex_view.hpp"
 #include "xtensor/xcomplex.hpp"
+#include <xtensor/xnpy.hpp>
 
 /*
 Temporary g++ command
@@ -888,8 +889,29 @@ class Simulation
             return 0;
         }
 
-        int write_to_npy(string output_filCree = "", xtensor<double,3> data = {{{0,0,0},{0,0,0}},{{0,0,0},{0,0,0}}})
+        int write_to_npy(string output_filename = "", xtensor<double,3> data = {{{0,0,0},{0,0,0}},{{0,0,0},{0,0,0}}})
         {
+            
+            //Store the time and source fields (column-wise; meaning each vector is stored in 1 column)
+            view(data,0,0,0) = sim_param.n_freq;
+            view(data,0,0,1) = sim_param.Nz;
+            view(data,0,0,2) = sim_param.Nt;
+            view(data,0,all(),1) = sim_source_fields.t;
+            view(data,0,all(),2) = sim_source_fields.Esrc;
+            view(data,0,all(),3) = sim_source_fields.Hsrc;
+
+            //Store E field
+            view(data,1,all(),all()) = csv_output.E; 
+            //Store H field
+            view(data,2,all(),all()) = csv_output.H; 
+            //Store Refl
+            view(data,3,all(),sim_param.n_freq) = cast<double>(csv_output.Reflectance); 
+            //Store Trans
+            view(data,4,all(),sim_param.n_freq) = cast<double>(csv_output.Transmittance); 
+
+            //write to a npy file
+            dump_npy(output_filename,data);
+
             return 0;
         }
 
@@ -977,8 +999,14 @@ class Simulation
                     4th 2D matrix will contain Reflectance simulation data
                     5th 2D matrix will contain Transmittance simulation data.
                 */
-
-
+                
+                xtensor<double,3> data;
+                cout << "Resizing 3D matrix" << endl;
+                data.resize({5,(unsigned int) sim_param.Nt,(unsigned int) sim_param.Nz});
+                cout << "Initializing 3D Matrix" << endl;
+                view(data,all(),all(),all()) = 0;
+                cout << "Writing to npy file" << endl;
+                write_to_npy("./input_output/output.npy",data);
 
             }
             else

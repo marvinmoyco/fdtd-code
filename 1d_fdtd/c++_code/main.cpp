@@ -7,6 +7,8 @@
     and the book "ELECTROMAGNETIC SIMULATION USING THE FDTD METHOD WITH PYTHON"
 
 
+    ffmpeg command: ffmpeg -f image2 -framerate 200 -i E_H_FFT_images_%07d.jpeg -s 1920x1080 output.mp4
+
 */
 #include "fdtd.hpp"
 save_data output;
@@ -27,6 +29,7 @@ int main(int argc, char* argv[])
     sim.save_to_file(argv[4],argv[5]);
     return 0;
   }
+
 
 
   return 0;
