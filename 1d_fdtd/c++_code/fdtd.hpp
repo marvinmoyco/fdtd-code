@@ -22,7 +22,7 @@
 #include "xtensor/xcsv.hpp"
 #include "xtensor/xindex_view.hpp"
 #include "xtensor/xcomplex.hpp"
-#include <xtensor/xnpy.hpp>
+#include "xtensor/xnpy.hpp"
 
 /*
 Temporary g++ command
@@ -193,13 +193,14 @@ class Source{
             source_param.Nt = ceil(source_param.sim_time/source_param.dt);
             cout << "dt: " << source_param.dt << " seconds" << " | Nt: " << source_param.Nt << " iterations"<< endl;
 
+            
             source_output.t = arange(0.0,source_param.Nt*source_param.dt,source_param.dt);
-
+            
             //source_output.t = linspace<double>(0,source_param.Nt*source_param.dt,source_param.Nt);
             
             //Selecting a sub array inside time-vector to apply exp()
             auto t_condition = filter(source_output.t,source_output.t < source_param.t0);
-            long unsigned int t_condition_size = t_condition.size();
+            long unsigned int t_condition_size = t_condition.size()-1;
 
 
             //Computing the time input for electric field component
@@ -210,14 +211,18 @@ class Source{
             source_output.t_H = ((source_output.t - source_param.t0)+adj_H)/source_param.tau;
             auto t_H_initial = view(source_output.t_H,range(0,t_condition_size+1));
 
+            cout << "t_E: " << source_output.t_E << endl;
+            cout << "t_H: " << source_output.t_H << endl;
+
             //Resize the source field components 
             source_output.Esrc.resize(source_output.t.shape());
             source_output.Hsrc.resize(source_output.t.shape());
-
+            
             //Computing the electric and magnetic field component of the source before t0
-            view(source_output.Esrc,range(0,t_condition_size)) = exp(-pow(t_E_initial,2))*(sin(2*numeric_constants<double>::PI*source_param.fmax*t_condition));
-            view(source_output.Hsrc,range(0,t_condition_size)) = exp(-pow(t_H_initial,2))*(sin(2*numeric_constants<double>::PI*source_param.fmax*t_condition));
-
+            view(source_output.Esrc,range(0,t_condition_size+1)) = exp(-pow(t_E_initial,2))*(sin(2*numeric_constants<double>::PI*source_param.fmax*t_condition));
+            cout << "11111" << endl;
+            view(source_output.Hsrc,range(0,t_condition_size+1)) = exp(-pow(t_H_initial,2))*(sin(2*numeric_constants<double>::PI*source_param.fmax*t_condition));
+            cout << "1112323211" << endl;
             //Computing the electric field and magnetic field component of the source after t0
             view(source_output.Esrc,range(t_condition_size,source_param.Nt)) = (sin(2*numeric_constants<double>::PI*source_param.fmax*view(source_output.t,range(t_condition_size,source_param.Nt))));
             view(source_output.Hsrc,range(t_condition_size,source_param.Nt)) = (sin(2*numeric_constants<double>::PI*source_param.fmax*view(source_output.t,range(t_condition_size,source_param.Nt))));
@@ -672,6 +677,7 @@ class Simulation
         {
             //Create a new Source object
             sim_source = new Source(sim_param);
+            
             cout << "========================================================================" << endl;
             cout << "Computing source. | Selected source: " << sim_param.source_type << endl;
             if(sim_param.source_type == "gaussian")
@@ -753,24 +759,29 @@ class Simulation
 
    
                 //Update H from E (FDTD Space Loop for H field)
-                view(sim_fields.H,range(0,end_index-1)) = view(sim_fields.H,range(0,end_index-1)) + (view(sim_fields.m_H,range(0,end_index-1)))*(view(sim_fields.E,range(1,end_index)) - view(sim_fields.E,range(0,end_index-1)));
-    
+                //view(sim_fields.H,range(0,end_index-1)) = view(sim_fields.H,range(0,end_index-1)) + (view(sim_fields.m_H,range(0,end_index-1)))*(view(sim_fields.E,range(1,end_index)) - view(sim_fields.E,range(0,end_index-1)));
+
+                for(int cell_pos = 0; cell_pos < sim_param.Nz ; cell_pos++)
+                {
+                    sim_fields.H(cell_pos)
+                }
+
 
                 //Inject the H source component
                 if(excitation == "hard")
                 {
-                    //cout << "H-hard ";
+                    cout << "H-hard ";
                     sim_fields.H(comp_domain.injection_point) = sim_source_fields.Hsrc(curr_iteration);
                 }
                 else if(excitation == "soft")
                 {
-                    //cout << "H-soft ";
+                    cout << "H-soft ";
                     sim_fields.H(comp_domain.injection_point) += sim_source_fields.Hsrc(curr_iteration);
                 }
                 else if(excitation == "tfsf")
                 {
-                    //cout << "H-tfsf ";
-                    sim_fields.H(comp_domain.injection_point-1) -= (sim_fields.m_H(comp_domain.injection_point-1)*sim_source_fields.Hsrc(curr_iteration));
+                    cout << "H-tfsf ";
+                    sim_fields.H(comp_domain.injection_point) -= (sim_fields.m_H(comp_domain.injection_point)*sim_source_fields.Hsrc(curr_iteration));
                 }
 
                 //cout << "E_bounds: " << E_bounds << endl;
@@ -819,17 +830,17 @@ class Simulation
                 //Inject the E source component
                 if(excitation == "hard")
                 {
-                    //cout << "E-hard ";
+                    cout << "E-hard ";
                     sim_fields.E(comp_domain.injection_point) = sim_source_fields.Esrc(curr_iteration);
                 }
                 else if(excitation == "soft")
                 {
-                    //cout << "E-soft";
+                    cout << "E-soft";
                     sim_fields.E(comp_domain.injection_point) += sim_source_fields.Esrc(curr_iteration);
                 }
                 else if(excitation == "tfsf")
                 {
-                    //cout << "E-tfsf ";
+                    cout << "E-tfsf ";
                     sim_fields.E(comp_domain.injection_point) -= (sim_fields.m_E(comp_domain.injection_point)*sim_source_fields.Esrc(curr_iteration));
                 }
                 
@@ -840,7 +851,7 @@ class Simulation
                 {
                     //Convert time-domain to freq. domain
                     sim_fields.Reflectance(freq_index) = sim_fields.Reflectance(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_fields.E(0) );
-                    sim_fields.Transmittance(freq_index) = sim_fields.Transmittance(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*E_bounds);
+                    sim_fields.Transmittance(freq_index) = sim_fields.Transmittance(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_fields.E(sim_param.Nz-1));
                     sim_fields.Source_FFT(freq_index) = sim_fields.Source_FFT(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_source_fields.Esrc(curr_iteration));
                 
                     //Adjust the values to take into account the decreasing power inputted by the source
@@ -873,6 +884,9 @@ class Simulation
             return csv_output;
         }
 
+
+        
+
         int write_to_csv(string output_file = "",xtensor<double,2> data ={{0,0,0},{0,0,0}})
         {
             ofstream out_stream;
@@ -894,8 +908,8 @@ class Simulation
             
             //Store the time and source fields (column-wise; meaning each vector is stored in 1 column)
             view(data,0,0,0) = sim_param.n_freq;
-            view(data,0,0,1) = sim_param.Nz;
-            view(data,0,0,2) = sim_param.Nt;
+            view(data,0,1,0) = sim_param.Nz;
+            view(data,0,2,0) = sim_param.Nt;
             view(data,0,all(),1) = sim_source_fields.t;
             view(data,0,all(),2) = sim_source_fields.Esrc;
             view(data,0,all(),3) = sim_source_fields.Hsrc;
