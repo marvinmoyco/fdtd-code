@@ -734,7 +734,7 @@ class Simulation
                 {
                     //cout << " H-pabc ";
                     //Get the front of the list
-                    sim_fields.H(0) = sim_fields.H_start.front();
+                    sim_fields.E(0) = sim_fields.H_start.front();
                     //Remove the front element from the list
                     sim_fields.H_start.pop_front();
                     //Add H[0] at the end of the list
@@ -761,27 +761,24 @@ class Simulation
                 //Update H from E (FDTD Space Loop for H field)
                 //view(sim_fields.H,range(0,end_index-1)) = view(sim_fields.H,range(0,end_index-1)) + (view(sim_fields.m_H,range(0,end_index-1)))*(view(sim_fields.E,range(1,end_index)) - view(sim_fields.E,range(0,end_index-1)));
 
-                for(int cell_pos = 0; cell_pos < sim_param.Nz ; cell_pos++)
-                {
-                    sim_fields.H(cell_pos);
-                }
+               
 
 
                 //Inject the H source component
                 if(excitation == "hard")
                 {
-                    cout << "H-hard ";
+                    //cout << "H-hard ";
                     sim_fields.H(comp_domain.injection_point) = sim_source_fields.Hsrc(curr_iteration);
                 }
                 else if(excitation == "soft")
                 {
-                    cout << "H-soft ";
+                    //cout << "H-soft ";
                     sim_fields.H(comp_domain.injection_point) += sim_source_fields.Hsrc(curr_iteration);
                 }
                 else if(excitation == "tfsf")
                 {
-                    cout << "H-tfsf ";
-                    sim_fields.H(comp_domain.injection_point) -= (sim_fields.m_H(comp_domain.injection_point)*sim_source_fields.Hsrc(curr_iteration));
+                    //cout << "H-tfsf ";
+                    sim_fields.H(comp_domain.injection_point) -= (sim_fields.m_H(comp_domain.injection_point)*sim_source_fields.Esrc(curr_iteration));
                 }
 
                 //cout << "E_bounds: " << E_bounds << endl;
@@ -797,7 +794,7 @@ class Simulation
                 {
                     //cout << "E-pabc ";
                     //Get the front of the list
-                    sim_fields.H(end_index-1) = sim_fields.E_end.front();
+                    sim_fields.E(end_index-1) = sim_fields.E_end.front();
                     //Remove the front element from the list
                     sim_fields.E_end.pop_front();
                     //Add E[Nz] at the end of the list
@@ -830,36 +827,24 @@ class Simulation
                 //Inject the E source component
                 if(excitation == "hard")
                 {
-                    cout << "E-hard ";
+                    //cout << "E-hard ";
                     sim_fields.E(comp_domain.injection_point) = sim_source_fields.Esrc(curr_iteration);
                 }
                 else if(excitation == "soft")
                 {
-                    cout << "E-soft";
+                    //cout << "E-soft";
                     sim_fields.E(comp_domain.injection_point) += sim_source_fields.Esrc(curr_iteration);
                 }
                 else if(excitation == "tfsf")
                 {
-                    cout << "E-tfsf ";
-                    sim_fields.E(comp_domain.injection_point) -= (sim_fields.m_E(comp_domain.injection_point)*sim_source_fields.Esrc(curr_iteration));
+                    //cout << "E-tfsf ";
+                    sim_fields.E(comp_domain.injection_point) -= (sim_fields.m_E(comp_domain.injection_point)*sim_source_fields.Hsrc(curr_iteration));
                 }
                 
 
                 //Compute for the Fourier Transform of the current simulation window
                 //More cheaper than saving all the data, it will compute at each iteration
-                for(int freq_index=0;freq_index < sim_param.n_freq;freq_index++)
-                {
-                    //Convert time-domain to freq. domain
-                    sim_fields.Reflectance(freq_index) = sim_fields.Reflectance(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_fields.E(0) );
-                    sim_fields.Transmittance(freq_index) = sim_fields.Transmittance(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_fields.E(sim_param.Nz-1));
-                    sim_fields.Source_FFT(freq_index) = sim_fields.Source_FFT(freq_index) + (pow(sim_fields.Kernel_Freq(freq_index),curr_iteration)*sim_source_fields.Esrc(curr_iteration));
                 
-                    //Adjust the values to take into account the decreasing power inputted by the source
-                    //sim_fields.Reflectance(freq_index) = pow(abs(sim_fields.Reflectance(freq_index)/sim_fields.Source_FFT(freq_index)),2);
-                    //sim_fields.Transmittance(freq_index) = pow(abs(sim_fields.Transmittance(freq_index)/sim_fields.Source_FFT(freq_index)),2);
-                    //sim_fields.Con_of_Energy(freq_index) = sim_fields.Reflectance(freq_index) + sim_fields.Transmittance(freq_index);
-                
-                }
 
 
                 //Save the computed fields into the save matrix
