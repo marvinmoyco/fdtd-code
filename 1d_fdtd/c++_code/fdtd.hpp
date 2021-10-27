@@ -50,7 +50,8 @@ typedef struct Simulation_parameters{
     double Nz = 0;
     double Nt = 0;
     double fmax = 0;
-    double df = 0; // for the Fourier Transform
+    double df = 0; // for the Fourier Transform'
+    double fmax_fft = 0; //Max freq that can resolved by FDTD in DFT
     double sim_time = 0;
     double n_freq = 0; //For Fourier Transform, indicates how many points
     int spacers = 0;
@@ -639,7 +640,8 @@ class Simulation
             
             //Initialize the frequency vector for Fourier Transform
             sim_param.n_freq = n_freq;
-            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax,sim_param.n_freq);
+            sim_param.fmax_fft = 0.5/sim_param.dt;
+            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax_fft,sim_param.n_freq);
 
             //Initialize the sizes of refl,trans, and kernal vectors
             sim_fields.Kernel_Freq = exp(-1i*2.0*pi*sim_param.dt*sim_fields.Freq_range);
@@ -718,8 +720,16 @@ class Simulation
             cout << "Boundary Condition: " << boundary_condition << " | Source Excitation Method: " << excitation << endl;
             unsigned int end_index = sim_param.Nz;
             //Initialize variables used for outside boundary terms
-            double E_bounds = 0;
-            double H_bounds = 0;
+            //double E_bounds = 0;
+            //double H_bounds = 0;
+            
+            //Initialize buffer variables in FFT calculation
+            xtensor<complex<double>,1> R = zeros<complex<double>>(sim_fields.Kernel_Freq.shape());
+            xtensor<complex<double>,1> T = zeros<complex<double>>(sim_fields.Kernel_Freq.shape());
+            xtensor<complex<double>,1> SRC = zeros<complex<double>>(sim_fields.Kernel_Freq.shape());
+            
+
+            //Remove in production
             comp_domain.injection_point = ceil(sim_param.Nz/2);
             cout << "Start of simulation." << endl;
             cout << "m_E: " << sim_fields.m_E << endl;
@@ -759,13 +769,13 @@ class Simulation
 
    
                 //Update H from E (FDTD Space Loop for H field)
-                //view(sim_fields.H,range(0,end_index-1)) = view(sim_fields.H,range(0,end_index-1)) + (view(sim_fields.m_H,range(0,end_index-1)))*(view(sim_fields.E,range(1,end_index)) - view(sim_fields.E,range(0,end_index-1)));
+                view(sim_fields.H,range(0,end_index-1)) = view(sim_fields.H,range(0,end_index-1)) + (view(sim_fields.m_H,range(0,end_index-1)))*(view(sim_fields.E,range(1,end_index)) - view(sim_fields.E,range(0,end_index-1)));
 
                
 
 
-                //Inject the H source component
-                if(excitation == "hard")
+                //Inject the H source component (only needed when using TFSF)
+                /*if(excitation == "hard")
                 {
                     //cout << "H-hard ";
                     sim_fields.H(comp_domain.injection_point) = sim_source_fields.Hsrc(curr_iteration);
@@ -774,11 +784,11 @@ class Simulation
                 {
                     //cout << "H-soft ";
                     sim_fields.H(comp_domain.injection_point) += sim_source_fields.Hsrc(curr_iteration);
-                }
-                else if(excitation == "tfsf")
+                }*/
+                if(excitation == "tfsf")
                 {
                     //cout << "H-tfsf ";
-                    sim_fields.H(comp_domain.injection_point) -= (sim_fields.m_H(comp_domain.injection_point)*sim_source_fields.Esrc(curr_iteration));
+                    sim_fields.H(comp_domain.injection_point-1) -= (sim_fields.m_H(comp_domain.injection_point-1)*sim_source_fields.Esrc(curr_iteration));
                 }
 
                 //cout << "E_bounds: " << E_bounds << endl;
@@ -798,7 +808,7 @@ class Simulation
                     //Remove the front element from the list
                     sim_fields.E_end.pop_front();
                     //Add E[Nz] at the end of the list
-                    sim_fields.E_end.push_back(sim_fields.H(end_index-2));
+                    sim_fields.E_end.push_back(sim_fields.E(end_index-2)); //In other file H(end_index-2);
                     //Printing the contents of E_end:
                     /*cout << "z_high: [";
                     for (auto iter : sim_fields.E_end)
@@ -844,8 +854,14 @@ class Simulation
 
                 //Compute for the Fourier Transform of the current simulation window
                 //More cheaper than saving all the data, it will compute at each iteration
-                
+                R = R + (pow(sim_fields.Kernel_Freq,curr_iteration)*sim_fields.E(0));
+                T = T + (pow(sim_fields.Kernel_Freq,curr_iteration)*sim_fields.E(end_index-1));
+                SRC = SRC + (pow(sim_fields.Kernel_Freq,curr_iteration)*sim_source_fields.Esrc(curr_iteration));
 
+                //Normalize the computed Fourier Transform
+                sim_fields.Reflectance = pow(real(R/SRC),2);
+                sim_fields.Transmittance = pow(real(T/SRC),2);
+                sim_fields.Con_of_Energy = sim_fields.Reflectance + sim_fields.Transmittance;
 
                 //Save the computed fields into the save matrix
                 //For the fields...

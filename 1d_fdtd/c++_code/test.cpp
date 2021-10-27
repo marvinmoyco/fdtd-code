@@ -24,18 +24,29 @@ using namespace std::complex_literals;
 
 
 using namespace std;
-using namespace xt;
+//using namespace xt;
 
 
 int main(){
+    //Shape: {row,column,sheet}
+    xt::xtensor<int,1> x;
+    x.resize({10});
+    x = xt::linspace(1,10,10);
+    xt::xtensor<int,1> y = xt::linspace(1,10,10);
+    std::cout << x << endl;
+    std::cout << y << endl;
 
-    xtensor<double,3> x = zeros<double>({3,3,3});
-    cout << x << endl << endl;
-    view(x,0,all(),all()) = 3;
-    view(x,1,all(),all()) = 5;
+    xt::xtensor<int,1> z = xt::zeros<int>({10});
 
-    cout << x << endl;
-    string filename = "out.npy";
-    dump_npy(filename,x);
+    z = x * y;
+    cout << z << endl;
+    z = 55*(x / y);
+    cout << z << endl;
+    //row,col,sheet 1:5
+    //range() -> [min,max)
+    xt::view(z,xt::range(0,5)) = xt::view(z,xt::range(0,5))/5; //slicing
+    cout << z << endl;
+    z(5) = 99; //element indexing
+    cout << z << endl;
     return 0;
 }

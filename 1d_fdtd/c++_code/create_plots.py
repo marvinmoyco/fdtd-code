@@ -137,19 +137,23 @@ def plot_fields_npy(fields = None,num_x = 0, num_y = 0, x_fft = 0):
     lineR, = ax[1].plot(fields[2,0,:])
     lineT, = ax[1].plot(fields[3,0,:])
     #lineC, = ax[1].plot(fields[0,:])
-    ax[0].set_ylim([-1,1])
-    ax[1].set_ylim([-5,5])
+    ax[0].set_ylim([-2,2])
+    #ax[1].set_ylim([-5,5])
     _,row,_ = fields.shape
     print(row)
-    for k in range(0,row):
-        ax[0].set(xlabel="Cells",ylabel="Levels",title = f"FDTD Simulation Iteration: {k}/{row}")
+    print(not fields[2,:].any())
+    print(not fields[3,:].any())
+    print(np.amax(fields[2,:]))
+    print(np.amax(fields[3,:]))
+    for k in range(1350,row):
+        ax[0].set(xlabel="Cells",ylabel="Levels",title = f"FDTD Simulation (Gaussian, PABC, Soft) Iteration: {k}/{row}")
         ax[1].set(xlabel="Frequency",ylabel="Levels",title="FFT ")
         #Only for ax[0]
         #ax[0].set_ylim([-3,3])
         ax[0].legend(handles = [lineE,lineH],labels=["Electric Field","Magnetic Field"])
         lineE.set_ydata(fields[0,k,:])
         lineH.set_ydata(fields[1,k,:])
-
+        
         #For ax[1]
         #ax[1].set_ylim([0,1])
         ax[1].legend(handles= [lineR,lineT],labels=["Reflectance","Transmittance"])
