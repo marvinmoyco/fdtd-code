@@ -763,7 +763,7 @@ class Simulation
 
                 for(int cell_pos = 0; cell_pos < sim_param.Nz ; cell_pos++)
                 {
-                    sim_fields.H(cell_pos)
+                    sim_fields.H(cell_pos);
                 }
 
 
