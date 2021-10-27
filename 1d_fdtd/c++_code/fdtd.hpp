@@ -709,7 +709,7 @@ class Simulation
             return 0;
         }
 
-
+        //FDTD ALgorithm only (serial version)
         save_data simulate(string boundary_condition = "", string excitation = "")
         {
             
@@ -884,8 +884,11 @@ class Simulation
             return csv_output;
         }
 
+        //FDTD Schwarz Serial Version
+        void simulate_fdtd_schwarz()
+        {
 
-        
+        }
 
         int write_to_csv(string output_file = "",xtensor<double,2> data ={{0,0,0},{0,0,0}})
         {
