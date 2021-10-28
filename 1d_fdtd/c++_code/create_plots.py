@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
-from datetime import datetime
-
+from datetime import date, datetime
+import sys
 
 
 
@@ -11,7 +11,7 @@ from datetime import datetime
 
 
 #Plot source
-def plot_source_csv(fname,row):
+def plot_source_csv(fname,row,output_dir="",source_name="source"):
     plt.ion()
     fig  = plt.figure(1,[10,6])
     ax = fig.add_subplot(111)
@@ -31,12 +31,13 @@ def plot_source_csv(fname,row):
 
     ax.plot(x[1,:])
     ax.plot(x[2,:])
-
+    date_str = datetime.today().strftime('%Y-%m-%d')
+    
     plt.show()
-    plt.savefig("./plots/source.jpeg")
+    plt.savefig(output_dir + date_str + '_' + source_name + '.png')
 
 
-def plot_fields_csv(field = "", fname=["","",""],row = 0,col=0,col_fft = 0):
+def plot_fields_csv(field = "", fname=["","",""],row = 0,col=0,col_fft = 0,output_dir=""):
     efield = np.zeros([row,col])
     hfield = np.zeros([row,col])
     refl = np.zeros([row,col_fft])
@@ -99,11 +100,16 @@ def plot_fields_csv(field = "", fname=["","",""],row = 0,col=0,col_fft = 0):
     lineR, = ax[1].plot(refl[0,:])
     lineT, = ax[1].plot(trans[0,:])
     lineC, = ax[1].plot(con[0,:])
-    ax[0].set_ylim([-1,1])
-    #ax[1].set_ylim([-5,5])
+    ax[0].set_ylim([-2,2])
+    ax[1].set_ylim([-10,10])
    
-    
-    for k in range(1300,iteration):
+    np.nan_to_num(efield)
+    np.nan_to_num(hfield)
+    np.nan_to_num(refl)
+    np.nan_to_num(trans)
+    np.nan_to_num(con)
+
+    for k in range(0,iteration):
         ax[0].set(xlabel="Cells",ylabel="Levels",title = f"FDTD Simulation Iteration: {k}/{iteration}")
         ax[1].set(xlabel="Frequency",ylabel="Levels",title="FFT ")
         #Only for ax[0]
@@ -113,20 +119,20 @@ def plot_fields_csv(field = "", fname=["","",""],row = 0,col=0,col_fft = 0):
         lineH.set_ydata(hfield[k,:])
 
         #For ax[1]
-        ax[1].set_ylim([min(refl[k,:]),max(con[k,:])])
+        #ax[1].set_ylim([min(refl[k,:]),max(con[k,:])])
         ax[1].legend(handles= [lineR,lineT,lineC],labels=["Reflectance","Transmittance","Conservation of Energy"])
         lineR.set_ydata(refl[k,:])
         lineT.set_ydata(trans[k,:])
         lineC.set_ydata(con[k,:])
 
 
-        plot_name = "./plots/E_H_FFT_images_{num:07d}.jpeg".format(num=k)
-        plt.savefig(plot_name)
+        plot_name = "E_H_FFT_images_{num:07d}.png".format(num=k)
+        plt.savefig(output_dir + plot_name)
         fig.canvas.draw()
         fig.canvas.flush_events()
 
 
-def plot_fields_npy(fields = None,num_x = 0, num_y = 0, x_fft = 0):
+def plot_fields_npy(fields = None,num_x = 0, num_y = 0, x_fft = 0,output_dir=""):
     plt.ion()
     fig, ax = plt.subplots(2)
     
@@ -158,12 +164,12 @@ def plot_fields_npy(fields = None,num_x = 0, num_y = 0, x_fft = 0):
         lineC.set_ydata(fields[k,:,4])
 
 
-        plot_name = "./plots/E_H_FFT_images_{num:07d}.jpeg".format(num=k)
-        plt.savefig(plot_name)
+        plot_name = "E_H_FFT_images_{num:07d}.png".format(num=k)
+        plt.savefig(output_dir + plot_name)
         fig.canvas.draw()
         fig.canvas.flush_events()
 
-def plot_source_npy(source_data = None,num_x = 0, num_y = 0, x_fft = 0):
+def plot_source_npy(source_data = None,num_x = 0, num_y = 0, x_fft = 0,output_dir = "",source_name = ""):
     plt.ion()
     fig  = plt.figure(1,[10,6])
     ax = fig.add_subplot(111)
@@ -172,16 +178,21 @@ def plot_source_npy(source_data = None,num_x = 0, num_y = 0, x_fft = 0):
     plt.title("FDTD Source Excitation")
     ax.plot(source_data[:,1],source_data[:,2])  
     ax.plot(source_data[:,1],source_data[:,3])
+    date_str = datetime.today().strftime('%Y-%m-%d')
 
-    plt.savefig("./plots/source.jpeg")
+    plt.savefig(output_dir + date_str + '_' + source_name + '.png')
 
 def main():
     #Get the current date
     
     date_str = datetime.today().strftime('%Y-%m-%d')
-    name = "csv"
-    curr_dir = "./input_output/"
-    type = 'csv'
+    #Get the input arguments; Format: (1) input directory (2) Custom file name (3) Output file type (4)Source Name (for image) (5) Output directory (for plots)
+
+    name = sys.argv[2]
+    input_dir = sys.argv[1]
+    type = sys.argv[3]
+    source_name = sys.argv[4]
+    output_dir = sys.argv[5]
 
     if type == 'csv':
         row = 5744
@@ -191,19 +202,19 @@ def main():
 
 
         for i in range(len(file_names)):
-            file_names[i] = curr_dir + date_str + "_" + name + "_" + file_names[i]
+            file_names[i] = input_dir + date_str + "_" + name + "_" + file_names[i]
 
 
         print(file_names)
-        plot_source_csv(file_names[0],row)
-        plot_fields_csv(field="1D FDTD", fname = file_names,row=row,col=col,col_fft=col_fft)
+        plot_source_csv(file_names[0],row,output_dir,source_name)
+        plot_fields_csv(field="1D FDTD Simulation", fname = file_names,row=row,col=col,col_fft=col_fft,output_dir=output_dir)
     elif type == 'npy':
         npy_filename = 'output.npy'
-        data = np.load(curr_dir+npy_filename)
+        data = np.load(input_dir+npy_filename)
         print(data.shape)
-        plot_source_npy(data[:,:,0],num_x = data[0,2,0])
+        plot_source_npy(data[:,:,0],num_x = data[0,2,0],output_dir=output_dir,source_name=source_name)
 
-        plot_fields_npy(fields = data[:,:,1:], num_x = data[0,1,0], num_y = data[0,2,0], x_fft = data[0,0,0])
+        plot_fields_npy(fields = data[:,:,1:], num_x = data[0,1,0], num_y = data[0,2,0], x_fft = data[0,0,0],output_dir=output_dir)
 
 
 
