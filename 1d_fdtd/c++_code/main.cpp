@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
   //cout << " Argc: " << argc << endl;
   //Simulation sim("./csv/input/input.csv");
   Simulation sim(argv[1]);
-  computational_domain check = sim.create_comp_domain(0,0,1000);
+  computational_domain check = sim.create_comp_domain(0,0,1336);
   if(check.check != -1)
   {
     //output = sim.simulate("pabc","tfsf");

@@ -32,7 +32,7 @@ def plot_source_csv(fname,row):
     ax.plot(x[1,:])
     ax.plot(x[2,:])
 
-
+    plt.show()
     plt.savefig("./plots/source.jpeg")
 
 
@@ -43,9 +43,6 @@ def plot_fields_csv(field = "", fname=["","",""],row = 0,col=0,col_fft = 0):
     trans = np.zeros([row,col_fft])
     con = np.zeros([row,col_fft])
 
-
-
-   
     
     iteration = 0
     #Read efield
@@ -80,6 +77,8 @@ def plot_fields_csv(field = "", fname=["","",""],row = 0,col=0,col_fft = 0):
         i = 0
         for row in csv_reader:
             trans[i,:] = row
+            if row == 0:
+                print(row.dtype)
             i += 1
 
     #Read con_of_energy
@@ -101,19 +100,20 @@ def plot_fields_csv(field = "", fname=["","",""],row = 0,col=0,col_fft = 0):
     lineT, = ax[1].plot(trans[0,:])
     lineC, = ax[1].plot(con[0,:])
     ax[0].set_ylim([-1,1])
-    ax[1].set_ylim([-5,5])
+    #ax[1].set_ylim([-5,5])
+   
     
     for k in range(1300,iteration):
         ax[0].set(xlabel="Cells",ylabel="Levels",title = f"FDTD Simulation Iteration: {k}/{iteration}")
         ax[1].set(xlabel="Frequency",ylabel="Levels",title="FFT ")
         #Only for ax[0]
-        #ax[0].set_ylim([-3,3])
+        #ax[0].set_ylim([min(hfield[k,:]),max(efield[k,:])])
         ax[0].legend(handles = [lineE,lineH],labels=["Electric Field","Magnetic Field"])
         lineE.set_ydata(efield[k,:])
         lineH.set_ydata(hfield[k,:])
 
         #For ax[1]
-        #ax[1].set_ylim([0,1])
+        ax[1].set_ylim([min(refl[k,:]),max(con[k,:])])
         ax[1].legend(handles= [lineR,lineT,lineC],labels=["Reflectance","Transmittance","Conservation of Energy"])
         lineR.set_ydata(refl[k,:])
         lineT.set_ydata(trans[k,:])
@@ -131,35 +131,31 @@ def plot_fields_npy(fields = None,num_x = 0, num_y = 0, x_fft = 0):
     fig, ax = plt.subplots(2)
     
     
-    lineE, = ax[0].plot(fields[0,0,:])
-    lineH, = ax[0].plot(fields[1,0,:])
+    lineE, = ax[0].plot(fields[0,:,0])
+    lineH, = ax[0].plot(fields[0,:,1])
 
-    lineR, = ax[1].plot(fields[2,0,:])
-    lineT, = ax[1].plot(fields[3,0,:])
-    #lineC, = ax[1].plot(fields[0,:])
-    ax[0].set_ylim([-2,2])
+    lineR, = ax[1].plot(fields[0,:,2])
+    lineT, = ax[1].plot(fields[0,:,3])
+    lineC, = ax[1].plot(fields[0,:,4])
+    #ax[0].set_ylim([-2,2])
     #ax[1].set_ylim([-5,5])
     _,row,_ = fields.shape
     print(row)
-    print(not fields[2,:].any())
-    print(not fields[3,:].any())
-    print(np.amax(fields[2,:]))
-    print(np.amax(fields[3,:]))
-    for k in range(1350,row):
+    for k in range(0,row):
         ax[0].set(xlabel="Cells",ylabel="Levels",title = f"FDTD Simulation (Gaussian, PABC, Soft) Iteration: {k}/{row}")
         ax[1].set(xlabel="Frequency",ylabel="Levels",title="FFT ")
         #Only for ax[0]
-        #ax[0].set_ylim([-3,3])
+        ax[0].set_ylim([min(fields[k,:,1]),max(fields[k,:,0])])
         ax[0].legend(handles = [lineE,lineH],labels=["Electric Field","Magnetic Field"])
-        lineE.set_ydata(fields[0,k,:])
-        lineH.set_ydata(fields[1,k,:])
+        lineE.set_ydata(fields[k,:,0])
+        lineH.set_ydata(fields[k,:,1])
         
         #For ax[1]
-        #ax[1].set_ylim([0,1])
+        ax[1].set_ylim([min(fields[k,:,2]),max(fields[k,:,4])])
         ax[1].legend(handles= [lineR,lineT],labels=["Reflectance","Transmittance"])
-        lineR.set_ydata(fields[2,k,:])
-        lineT.set_ydata(fields[3,k,:])
-        #lineC.set_ydata(con[k,:])
+        lineR.set_ydata(fields[k,:,2])
+        lineT.set_ydata(fields[k,:,3])
+        lineC.set_ydata(fields[k,:,4])
 
 
         plot_name = "./plots/E_H_FFT_images_{num:07d}.jpeg".format(num=k)
@@ -183,14 +179,14 @@ def main():
     #Get the current date
     
     date_str = datetime.today().strftime('%Y-%m-%d')
-    name = "marvin"
+    name = "csv"
     curr_dir = "./input_output/"
-    type = 'npy'
+    type = 'csv'
 
     if type == 'csv':
         row = 5744
         col = 1336
-        col_fft = 1000
+        col_fft = 1336
         file_names = ["source.csv", "e_field.csv","h_field.csv","refl.csv","trans.csv","refl_trans.csv"]
 
 
@@ -200,13 +196,14 @@ def main():
 
         print(file_names)
         plot_source_csv(file_names[0],row)
-        plot_fields_csv(field="1D FDTD (PABC, Hard Source - Gaussian)", fname = file_names,row=row,col=col,col_fft=col_fft)
+        plot_fields_csv(field="1D FDTD", fname = file_names,row=row,col=col,col_fft=col_fft)
     elif type == 'npy':
         npy_filename = 'output.npy'
         data = np.load(curr_dir+npy_filename)
-        plot_source_npy(data[0,:,:],num_x = data[0,0,2])
+        print(data.shape)
+        plot_source_npy(data[:,:,0],num_x = data[0,2,0])
 
-        plot_fields_npy(fields = data[1:,:,:], num_x = data[0,0,1], num_y = data[0,0,2], x_fft = data[0,0,0])
+        plot_fields_npy(fields = data[:,:,1:], num_x = data[0,1,0], num_y = data[0,2,0], x_fft = data[0,0,0])
 
 
 

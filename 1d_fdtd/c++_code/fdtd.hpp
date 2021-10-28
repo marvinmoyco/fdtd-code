@@ -425,7 +425,7 @@ class Simulation
                 simulation is done. The simulate() can be used after this function successfully finished.
             */
 
-
+            
             //Try catch here to make sure that the input struct is not empty
             cout << "========================================================================" << endl;
             try
@@ -641,6 +641,7 @@ class Simulation
             //Initialize the frequency vector for Fourier Transform
             sim_param.n_freq = n_freq;
             sim_param.fmax_fft = 0.5/sim_param.dt;
+            n_freq = sim_param.Nz;
             sim_fields.Freq_range = linspace<double>(0,sim_param.fmax_fft,sim_param.n_freq);
 
             //Initialize the sizes of refl,trans, and kernal vectors
@@ -669,6 +670,7 @@ class Simulation
             //Print the information computed
             cout << "========================================================================" << endl;
             cout << "df: " << sim_param.df << " | Frequency range: " << sim_fields.Freq_range.size() << " | Kernel: " << sim_fields.Kernel_Freq.size() << endl;
+            cout << "fmax_fft: " << sim_param.fmax_fft << endl;
             cout << "Save Matrices Sizes:" << endl;
             cout << "Reflectance: " << csv_output.Reflectance.size() << " | Transmittance: " << csv_output.Transmittance.size() << " | Conservation of Energy: " << csv_output.R_T_Sum.size() << endl;
             return comp_domain;
@@ -726,7 +728,6 @@ class Simulation
             //Initialize buffer variables in FFT calculation
             xtensor<complex<double>,1> R = zeros<complex<double>>(sim_fields.Kernel_Freq.shape());
             xtensor<complex<double>,1> T = zeros<complex<double>>(sim_fields.Kernel_Freq.shape());
-            xtensor<complex<double>,1> SRC = zeros<complex<double>>(sim_fields.Kernel_Freq.shape());
             
 
             //Remove in production
@@ -804,11 +805,11 @@ class Simulation
                 {
                     //cout << "E-pabc ";
                     //Get the front of the list
-                    sim_fields.E(end_index-1) = sim_fields.E_end.front();
+                    sim_fields.H(end_index-1) = sim_fields.E_end.front();
                     //Remove the front element from the list
                     sim_fields.E_end.pop_front();
                     //Add E[Nz] at the end of the list
-                    sim_fields.E_end.push_back(sim_fields.E(end_index-2)); //In other file H(end_index-2);
+                    sim_fields.E_end.push_back(sim_fields.H(end_index-2)); //In other file H(end_index-2);
                     //Printing the contents of E_end:
                     /*cout << "z_high: [";
                     for (auto iter : sim_fields.E_end)
@@ -854,13 +855,13 @@ class Simulation
 
                 //Compute for the Fourier Transform of the current simulation window
                 //More cheaper than saving all the data, it will compute at each iteration
-                R = R + (pow(sim_fields.Kernel_Freq,curr_iteration)*sim_fields.E(0));
+                R = R + (pow(sim_fields.Kernel_Freq,curr_iteration)*sim_fields.E(1));
                 T = T + (pow(sim_fields.Kernel_Freq,curr_iteration)*sim_fields.E(end_index-1));
-                SRC = SRC + (pow(sim_fields.Kernel_Freq,curr_iteration)*sim_source_fields.Esrc(curr_iteration));
+                sim_fields.Source_FFT = sim_fields.Source_FFT  + (pow(sim_fields.Kernel_Freq,curr_iteration)*sim_source_fields.Esrc(curr_iteration));
 
                 //Normalize the computed Fourier Transform
-                sim_fields.Reflectance = pow(real(R/SRC),2);
-                sim_fields.Transmittance = pow(real(T/SRC),2);
+                sim_fields.Reflectance = pow(real(R/sim_fields.Source_FFT ),2);
+                sim_fields.Transmittance = pow(real(T/sim_fields.Source_FFT ),2);
                 sim_fields.Con_of_Energy = sim_fields.Reflectance + sim_fields.Transmittance;
 
                 //Save the computed fields into the save matrix
@@ -911,22 +912,35 @@ class Simulation
         {
             
             //Store the time and source fields (column-wise; meaning each vector is stored in 1 column)
+            //Resize data matrix
+            long unsigned int row = sim_param.Nt;
+            long unsigned int col = sim_param.Nz;
+            data.resize({row,col,6});
+            //Shape: (row,column,sheet) for 3D arrays
             view(data,0,0,0) = sim_param.n_freq;
-            view(data,0,1,0) = sim_param.Nz;
-            view(data,0,2,0) = sim_param.Nt;
-            view(data,0,all(),1) = sim_source_fields.t;
-            view(data,0,all(),2) = sim_source_fields.Esrc;
-            view(data,0,all(),3) = sim_source_fields.Hsrc;
-
+            view(data,1,0,0) = sim_param.Nz;
+            view(data,2,0,0) = sim_param.Nt;
+            view(data,3,0,0) = sim_param.fmax_fft;
+            view(data,4,0,0) = sim_param.injection_point;
+            view(data,5,0,0) = sim_param.dt;
+            view(data,6,0,0) = sim_param.dz;
+            view(data,all(),1,0) = sim_source_fields.t;
+            view(data,all(),2,0) = sim_source_fields.Esrc;
+            view(data,all(),3,0) = sim_source_fields.Hsrc;
+            //view(data,all(),4,0) = sim_fields.Freq_range;
+            cout << view(data,0,all(),all()) << endl;
             //Store E field
-            view(data,1,all(),all()) = csv_output.E; 
+            view(data,all(),all(),1) = csv_output.E; 
             //Store H field
-            view(data,2,all(),all()) = csv_output.H; 
+            view(data,all(),all(),2) = csv_output.H; 
             //Store Refl
-            view(data,3,all(),sim_param.n_freq) = cast<double>(csv_output.Reflectance); 
+            view(data,all(),sim_param.n_freq,3) = cast<double>(csv_output.Reflectance); 
             //Store Trans
-            view(data,4,all(),sim_param.n_freq) = cast<double>(csv_output.Transmittance); 
-
+            view(data,all(),sim_param.n_freq,4) = cast<double>(csv_output.Transmittance); 
+            //Store Conservation of Power
+            cout << "Storing data from Conservation of Power" << endl;
+            cout << view(data,all(),all(),5) << endl;
+            view(data,all(),sim_param.n_freq,5) = cast<double>(csv_output.R_T_Sum);
             //write to a npy file
             dump_npy(output_filename,data);
 
