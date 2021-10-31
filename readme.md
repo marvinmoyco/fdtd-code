@@ -26,12 +26,20 @@
 * [xtensor](https://github.com/xtensor-stack/xtensor)
 * [xtl](https://github.com/xtensor-stack/xtl)
 * [xtensor-io](https://github.com/xtensor-stack/xtensor-io)
+
    |
+
    |
+
     * [HgihFive](https://github.com/BlueBrain/HighFive)   
+
         |
+
         |
+        
         * **libhdf5** - can be installed using *sudo apt install libhdf5-dev*
+
+
 **Python Libraries:**
 * [numpy](https://numpy.org/doc/stable/)
 * [matplotlib](https://matplotlib.org/stable/contents.html)
