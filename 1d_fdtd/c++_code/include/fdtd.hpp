@@ -23,6 +23,8 @@
 #include "xtensor/xindex_view.hpp"
 #include "xtensor/xcomplex.hpp"
 #include "xtensor/xnpy.hpp"
+#include "xtensor/xio.hpp"
+#include "xtensor-io/xhighfive.hpp"
 
 /*
 Temporary g++ command
@@ -58,6 +60,8 @@ typedef struct Simulation_parameters{
     int injection_point = 0;
 
     string source_type = "";
+    string boundary_cond = "";
+    string excitation_method = "";
 
 } simulation_parameters;
 
@@ -91,6 +95,7 @@ typedef struct Source_parameters{
     double sim_time = 0;
     double t_prop = 0;
     string source_type = "";
+    
 
 } source_parameters;
 
@@ -126,7 +131,7 @@ typedef struct Save_Data{
     xtensor<double,2> H;
     xtensor<double,2> Reflectance;
     xtensor<double,2> Transmittance;
-    xtensor<double,2> R_T_Sum;
+    xtensor<double,2> Con_of_Energy;
     xtensor<double,2> Source;
 
 } save_data;
@@ -149,7 +154,7 @@ class Source{
             source_param.source_type = sim_param.source_type;
         }
 
-        int GaussianSource(double t0_coeff = 3.0,double prop_coeff = 6.0,double tau_coeff = 12.0,double nmax = 1,double nsrc = 1)
+        int GaussianSource(double t0_coeff = 6.0,double prop_coeff = 6.0,double tau_coeff = 12.0,double nmax = 1,double nsrc = 1)
         {
             //Calculate the necessary variables
             initialize(t0_coeff,prop_coeff,tau_coeff,nmax);
@@ -160,24 +165,24 @@ class Source{
             source_param.Nt = ceil(source_param.sim_time/source_param.dt);
             cout << "dt: " << source_param.dt << " seconds" << " | Nt: " << source_param.Nt << " iterations"<< endl;
 
-            source_output.t = arange<double>(0.0,(source_param.Nt*source_param.dt) ,source_param.dt);
-
-            //source_output.t = linspace<double>(0,source_param.Nt*source_param.dt,source_param.Nt);
+            //source_output.t = arange<double>(0.0,(source_param.Nt*source_param.dt) ,source_param.dt);
+            
+            source_output.t = linspace<double>(0,source_param.Nt*source_param.dt,source_param.Nt);
 
             //Computing the time input for electric field component
             source_output.t_E = (source_output.t - source_param.t0)/source_param.tau;
             
-
             //Computing the electric field component of the source
             source_output.Esrc = exp(-pow(source_output.t_E,2));
             
+
             //Computing the time input for the magnetic field component
             double adj_H = (nsrc*source_param.dz/(2*c_0)) + (source_param.dt/2);
             source_output.t_H = ((source_output.t - source_param.t0)+adj_H)/source_param.tau;
-
+            
             //Computing the magnetic field component of the source
             source_output.Hsrc = -sqrt(1)*exp(-pow(source_output.t_H,2));
-
+            
             //cout << "Sizes of the electric and magnetic field component:" << endl;
             //cout << "Esrc: " << source_output.Esrc.size() << " | Hsrc: " << source_output.Hsrc.size() << endl;
             return 0;
@@ -203,7 +208,7 @@ class Source{
             auto t_condition = filter(source_output.t,source_output.t < source_param.t0);
             long unsigned int t_condition_size = t_condition.size()-1;
 
-
+            
             //Computing the time input for electric field component
             source_output.t_E = (source_output.t - source_param.t0)/source_param.tau;
             auto t_E_initial = view(source_output.t_E,range(0,t_condition_size+1));
@@ -290,7 +295,7 @@ class Simulation
         int spacer_cells;
         Source* sim_source;
         source_output_d sim_source_fields;
-        save_data csv_output;
+        save_data output;
         //Initializing variables in the constructor
         Simulation(string input_file="")
         {
@@ -451,11 +456,11 @@ class Simulation
             
             //Computing cell size based on the smallest wavelength (lambda_min)
             double lambda_min = c_0/(n_max*input.simulation_parameters.at(0));
-            double delta_lambda = lambda_min/50; //denominator is  dependent on how many samples you want for a whole wave
+            double delta_lambda = lambda_min/10; //denominator is  dependent on how many samples you want for a whole wave
             
             //Computing cell size based on the smallest layer size (min. dimension)
             double d_min = amin(input.layer_size)(0);
-            double delta_size = d_min/25;  //denominator is the amount of cells that can resolve the smallest dimension
+            double delta_size = d_min/4;  //denominator is the amount of cells that can resolve the smallest dimension
             
             //The final cell size is obtained by getting the smallest of delta_lambda and delta_size 
             //to make sure that the comp domain can resolve all the necessary features (wavelength or dimension)
@@ -605,7 +610,7 @@ class Simulation
 
             //Compute the source that will be used in the project.
             compute_source();
-
+            
             //Resize the fields
             sim_fields.E.resize(comp_domain.z.shape());
             sim_fields.H.resize(comp_domain.z.shape());
@@ -623,12 +628,12 @@ class Simulation
             unsigned long int row = sim_param.Nt;
             unsigned long int col = sim_param.Nz;
             //Resize the different save matrices
-            csv_output.E.resize({row,col});
-            csv_output.H.resize({row,col});
+            output.E.resize({row,col});
+            output.H.resize({row,col});
 
             //Print shape
-            //for (auto& el : csv_output.E.shape()) {cout << el << ", ";}
-            //cout << csv_output.E.size() <<endl;
+            //for (auto& el : output.E.shape()) {cout << el << ", ";}
+            //cout << output.E.size() <<endl;
 
             //cout << comp_domain.z.size() << "   " << comp_domain.mu.size() << endl;
 
@@ -640,7 +645,7 @@ class Simulation
             sim_param.n_freq = n_freq;
             sim_param.fmax_fft = 0.5/sim_param.dt;
             n_freq = sim_param.Nz;
-            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax_fft,sim_param.n_freq);
+            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax,sim_param.n_freq);
 
             //Initialize the sizes of refl,trans, and kernal vectors
             sim_fields.Kernel_Freq = exp(-1i*2.0*pi*sim_param.dt*sim_fields.Freq_range);
@@ -661,16 +666,16 @@ class Simulation
 
             //Initialize save matrices for FFT;
             unsigned long col_f = sim_param.n_freq;
-            csv_output.Reflectance.resize({row,col_f});
-            csv_output.Transmittance.resize({row,col_f});
-            csv_output.R_T_Sum.resize({row,col_f});
+            output.Reflectance.resize({row,col_f});
+            output.Transmittance.resize({row,col_f});
+            output.Con_of_Energy.resize({row,col_f});
 
             //Print the information computed
             cout << "========================================================================" << endl;
             cout << "df: " << sim_param.df << " | Frequency range: " << sim_fields.Freq_range.size() << " | Kernel: " << sim_fields.Kernel_Freq.size() << endl;
             cout << "fmax_fft: " << sim_param.fmax_fft << endl;
             cout << "Save Matrices Sizes:" << endl;
-            cout << "Reflectance: " << csv_output.Reflectance.size() << " | Transmittance: " << csv_output.Transmittance.size() << " | Conservation of Energy: " << csv_output.R_T_Sum.size() << endl;
+            cout << "Reflectance: " << output.Reflectance.size() << " | Transmittance: " << output.Transmittance.size() << " | Conservation of Energy: " << output.Con_of_Energy.size() << endl;
             return comp_domain;
         }
         
@@ -684,7 +689,7 @@ class Simulation
             cout << "Computing source. | Selected source: " << sim_param.source_type << endl;
             if(sim_param.source_type == "gaussian")
             {
-                sim_source->GaussianSource(2,2,8,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->GaussianSource(3,4,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "sinusoidal")
             {
@@ -698,12 +703,12 @@ class Simulation
             unsigned long int row_s = 3;
             unsigned long int col_s = sim_param.Nt;
             //Resize Source xtensor
-            csv_output.Source.resize({row_s,col_s});
-
+            output.Source.resize({row_s,col_s});
+    
             //Add source to output_csv
-            row(csv_output.Source,0) = sim_source->source_output.t;
-            row(csv_output.Source,1) = sim_source->source_output.Esrc;
-            row(csv_output.Source,2) = sim_source->source_output.Hsrc;
+            row(output.Source,0) = sim_source->source_output.t;
+            row(output.Source,1) = sim_source->source_output.Esrc;
+            row(output.Source,2) = sim_source->source_output.Hsrc;
 
             //Print the details
             cout << "Sizes of the electric and magnetic field component:" << endl;
@@ -719,6 +724,8 @@ class Simulation
             cout << "Starting 1-D FDTD Simulation..." << endl;
             cout << "Boundary Condition: " << boundary_condition << " | Source Excitation Method: " << excitation << endl;
             unsigned int end_index = sim_param.Nz;
+            sim_param.boundary_cond = boundary_condition;
+            sim_param.excitation_method = excitation;
             //Initialize variables used for outside boundary terms
             //double E_bounds = 0;
             //double H_bounds = 0;
@@ -864,13 +871,13 @@ class Simulation
 
                 //Save the computed fields into the save matrix
                 //For the fields...
-                row(csv_output.E,curr_iteration) = sim_fields.E;
-                row(csv_output.H,curr_iteration) = sim_fields.H;
+                row(output.E,curr_iteration) = sim_fields.E;
+                row(output.H,curr_iteration) = sim_fields.H;
                 
                 //for the Fourier Transform
-                row(csv_output.Reflectance,curr_iteration) = real(sim_fields.Reflectance);
-                row(csv_output.Transmittance,curr_iteration) = real(sim_fields.Transmittance);
-                row(csv_output.R_T_Sum,curr_iteration) = real(sim_fields.Con_of_Energy);
+                row(output.Reflectance,curr_iteration) = real(sim_fields.Reflectance);
+                row(output.Transmittance,curr_iteration) = real(sim_fields.Transmittance);
+                row(output.Con_of_Energy,curr_iteration) = real(sim_fields.Con_of_Energy);
 
                 //cout << endl;
                 cout << "\rCurrent Iteration: "<<curr_iteration + 1<<"/"<<sim_param.Nt ;
@@ -881,7 +888,7 @@ class Simulation
             //sim_fields.Con_of_Energy = sim_fields.Reflectance + sim_fields.Transmittance;
             cout << endl << "End of simulation." << endl;
                 
-            return csv_output;
+            return output;
         }
 
         //FDTD Schwarz Serial Version
@@ -928,38 +935,49 @@ class Simulation
             //view(data,all(),4,0) = sim_fields.Freq_range;
             cout << view(data,0,all(),all()) << endl;
             //Store E field
-            view(data,all(),all(),1) = csv_output.E; 
+            view(data,all(),all(),1) = output.E; 
             //Store H field
-            view(data,all(),all(),2) = csv_output.H; 
+            view(data,all(),all(),2) = output.H; 
             //Store Refl
-            view(data,all(),sim_param.n_freq,3) = cast<double>(csv_output.Reflectance); 
+            view(data,all(),sim_param.n_freq,3) = cast<double>(output.Reflectance); 
             //Store Trans
-            view(data,all(),sim_param.n_freq,4) = cast<double>(csv_output.Transmittance); 
+            view(data,all(),sim_param.n_freq,4) = cast<double>(output.Transmittance); 
             //Store Conservation of Power
             cout << "Storing data from Conservation of Power" << endl;
             cout << view(data,all(),all(),5) << endl;
-            view(data,all(),sim_param.n_freq,5) = cast<double>(csv_output.R_T_Sum);
+            view(data,all(),sim_param.n_freq,5) = cast<double>(output.Con_of_Energy);
             //write to a npy file
             dump_npy(output_filename,data);
 
             return 0;
         }
 
+        auto write_to_hdf5(HighFive::File file, string dataset_path, auto data)
+        {
+            //format dump(filename, key,value)
+            return dump(file, dataset_path,data,dump_mode::overwrite);
+        }
+
         int save_to_file(string name = "",string type = "npy",string output_dir = "")
         {
             /*
             
-                CSV - produces multiple files while NPY produces a single file output.
+                CSV - produces multiple files in csv format
+                NPY - produces single file where the data is stored in 3D Matrix
+                HDF5 - produces single file but can have key-value pairs
             */
+
+            //get the current date
+            auto now = chrono::system_clock::now();
+            auto today = chrono::system_clock::to_time_t(now);
+            stringstream string_stream;
+            string_stream << put_time(localtime(&today),"%Y-%m-%d"); 
+            string date_string = string_stream.str();
+
             if (type == "csv")
             {
                 vector<string> names = {"source.csv","e_field.csv","h_field.csv","refl.csv","trans.csv","refl_trans.csv"};
-                //get the current date
-                auto now = chrono::system_clock::now();
-                auto today = chrono::system_clock::to_time_t(now);
-                stringstream string_stream;
-                string_stream << put_time(localtime(&today),"%Y-%m-%d"); 
-                string date_string = string_stream.str();
+                
                 //cout << date_string + "_" + names[0] << endl;
                 cout << "========================================================================" << endl;
                 cout << "Saving data to csv files" << endl;
@@ -988,29 +1006,29 @@ class Simulation
                     {
                         case 0: //for sources
                             //call write_to_csv
-                            write_to_csv(file_name,csv_output.Source);
+                            write_to_csv(file_name,output.Source);
                             break;
 
                         case 1: //for E-fields
                             //call write_to_csv
-                            write_to_csv(file_name,csv_output.E);
+                            write_to_csv(file_name,output.E);
                             break;
 
                         case 2: //for H-fields
                             //call write_to_csv
-                            write_to_csv(file_name,csv_output.H);
+                            write_to_csv(file_name,output.H);
                             break;
 
                         case 3: //for the reflectance
-                            write_to_csv(file_name,csv_output.Reflectance);
+                            write_to_csv(file_name,output.Reflectance);
                             break;
                         
                         case 4: //for the transmittance 
-                            write_to_csv(file_name,csv_output.Transmittance);
+                            write_to_csv(file_name,output.Transmittance);
                             break;
 
                         case 5:
-                            write_to_csv(file_name,csv_output.R_T_Sum);
+                            write_to_csv(file_name,output.Con_of_Energy);
                             break;
                     }
                     cout << "-----> Successfully saved" << endl;
@@ -1029,16 +1047,89 @@ class Simulation
                     4th 2D matrix will contain Reflectance simulation data
                     5th 2D matrix will contain Transmittance simulation data.
                 */
-                
-                xtensor<double,3> data;
+                string npy_file_name = date_string + "_" + name + ".npy";
+                xtensor<double,3> npy_data;
                 cout << "Resizing 3D matrix" << endl;
-                data.resize({5,(unsigned int) sim_param.Nt,(unsigned int) sim_param.Nz});
+                npy_data.resize({5,(unsigned int) sim_param.Nt,(unsigned int) sim_param.Nz});
                 cout << "Initializing 3D Matrix" << endl;
-                view(data,all(),all(),all()) = 0;
+                view(npy_data,all(),all(),all()) = 0;
                 cout << "Writing to npy file" << endl;
-                string output_filename = output_dir + "output.npy";
-                write_to_npy(output_filename ,data);
+                string output_filename = output_dir + npy_file_name;
+                write_to_npy(output_filename ,npy_data);
 
+            }
+            else if(type == "hdf5")
+            {
+                //The format will be similar to a Python Dictionary, using a key-value pair
+                string h5_file_name = output_dir + date_string + "_" + name + ".hdf5";
+                cout << "========================================================================" << endl;
+                cout << "Creating HDF5 file...." << endl;
+                HighFive::File file(h5_file_name, HighFive::File::Overwrite);
+
+                cout << "Saving simulation parameters" << "-----";
+                //Store simulation parameters...
+                write_to_hdf5(file, string("/Date of Simulation"), date_string);
+                write_to_hdf5(file, string("/Cell size (dz)"), sim_param.dz);
+                write_to_hdf5(file, string("/Total number of cells (Nz)"), sim_param.Nz);
+                write_to_hdf5(file, string("/Time step (dt)"), sim_param.dt);
+                write_to_hdf5(file, string("/Total number of time iteration (Nt)"), sim_param.Nt);
+                write_to_hdf5(file, string("/Frequency of Interest (fmax)"), sim_param.fmax);
+                write_to_hdf5(file, string("/Frequency Resolution (df)"), sim_param.df);
+                write_to_hdf5(file, string("/Upper frequency limit (FFT)"), sim_param.fmax_fft);
+                write_to_hdf5(file, string("/Total Simulation Time"), sim_param.sim_time);
+                write_to_hdf5(file, string("/Number of frequencies (FFT)"), sim_param.n_freq);
+                write_to_hdf5(file, string("/Amount of spacing (number of cells)"), sim_param.spacers);
+                write_to_hdf5(file, string("/Source injection point (cell index)"), sim_param.injection_point);
+                write_to_hdf5(file, string("/Source Type"), sim_param.source_type);
+                write_to_hdf5(file, string("/Boundary Condition"), sim_param.boundary_cond);
+                write_to_hdf5(file, string("/Source Excitation Method"), sim_param.excitation_method);
+                cout << "--->" << "Saved" << endl;
+
+
+                cout << "Saving Computational Domain parameters -----";
+                //Store computational domain parameters
+                write_to_hdf5(file, string("/Computational domain z (vector)"), comp_domain.z);
+                write_to_hdf5(file, string("/Magnetic permeability mu (vector)"), comp_domain.mu);
+                write_to_hdf5(file, string("/Electric permittivity epsilon (vector)"), comp_domain.epsilon);
+                write_to_hdf5(file, string("/Refractive Index (vector)"), comp_domain.n);
+                cout << "---> Saved!" << endl;
+
+                cout << "Saving Input data -----";
+                //Store input data (parsed from the input file)
+                write_to_hdf5(file, string("/Input Layer size"), input.layer_size);
+                write_to_hdf5(file, string("/Magnetic Permeability"), input.magnetic_permeability);
+                write_to_hdf5(file, string("/Electric Permittivity"), input.electric_permittivity);
+                cout << "---> Saved!" << endl;
+
+                cout << "Saving Source parameters -----";
+                //Store source parameters
+                write_to_hdf5(file, string("/Source tau"), sim_source->source_param.tau);
+                write_to_hdf5(file, string("/Source t0"), sim_source->source_param.t0);
+                write_to_hdf5(file, string("/Source t_prop"), sim_source->source_param.t_prop);
+                write_to_hdf5(file, string("/Esrc"), sim_source_fields.Esrc);
+                write_to_hdf5(file, string("/Hsrc"), sim_source_fields.Hsrc);
+                write_to_hdf5(file, string("/t_E"), sim_source_fields.t_E);
+                write_to_hdf5(file, string("/t_H"), sim_source_fields.t_H);
+                write_to_hdf5(file, string("/t"), sim_source_fields.t);
+                cout << "---> Saved!" << endl;
+
+
+                cout << "Saving Simulation Data -----";
+                //Store the main simulation data
+                write_to_hdf5(file, string("/m_E"), sim_fields.m_E);
+                write_to_hdf5(file, string("/m_H"), sim_fields.m_H);
+                write_to_hdf5(file, string("/FFT Frequency Range"), sim_fields.Freq_range);
+                write_to_hdf5(file, string("/FFT Kernel Frequency Vector"), sim_fields.Kernel_Freq);
+                write_to_hdf5(file, string("/E"), output.E);
+                write_to_hdf5(file, string("/H"), output.H);
+                write_to_hdf5(file, string("/Reflectance"), output.Reflectance);
+                write_to_hdf5(file, string("/Transmittance"), output.Transmittance);
+                write_to_hdf5(file, string("/Conservation of Energy"), output.Con_of_Energy);
+                cout << "---> Saved!" << endl;
+
+
+                cout << "End....";
+                cout << "========================================================================" << endl;
             }
             else
             {

@@ -27,7 +27,7 @@ read -p 'Select Source Excitation Method [hard/soft/tfsf]: ' excitation_method
 read -p 'Enter custom name for output file/s: ' custom_name
 
 #Output file type: 'csv' or  'npy'
-read -p 'Select output file type [csv/npy]: ' output_file_type
+read -p 'Select output file type [csv/npy/hdf5]: ' output_file_type
 
 echo ================================================================
 echo Running the compiled program.....
@@ -36,7 +36,7 @@ echo Running the compiled program.....
 #Execute the program
 #Format of input arguments: (1) input file directory (2) Boundary Condition (3) Excitation method (4) Custom Output Filename (5) Output File type (6) Output directory
 log_file=$(date '+%Y-%m-%d')_log.txt
-$fdtd_bin $input_dir $boundary_cond $excitation_method $custom_name $output_file_type $output_dir > $output_dir/$log_file
+$fdtd_bin $input_dir $boundary_cond $excitation_method $custom_name $output_file_type $output_dir |& tee $output_dir/$log_file
 echo Check the simulation logs in $output_dir/$log_file to check the simulation details
 echo ================================================================
 
@@ -48,7 +48,7 @@ echo ================================================================
 read -p "Enter a custom name for the source image: " source_name
 echo ================================================================
 echo Running plotting script....
-python3 $python_file $output_dir $custom_name $output_file_type $source_name $py_output_dir >> $output_dir/$log_file
+python3 $python_file $output_dir $custom_name $output_file_type $source_name $py_output_dir |& tee -a $output_dir/$log_file
 echo Check the simulation logs in $output_dir/$log_file to check the plotting details
 echo ================================================================
 read -p "Enter output filename for video file: " video_name

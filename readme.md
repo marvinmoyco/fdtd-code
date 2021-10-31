@@ -16,8 +16,8 @@
 
 ###### FDTD
 1. Sinusoidal source propagate backwards (towards the left).
-2. Grid dispersion (I think) is present since weird oscillations in the grid is observed to start at the end of the computational domain. (SOLVED)
-3. PABC still reflects some energy and do propagate all of the energy outside the computational domain.
+2. Numerical dispersion is still present that is causing the FFT of the simulation to go weird. (weird oscillations are present that propagates to the left)
+3. PABC still reflects some energy and do propagate all of the energy outside the computational domain. (SOLVED)
 4. Integration of gnuplot to the current code is still underway. (Scrapped. Will continue to use matplotlib to plot the data.)
 
 #### Libraries Used:
@@ -25,7 +25,13 @@
 **C++ Libraries:**
 * [xtensor](https://github.com/xtensor-stack/xtensor)
 * [xtl](https://github.com/xtensor-stack/xtl)
-
+* [xtensor-io](https://github.com/xtensor-stack/xtensor-io)
+   |
+   |
+    * [HgihFive](https://github.com/BlueBrain/HighFive)   
+        |
+        |
+        * **libhdf5** - can be installed using *sudo apt install libhdf5-dev*
 **Python Libraries:**
 * [numpy](https://numpy.org/doc/stable/)
 * [matplotlib](https://matplotlib.org/stable/contents.html)
