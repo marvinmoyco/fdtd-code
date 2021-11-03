@@ -36,9 +36,16 @@
         |
 
         |
-        
+
         * **libhdf5** - can be installed using *sudo apt install libhdf5-dev*
 
+* [xtensor-fftw](https://github.com/xtensor-stack/xtensor-fftw.git)
+    
+    |
+
+    |
+
+    * [FFTW 3 Library](http://www.fftw.org/) - can be installed using *sudo apt install libfftw3-dev*
 
 **Python Libraries:**
 * [numpy](https://numpy.org/doc/stable/)

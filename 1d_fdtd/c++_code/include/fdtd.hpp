@@ -24,6 +24,8 @@
 #include "xtensor/xcomplex.hpp"
 #include "xtensor/xnpy.hpp"
 #include "xtensor/xio.hpp"
+#include <xtensor-fftw/basic.hpp>   // rfft, irfft
+#include <xtensor-fftw/helper.hpp>  // rfftscale
 #include "xtensor-io/xhighfive.hpp"
 
 /*
@@ -133,6 +135,11 @@ typedef struct Save_Data{
     xtensor<double,2> Transmittance;
     xtensor<double,2> Con_of_Energy;
     xtensor<double,2> Source;
+
+    xtensor<double,1> FFTW_R;
+    xtensor<double,1> FFTW_T;
+    xtensor<double,1> FFTW_C;
+    xtensor<double,1> FFTW_S;
 
 } save_data;
 
@@ -887,7 +894,25 @@ class Simulation
             //sim_fields.Transmittance = pow(abs(sim_fields.Transmittance/sim_fields.Source_FFT),2);
             //sim_fields.Con_of_Energy = sim_fields.Reflectance + sim_fields.Transmittance;
             cout << endl << "End of simulation." << endl;
-                
+
+            cout << "Computing FFT using FFTW library..." << endl;
+
+            //Compute FFT using FFTW lib
+            //Resize the save data
+            FFTW_R.resize({sim_param.Nt,1});
+            FFTW_T.resize({sim_param.Nt,1});
+            FFTW_C.resize({sim_param.Nt,1});
+            FFTW_S.resize({sim_param.Nt,1});
+            
+            
+            //Compute for the Fourier transform
+            FFTW_S = rfft(output.Source);
+            FFTW_R = rfft(col(E,0))/FFTW_S;
+            FFTW_T = rfft(col(E,end_index-1))/FFTW_S;
+            FFTW_C = FFTW_R + FFTW_T;
+            
+
+
             return output;
         }
 
@@ -902,6 +927,7 @@ class Simulation
             ofstream out_stream;
             out_stream.open(output_file);
             dump_csv(out_stream,data);
+            out_stream.close();
             return 0;
         }
         //Overloading the write_to_csv function to accept 2D complex data type
@@ -910,6 +936,7 @@ class Simulation
             ofstream out_stream;
             out_stream.open(output_file);
             dump_csv(out_stream,data);
+            out_stream.close();
             return 0;
         }
 
@@ -1125,6 +1152,11 @@ class Simulation
                 write_to_hdf5(file, string("/Reflectance"), output.Reflectance);
                 write_to_hdf5(file, string("/Transmittance"), output.Transmittance);
                 write_to_hdf5(file, string("/Conservation of Energy"), output.Con_of_Energy);
+                //Saving the FFTW-computed data
+                write_to_hdf5(file,string("/FFTW_R"),output.FFTW_R);
+                write_to_hdf5(file,string("/FFTW_T"),output.FFTW_R);
+                write_to_hdf5(file,string("/FFTW_C"),output.FFTW_R);
+                write_to_hdf5(file,string("/FFTW_S"),output.FFTW_R);
                 cout << "---> Saved!" << endl;
 
 

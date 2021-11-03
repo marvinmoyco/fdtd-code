@@ -11,6 +11,7 @@ LDIR = ../../../../libs
 xtensor_dir = $(LDIR)/xtensor/include
 xtl_dir = $(LDIR)/xtl/include
 xtensor_io_dir = $(LDIR)/xtensor-io/include
+xtensor_fftw_dir = $(LDIR)/xtensor-fftw/include
 highfive_dir = $(LDIR)/HighFive/include
 libhdf5_dir = /usr/include/hdf5/serial
 
@@ -25,7 +26,7 @@ lib_dir_hdf5 = -L/usr/lib/x86_64-linux-gnu/hdf5/serial/ -lhdf5
 
 #-Wall: Shows any error/warning in compilation
 #-O0: Optimization -O0 is lowest unoptimized
-XTENSOR_FLAGS = -isystem $(xtensor_dir) -isystem $(xtl_dir) -isystem $(xtensor_io_dir)
+XTENSOR_FLAGS = -isystem $(xtensor_dir) -isystem $(xtl_dir) -isystem $(xtensor_io_dir) -isystem $(xtensor_fftw_dir)
 HDF5_FLAGS = -isystem $(highfive_dir) -isystem $(libhdf5_dir) 
 
 CPPFLAGS= -std=$(STD_VER) -Wall -O0 -isystem $(IDIR) $(XTENSOR_FLAGS) $(HDF5_FLAGS) 
@@ -42,7 +43,7 @@ BIN = $(BDIR)/$(_BIN)
 
 $(BIN).out: $(OBJ).o
 	@echo 'Linking the object files....'
-	$(CXX) $^ $(lib_dir_hdf5) -o $@
+	$(CXX) $^ $(lib_dir_hdf5) -lfftw3 -o $@
 
 
 $(OBJ).o: $(source) $(DEPS)
