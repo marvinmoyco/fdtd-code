@@ -262,6 +262,7 @@ def plot_hdf5(data=None,save_plots=True,output_dir=""):
     lineC, = ax[1].plot(f,Con_of_Energy[0,:],linewidth=0.5,linestyle='dashed')
     ax[1].set(xlabel="Frequency (Hz) ",ylabel="Levels",title="FFT Response of Simulation")
     ax[1].legend(handles= [lineR,lineT,lineC],labels=["Reflectance","Transmittance","Conservation of Energy"])
+    ax[1].set_xscale('log')
     #ax[1].set_ylim(np.amin(fft_min),np.amax(fft_max))
     
 
@@ -290,7 +291,7 @@ def update_plot(i,E=0,H=0,R=0,T=0,C=0,l_E=None,l_H=None,l_R=None,l_T=None,l_C=No
     fft_min.append(np.amin(T[i,:]))
     fft_min.append(np.amin(C[i,:]))
     ax[0].set(title=sim_title)
-    ax[1].set_ylim(np.amin(fft_min),np.amax(fft_max))
+    #ax[1].set_ylim(np.amin(fft_min),np.amax(fft_max))
 
     l_E.set_ydata(E[i,:])
     l_H.set_ydata(H[i,:])

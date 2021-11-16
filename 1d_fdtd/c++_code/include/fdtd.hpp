@@ -135,11 +135,14 @@ typedef struct Save_Data{
     xtensor<double,2> Transmittance;
     xtensor<double,2> Con_of_Energy;
     xtensor<double,2> Source;
+    xtensor<double,2> Freq_Axis;
+    xtensor<double,2> Source_FFT;
 
-    xtensor<double,1> FFTW_R;
-    xtensor<double,1> FFTW_T;
-    xtensor<double,1> FFTW_C;
-    xtensor<double,1> FFTW_S;
+    xtensor<double,2> FFTW_R;
+    xtensor<double,2> FFTW_T;
+    xtensor<double,2> FFTW_C;
+    xtensor<double,2> FFTW_S;
+    xtensor<double,2> FFTW_Freq;
 
 } save_data;
 
@@ -241,6 +244,76 @@ class Source{
             return 0;
         }
 
+
+        int SquareWaveSource(double delay = 0, double width = 0, double nmax = 1, double nsrc = 1)
+        {
+            initialize(delay,width,12,nmax);
+            //Calculate the necessary variables
+            cout << "========================================================================" << endl;
+            cout << "t0: "<< source_param.t0 << " | tau: " << source_param.tau << " | T: " << source_param.sim_time << endl;
+
+            //Calculate Nt 
+            source_param.Nt = ceil(source_param.sim_time/source_param.dt);
+            cout << "dt: " << source_param.dt << " seconds" << " | Nt: " << source_param.Nt << " iterations"<< endl;
+
+            
+            source_output.t = arange(0.0,source_param.Nt*source_param.dt,source_param.dt);
+            
+
+            //Resize the source field components 
+            //width = tau
+            //delay = t_0
+            source_output.Esrc.resize(source_output.t.shape());
+            source_output.Hsrc.resize(source_output.t.shape());
+            int start_index = floor(source_param.tau/source_param.dt);
+            int end_index = ceil((source_param.tau + source_param.t0)/source_param.dt);
+            cout << "Start index: " << start_index << " | End index: " << end_index;
+
+            //Computing the electric and magnetic field component of the source before t0
+            view(source_output.Esrc,range(start_index,end_index)) = 1;
+            source_output.Esrc(start_index-1) = 0.5;
+            source_output.Esrc(end_index) = 0.5;
+            //Computing the electric field and magnetic field component of the source after t0
+            view(source_output.Hsrc,range(start_index,end_index)) = -1;
+            source_output.Hsrc(start_index-1) = -0.5;
+            source_output.Hsrc(end_index) = -0.5;
+            return 0;
+        }
+        
+        int ModulatedSineSource(double t0_coeff = 3,double prop_coeff = 3.0,double tau_coeff = 3,double nmax = 1,double nsrc = 1)
+        {
+            //Calculate the necessary variables
+            initialize(t0_coeff,prop_coeff,tau_coeff,nmax);
+            cout << "========================================================================" << endl;
+            cout << "t0: "<< source_param.t0 << " | tau: " << source_param.tau << " | T: " << source_param.sim_time << endl;
+
+            //Calculate Nt 
+            source_param.Nt = ceil(source_param.sim_time/source_param.dt);
+            cout << "dt: " << source_param.dt << " seconds" << " | Nt: " << source_param.Nt << " iterations"<< endl;
+
+            
+            source_output.t = arange(0.0,source_param.Nt*source_param.dt,source_param.dt);
+            
+            //source_output.t = linspace<double>(0,source_param.Nt*source_param.dt,source_param.Nt);
+            //Computing the time input for electric field component
+            source_output.t_E = (source_outvput.t - source_param.t0)/source_param.tau;
+            
+            //Computing the electric field component of the source
+            source_output.Esrc = (sin(2*numeric_constants<double>::PI*source_param.fmax*source_output.t))*(exp(-pow(source_output.t_E,2)));
+            
+
+            //Computing the time input for the magnetic field component
+            double adj_H = (nsrc*source_param.dz/(2*c_0)) + (source_param.dt/2);
+            source_output.t_H = ((source_output.t - source_param.t0)+adj_H)/source_param.tau;
+            
+            //Computing the magnetic field component of the source
+            source_output.Hsrc = -sqrt(1)*(sin(2*numeric_constants<double>::PI*source_param.fmax*source_output.t))*(exp(-pow(source_output.t_H,2)));
+            
+           
+            return 0;
+        }
+        
+        
         source_output_d get_computed_source()
         {
             return source_output;
@@ -263,6 +336,10 @@ class Source{
             {
                 source_param.tau = 3/source_param.fmax;
             }
+            else if(source_param.source_type == "square")
+            {
+                source_param.tau = 1/source_param.fmax;
+            }
             else{
                 cout << "ERROR: Incorrect source type!" << endl;
                 return -1;
@@ -273,10 +350,8 @@ class Source{
             double initial_total_time = tau_coeff*source_param.tau +(prop_coeff*source_param.t_prop);
             //cout << "initial_total: " << initial_total_time << " vs. simparam_sim_time: " << source_param.sim_time << endl;
             //Get the smaller total sim time to save memory
-            if (source_param.sim_time < initial_total_time)
-            {
-                source_param.sim_time = initial_total_time;
-            }
+            source_param.sim_time = initial_total_time;
+
 
 
             return 0;
@@ -463,11 +538,11 @@ class Simulation
             
             //Computing cell size based on the smallest wavelength (lambda_min)
             double lambda_min = c_0/(n_max*input.simulation_parameters.at(0));
-            double delta_lambda = lambda_min/10; //denominator is  dependent on how many samples you want for a whole wave
+            double delta_lambda = lambda_min/20; //denominator is  dependent on how many samples you want for a whole wave
             
             //Computing cell size based on the smallest layer size (min. dimension)
             double d_min = amin(input.layer_size)(0);
-            double delta_size = d_min/4;  //denominator is the amount of cells that can resolve the smallest dimension
+            double delta_size = d_min/10;  //denominator is the amount of cells that can resolve the smallest dimension
             
             //The final cell size is obtained by getting the smallest of delta_lambda and delta_size 
             //to make sure that the comp domain can resolve all the necessary features (wavelength or dimension)
@@ -609,6 +684,10 @@ class Simulation
                 sim_param.source_type = "sinusoidal";
 
             }
+            else if(input.simulation_parameters.at(1) == 2)
+            {
+                sim_param.source_type = "square";
+            }
             else{
                 cout << "ERROR: Invalid source type!";
                 comp_domain.check = -1;
@@ -648,15 +727,16 @@ class Simulation
             
             sim_param.df = 1/(sim_param.dt*sim_param.Nt);
             
+
             //Initialize the frequency vector for Fourier Transform
             sim_param.n_freq = n_freq;
-            sim_param.fmax_fft = 0.5/sim_param.dt;
-            n_freq = sim_param.Nz;
-            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax,sim_param.n_freq);
-
+            sim_param.fmax_fft = 0.5*(1/sim_param.dt); //Upper frequency limit Fs/2
+            sim_param.n_freq = sim_param.Nt; //Make sure to match the num of points in other FFT
+            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax_fft,sim_param.n_freq);
+            cout << "Num. of freq. samples: " << sim_param.n_freq << " | Freq_range shape: (" << sim_fields.Freq_range.shape()[0] << "," << sim_fields.Freq_range.shape()[1] << endl;
             //Initialize the sizes of refl,trans, and kernal vectors
             sim_fields.Kernel_Freq = exp(-1i*2.0*pi*sim_param.dt*sim_fields.Freq_range);
-            
+            cout << "Kernel shape: (" << sim_fields.Kernel_Freq.shape()[0] << "," << sim_fields.Kernel_Freq.shape()[1] << ")" << endl; 
 
             //Initialize all related tensors for FFT
             sim_fields.Reflectance.resize(sim_fields.Kernel_Freq.shape());
@@ -676,6 +756,7 @@ class Simulation
             output.Reflectance.resize({row,col_f});
             output.Transmittance.resize({row,col_f});
             output.Con_of_Energy.resize({row,col_f});
+            output.Source_FFT.resize({row,col_f});
 
             //Print the information computed
             cout << "========================================================================" << endl;
@@ -696,11 +777,15 @@ class Simulation
             cout << "Computing source. | Selected source: " << sim_param.source_type << endl;
             if(sim_param.source_type == "gaussian")
             {
-                sim_source->GaussianSource(3,4,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->GaussianSource(3,12,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "sinusoidal")
             {
-                sim_source->SinusoidalSource(3,3,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->SinusoidalSource(3,12,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+            }
+            else if(sim_param.source_type == "square")
+            {
+                sim_source->SquareWaveSource(6,1,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
 
             //Transfer Nt to sim_param
@@ -745,8 +830,8 @@ class Simulation
             //Remove in production
             comp_domain.injection_point = ceil(sim_param.Nz/2);
             cout << "Start of simulation." << endl;
-            cout << "m_E: " << sim_fields.m_E << endl;
-            cout << "m_H: " << sim_fields.m_H << endl;
+            //cout << "m_E: " << sim_fields.m_E << endl;
+            //cout << "m_H: " << sim_fields.m_H << endl;
             //FDTD Time Loop
             for(int curr_iteration = 0;curr_iteration < sim_param.Nt; curr_iteration++)
             {
@@ -880,7 +965,7 @@ class Simulation
                 //For the fields...
                 row(output.E,curr_iteration) = sim_fields.E;
                 row(output.H,curr_iteration) = sim_fields.H;
-                
+                row(output.Source_FFT,curr_iteration) = real(sim_fields.Source_FFT);
                 //for the Fourier Transform
                 row(output.Reflectance,curr_iteration) = real(sim_fields.Reflectance);
                 row(output.Transmittance,curr_iteration) = real(sim_fields.Transmittance);
@@ -899,20 +984,37 @@ class Simulation
 
             //Compute FFT using FFTW lib
             //Resize the save data
-            FFTW_R.resize({sim_param.Nt,1});
-            FFTW_T.resize({sim_param.Nt,1});
-            FFTW_C.resize({sim_param.Nt,1});
-            FFTW_S.resize({sim_param.Nt,1});
-            
-            
+            unsigned int size_fft = sim_param.Nt/2;
+            output.FFTW_R.resize({size_fft,1});
+            output.FFTW_T.resize({size_fft,1});
+            output.FFTW_C.resize({size_fft,1});
+            output.FFTW_S.resize({size_fft,1});
+            output.Freq_Axis.resize({sim_param.Nt,1});
+            cout << "Transfer xtensor to xarray...." << endl;
+            //Transfer xtensor arrays to xarray
+            xarray<double> source = zeros<double>({(int) sim_param.Nt,1});
+            xarray<double> E_0 = zeros<double>({(int) sim_param.Nt,1});
+            xarray<double> E_n = zeros<double>({(int) sim_param.Nt,1});
+            view(source,all(),0) = sim_source_fields.Esrc;
+            view(E_0,all(),0) = col(output.E,0);
+            view(E_n,all(),0) = col(output.E,end_index-1);
+
+            cout << "Compute FFTW..." << source.shape()[0] << ", " << source.shape()[1] << endl;
+            cout << sim_source_fields.Esrc.shape()[0] << ", " << sim_source_fields.Esrc.shape()[1] << endl;
+            cout << "Esrc (Xtensor): " << sim_source_fields.Esrc << endl;
+            cout << "Esrc (Xarray): " << view(source,all(),0).shape()[0] << endl;
+
+
             //Compute for the Fourier transform
-            FFTW_S = rfft(output.Source);
-            FFTW_R = rfft(col(E,0))/FFTW_S;
-            FFTW_T = rfft(col(E,end_index-1))/FFTW_S;
-            FFTW_C = FFTW_R + FFTW_T;
-            
-
-
+            output.FFTW_S = abs(real(fftw::rfft(source)));
+            cout << "computing source fft.." << endl;
+            output.FFTW_R = abs(real(fftw::rfft(E_0)/output.FFTW_S));
+            output.FFTW_T = abs(real(fftw::rfft(E_n)/output.FFTW_S));
+            output.FFTW_C = abs(real(output.FFTW_R + output.FFTW_T));
+            output.FFTW_Freq = fftw::rfftfreq(sim_param.Nt,sim_param.dt);
+            cout << "After FFTW_Freq " << output.Source_FFT.shape()[0] << ", " << output.Source_FFT.shape()[1] << endl;
+            col(output.Freq_Axis,0) = linspace<double>(0,(sim_param.fmax_fft)*sim_param.df,(output.Source_FFT.shape()[0]));
+            cout << "After Freq Axis" << endl;
             return output;
         }
 
@@ -1152,11 +1254,16 @@ class Simulation
                 write_to_hdf5(file, string("/Reflectance"), output.Reflectance);
                 write_to_hdf5(file, string("/Transmittance"), output.Transmittance);
                 write_to_hdf5(file, string("/Conservation of Energy"), output.Con_of_Energy);
+                write_to_hdf5(file, string("/Source"), output.Source);
+                write_to_hdf5(file, string("/Freq_Axis"), output.Freq_Axis);
+                write_to_hdf5(file, string("/Source_FFT"), output.Source_FFT);
+                
                 //Saving the FFTW-computed data
                 write_to_hdf5(file,string("/FFTW_R"),output.FFTW_R);
-                write_to_hdf5(file,string("/FFTW_T"),output.FFTW_R);
-                write_to_hdf5(file,string("/FFTW_C"),output.FFTW_R);
-                write_to_hdf5(file,string("/FFTW_S"),output.FFTW_R);
+                write_to_hdf5(file,string("/FFTW_T"),output.FFTW_T);
+                write_to_hdf5(file,string("/FFTW_C"),output.FFTW_C);
+                write_to_hdf5(file,string("/FFTW_S"),output.FFTW_S);
+                write_to_hdf5(file,string("/FFTW_Freq"),output.FFTW_Freq);
                 cout << "---> Saved!" << endl;
 
 
