@@ -1,30 +1,52 @@
 % Schwarz Alternating method 
 
 % Initialization of constants 
-l_subdom = 500;               % length of domain
-subdom = 4;           % number of subdomains
+l_dom = 500;                                 % length of domain      % arbitrary 
+subdom = 4;                                  % number of subdomains  % arbitrary 
 
 % initializing of computational domain 
-D = randi([0 l_subdom],1,l_subdom);                 % temporary
+D = randi([0 l_dom],1,l_dom);                % temporary
 
 % initializing of subdomains 
-t = round(l_subdom/subdom);
+t = round(l_dom/subdom);
 
 for index = 1:subdom
     x = num2str(index);
     y = strcat('omg',x);
 
-    s.(y) = [];  
+    omegas.(y) = [];  
 
     if index == 1
-        s.(y) = D(1:t);
+        omegas.(y) = D(1:t);
     elseif index < subdom
-        s.(y) = D(((index-1)*t + 1):index*t);
+        omegas.(y) = D(((index-1)*t + 1):index*t);
     else
-        s.(y) = D(((index-1)*t + 1):l_subdom);
+        omegas.(y) = D(((index-1)*t + 1):l_dom);
     end 
 
 end
+
+% set external boundary conditions 
+
+% solve PDE on subdomain
+% insert 1D FDTD 
+
+% placeholder
+for index = 1:subdom
+    x = num2str(index);
+    y = strcat('omg',x);
+    z = strcat('omg_slvd',x);
+
+    omegas_slvd.(z) = omegas.(y) + 1;
+end  
+
+% Transfer of data 
+olap_sz = 20; 
+
+
+
+
+
 
 
 
