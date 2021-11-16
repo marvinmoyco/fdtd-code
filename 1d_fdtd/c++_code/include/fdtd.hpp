@@ -280,7 +280,7 @@ class Source{
             return 0;
         }
         
-        int ModulatedSineSource(double t0_coeff = 3,double prop_coeff = 3.0,double tau_coeff = 3,double nmax = 1,double nsrc = 1)
+      /*  int ModulatedSineSource(double t0_coeff = 3,double prop_coeff = 3.0,double tau_coeff = 3,double nmax = 1,double nsrc = 1)
         {
             //Calculate the necessary variables
             initialize(t0_coeff,prop_coeff,tau_coeff,nmax);
@@ -311,7 +311,7 @@ class Source{
             
            
             return 0;
-        }
+        }*/
         
         
         source_output_d get_computed_source()
