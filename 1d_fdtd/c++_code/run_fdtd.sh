@@ -42,16 +42,17 @@ echo ================================================================
 
 #Execute the python script
 #Get the input arguments; Format: (1) input directory (2) Custom file name (3) Output file type (4)Source Name (for image) (5) Output directory (for plots)
-python_file=create_plots.py
+python_file=plotly_subplot.py
 py_output_dir=$output_dir/plots/
-echo ================================================================
-read -p "Enter a custom name for the source image: " source_name
+#echo ================================================================
+#read -p "Enter a custom name for the source image: " source_name
 echo ================================================================
 echo Running plotting script....
-python3 $python_file $output_dir $custom_name $output_file_type $source_name $py_output_dir |& tee -a $output_dir/$log_file
+py_input=$(date '+%Y-%m-%d')_$custom_name.hdf5
+python3 $python_file $output_dir $py_input #$output_file_type $source_name $py_output_dir |& tee -a $output_dir/$log_file
 echo Check the simulation logs in $output_dir/$log_file to check the plotting details
-echo ================================================================
-read -p "Enter output filename for video file: " video_name
-echo Running ffmpeg...
-ffmpeg -f image2 -framerate 200 -i $output_dir/plots/E_H_FFT_images_%07d.png -s 1920x1080 $output_dir/$video_name.mp4
-echo ================================================================
+#echo ================================================================
+#read -p "Enter output filename for video file: " video_name
+##echo Running ffmpeg...
+#ffmpeg -f image2 -framerate 200 -i $output_dir/plots/E_H_FFT_images_%07d.png -s 1920x1080 $output_dir/$video_name.mp4
+#echo ================================================================

@@ -194,7 +194,7 @@ def np_to_str(input):
 def plot_hdf5(data=None,save_plots=True,output_dir=""):
 
     #Read pre-processing data
-    Nt = np.array(data['Total number of time iteration (Nt)'])
+    Nt = np.ceil(np.array(data['Total number of time iteration (Nt)'])/3)
     source_type = np_to_str(data["Source Type"])
     boundary_cond = np_to_str(data['Boundary Condition'])
     excitation_method = np_to_str(data['Source Excitation Method'])

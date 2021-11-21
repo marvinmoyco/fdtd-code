@@ -5,32 +5,51 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import numpy as np
 import h5py
+import sys
 
 #Converter function from numpy ndarray to str object
 def np_to_str(input):
     return np.array_str(np.array(input).astype(str))
 
+filename = ''
+#Check the length of input arguments
+if len(sys.argv) == 3:
+    filename = sys.argv[1] + sys.argv[2]
+
 #Read Electric field
-data = h5py.File('./outputs/2021-11-11_fft.hdf5',mode='r')
+data = h5py.File(filename,mode='r')
 print(data.keys())
 z = data['Computational domain z (vector)'][:]
-E = data['E'][:,:]
-H = data['H'][:,:]
-R = data['Reflectance'][:,:]
-T = data['Transmittance'][:,:]
+E = np.nan_to_num(data['E'][:,:])
+H = np.nan_to_num(data['H'][:,:])
+R = np.nan_to_num(data['Reflectance'][:,:])
+T = np.nan_to_num(data['Transmittance'][:,:])
+C = np.nan_to_num(data['Conservation of Energy'][:,:])
+
+
+#Read source data
+t = data['t'][:]
+t_E = data['t_E'][:]
+Esrc = data['Esrc'][:]
+t_H = data['t_H'][:]
+Hsrc = data['Hsrc'][:]
+print(Esrc,Hsrc)
+print(R,T)
+print(C)
+print(E,H)
 sim_date = np_to_str((data['Date of Simulation']))
 source_type = np_to_str(data['Source Type'])
 n = data['Refractive Index (vector)'][:]
-Nt = int(np.array(data['Total number of time iteration (Nt)']))
+Nt = int(np.ceil(np.array(data['Total number of time iteration (Nt)'])/2))
 
 dz = float(np.array(data['Cell size (dz)']))
 spacer = int(np.array(data['Amount of spacing (number of cells)']))*dz
 #print(z.shape,E.shape,Nt)
 input_layer = data['Input Layer size'][:]
-print(input_layer,spacer)
+#print(input_layer,spacer)
 
 #Create subplotsd
-fig = make_subplots(rows=2, cols=1, subplot_titles = ('FDTD Simulation', 'Frequency Response (Reflectance and Transmittance)'))
+fig = make_subplots(rows=3, cols=1, subplot_titles = ('FDTD Simulation', 'Frequency Response (Reflectance and Transmittance)',f'Source Plot (type: {source_type})'))
 
 #Get the total maximum for E and H fields
 max_point = np.max([np.amax(E),np.amax(H)])
@@ -66,13 +85,34 @@ for index in range(len(input_layer)):
 
     x_start = x_end
 
+fig.add_trace(go.Scatter(
+                x= t_E,
+                y= Esrc,
+                mode = 'lines',
+                hovertemplate="x: %{x} <br> y: %{y}",
+                legendgroup= 'Input Source (Electric Field)',
+                #line_color= 'rgb(255, 79, 38)',
+                name= 'Input Source (Electric Field)',
+                showlegend= True), row=3, col=1)
+
+fig.add_trace(go.Scatter(
+                x= t_H,
+                y= Hsrc,
+                mode = 'lines',
+                hovertemplate="x: %{x} <br> y: %{y}",
+                legendgroup= 'Input Source (Magnetic Field)',
+                #line_color= 'rgb(255, 79, 38)',
+                name= 'Input Source (Magnetic Field)',
+                showlegend= True), row=3, col=1)
+
+
 #Add traces in subplot 1
 fig.add_trace(go.Scatter(
                 x= z,
                 y= E[0,:],
                 mode = 'lines',
-                hoverinfo='name',
                 legendgroup= 'Electric Field',
+                hovertemplate="x: %{x} <br> y: %{y}",
                 #line_color= 'rgb(255, 79, 38)',
                 name= 'Electric Field',
                 showlegend= True), row=1, col=1)
@@ -81,7 +121,7 @@ fig.add_trace(go.Scatter(
                 x= z,
                 y= H[0,:],
                 mode = 'lines',
-                hoverinfo='name',
+                hovertemplate="x: %{x} <br> y: %{y}",
                 legendgroup= 'Magnetic Field',
                 #line_color= 'rgb(255, 79, 38)',
                 name= 'Magnetic Field',
@@ -94,20 +134,31 @@ fig.add_trace(go.Scatter(
                 x= z,
                 y= R[0,:],
                 mode = 'lines',
-                hoverinfo='name',
+                hovertemplate="x: %{x} <br> y: %{y}",
                 legendgroup= 'Reflectance',
                 #line_color= 'rgb(255, 79, 38)',
-                name= 'Reflectance',
+                name = 'Reflectance',
                 showlegend= True), row=2, col=1)
 
 fig.add_trace(go.Scatter(
                 x= z,
                 y= T[0,:],
                 mode = 'lines',
-                hoverinfo='name',
+                hovertemplate="x: %{x} <br> y: %{y}",
                 legendgroup= 'Transmittance',
                 #line_color= 'rgb(255, 79, 38)',
                 name= 'Transmittance',
+                showlegend= True), row=2, col=1)
+
+fig.add_trace(go.Scatter(
+                x= z,
+                y= C[0,:],
+                mode = 'lines',
+                line=dict(dash='dash'),
+                hovertemplate="x: %{x} <br> y: %{y}",
+                legendgroup= 'Conservation of Energy',
+                #line_color= 'rgb(255, 79, 38)',
+                name= 'Conservation of Energy',
                 showlegend= True), row=2, col=1)
 
 
@@ -115,26 +166,32 @@ print(len(fig.data))
 
 
 
+#width=1024, height=720,
 
-
-fig.update_layout(width=1920, height=1080,title_text=f"FDTD Simulation [Date: {sim_date} | Source Type: {source_type}]")
-#Adjust the axes of the two subplots
+fig.update_layout(title_text=f"FDTD Simulation [Date: {sim_date} | Source Type: {source_type}]")
+#Adjust the axes of the three subplots
 fig.update_xaxes(title_text="Computational Domain (m)", row=1,col=1)
 fig.update_xaxes(title_text="Frequency (Hz)",row=2,col=1)
+fig.update_xaxes(title_text="Time (s)",row=3,col=1)
+
 
 fig.update_yaxes(title_text="Level",range=[-1,1],row=1,col=1)
 fig.update_yaxes(title_text="Magnitude",range=[0,1],row=2,col=1)
+fig.update_yaxes(title_text="Level",range=[-1,1],row=3,col=1)
 
 end_indices = len(input_layer) 
 #Add the frames of each traces
 frames=[dict(name=i,
-             data=[go.Scatter(y=E[i,:]),#update the E-Field
+             data=[go.Scatter(y=Esrc),
+             go.Scatter(y=Hsrc),
+             go.Scatter(y=E[i,:]),#update the E-Field
              go.Scatter(y=H[i,:]),#update the H-Field
              go.Scatter(y=R[i,:]),
-             go.Scatter(y=T[i,:])],
+             go.Scatter(y=T[i,:]),
+             go.Scatter(y=C[i,:])],
              #Added 4 to the end indices since there 4 traces after (E,H,R,T)
-             traces = [x for x in range(end_indices,end_indices+4)] #This is done because the rectangles are traces (to have hover information)
-             ) for i in range(Nt)] #Iterate from the 2nd row to Nt-th row
+             traces = [x for x in range(end_indices,end_indices+7)] #This is done because the rectangles are traces (to have hover information)
+             ) for i in range(Nt)] #Iterate from the 2nd row to Nt-th row (now up until 1/3rd of Nt since it is very expensive to compute)
 
 #Add the button and slider
 updatemenus = [dict(type='buttons',
@@ -170,6 +227,6 @@ sliders = [{'yanchor': 'top',
 fig.update(frames=frames),
 fig.update_layout(updatemenus=updatemenus,
                   sliders=sliders)
-fig.show() #in jupyter notebook
+fig.show('chrome') #in jupyter notebook
 #fig.show('browser') # in browser (the former offline.plot)
-fig.write_html('sample.html')
+#fig.write_html('sample.html')

@@ -10,7 +10,7 @@
     ffmpeg command: ffmpeg -f image2 -framerate 200 -i E_H_FFT_images_%07d.jpeg -s 1920x1080 output.mp4
 
 */
-#include "fdtd.hpp"
+#include "simulation.hpp"
 save_data output;
 
 //Arguments (1) file_path of input csv (2) Boundary condition (3) source excitation (4) custom name for output (5) output file type (6) output directory

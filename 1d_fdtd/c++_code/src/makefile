@@ -1,7 +1,7 @@
 CXX= g++
 STD_VER = c++17
 
-IDIR = ../include
+IDIR = ../include/
 ODIR = obj
 BDIR = bin
 LDIR = ../../../../libs
@@ -32,8 +32,8 @@ HDF5_FLAGS = -isystem $(highfive_dir) -isystem $(libhdf5_dir)
 CPPFLAGS= -std=$(STD_VER) -Wall -O0 -isystem $(IDIR) $(XTENSOR_FLAGS) $(HDF5_FLAGS) 
 source = main.cpp
  
-_DEPS = fdtd.hpp
-DEPS = $(IDIR)/$(_DEPS)
+#_DEPS = *.hpp 
+DEPS = $(IDIR)#/$(_DEPS)
 
 _OBJ = main
 OBJ = $(ODIR)/$(_OBJ)
@@ -54,4 +54,4 @@ $(OBJ).o: $(source) $(DEPS)
 
 clean:
 	@echo 'Cleaning the directory....'
-	rm $(OBJ).o $(BIN).out core
+	rm $(OBJ).o $(BIN).out
