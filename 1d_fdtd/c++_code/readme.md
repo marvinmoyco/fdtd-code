@@ -1,4 +1,4 @@
-#Instructions to simulate in a terminal
+# Instructions to simulate in a terminal
 
 1. Make sure that the makefile is modified so that the libraries and header files are properly searched by the program.
 2. To run the program, you have two options: (1) run the compiled program located at ./src/bin or (2) use the bash script "run_fdtd.sh".
