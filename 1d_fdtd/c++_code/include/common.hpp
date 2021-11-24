@@ -46,6 +46,35 @@ double  epsilon_0 = 8.8541878128E-12;
 double  mu_0 = 1.25663706212E-6;
 
 //Struct declarations...
+typedef struct Subdomain_data
+{
+    unsigned int subdomain_id;
+    unsigned int subdomain_size;
+    unsigned int overlap_size;
+    unsigned int num_subdomains = 0;
+    bool source_inject = false;
+    bool preprocessed = false;
+    double dz = 0; //Cell length
+    double dt = 0;
+    double Nz = 0;
+    double Nt = 0;
+    int spacers = 0;
+    int injection_point = 0;
+
+    string boundary_condition = "";
+    string excitation_method = "";
+
+} subdomain_data;
+
+typedef struct Subdomain_fields
+{
+    xtensor<double,1> E;
+    xtensor<double,1> H;
+    xtensor<double,1> m_E;
+    xtensor<double,1> m_H;
+    list<double> E_end {0,0};
+    list<double> H_start {0,0};
+} subdomain_fields;
 
 typedef struct Simulation_parameters{
     double dz = 0; //Cell length
@@ -59,6 +88,10 @@ typedef struct Simulation_parameters{
     double n_freq = 0; //For Fourier Transform, indicates how many points
     int spacers = 0;
     int injection_point = 0;
+    
+    unsigned int subdomain_size = 0;
+    unsigned int num_subdomains = 0;
+    unsigned int overlap_size = 0;
 
     string source_type = "";
     string boundary_cond = "";
@@ -142,6 +175,8 @@ typedef struct Save_Data{
     xtensor<double,2> FFTW_C;
     xtensor<double,2> FFTW_S;
     xtensor<double,2> FFTW_Freq;
+
+    bool simulation_success = false;
 
 } save_data;
 

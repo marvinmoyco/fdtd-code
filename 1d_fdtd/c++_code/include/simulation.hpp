@@ -22,6 +22,8 @@ class Simulation
         Source* sim_source;
         source_output_d sim_source_fields;
         save_data output;
+        vector<Subdomain> subdomains;
+
         //Initializing variables in the constructor
         Simulation(string input_file="")
         {
@@ -147,7 +149,7 @@ class Simulation
         
 
         //Creating computational domain
-        computational_domain create_comp_domain(int spacer_cells = 0,int injection_point = 0, double n_freq = 0)
+        computational_domain create_comp_domain(int spacer_cells = 0,int injection_point = 0, double n_freq = 0, unsigned int num_subdomains=1, bool multithread = false)
         {
             /*
                 This function is the "pre-processing" stage of the simulation. All of the needed pre-requisite computations are done before the actual
@@ -176,6 +178,9 @@ class Simulation
 
                 exit(EXIT_FAILURE);
             }
+
+            //Store the number of subdomains in sim_param struct....
+            sim_param.num_subdomains = num_subdomains;
 
             //Computing dz and Nz...
             double n_max =  amax<double>(sqrt(input.magnetic_permeability*input.electric_permittivity))(0);
@@ -212,11 +217,13 @@ class Simulation
                 sim_param.Nz += sim_param.Nz;
                 
             }
-            //Adjust Nz to be divisible by 2
-            while(fmod(sim_param.Nz,2.0) != 0)
+            //Adjust Nz to be divisible by the numbe of subdomains
+            while(fmod(sim_param.Nz,num_subdomains) != 0)
             {
-                //To make Nz divisible by 2, add 1 cell to spacer regions until it becomes divisible by 2
+                
+                //To make Nz divisible by number of subdomains, add 1 cell to spacer regions until it becomes divisible by it
                 sim_param.Nz += 1;
+                sim_param.spacers +=1;
             }
 
             //Check to make sure that the injection point is inside the spacer region. 
@@ -275,11 +282,6 @@ class Simulation
                 start = end;
             }
 
- 
-            /*cout << "+++++++++++++++=+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"  << endl;
-            cout << comp_domain.mu << endl;
-            cout << "+++++++++++++++=+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"  << endl;
-            cout << comp_domain.epsilon << endl;*/
 
             // Computing for the refractive index vector based on the mu and epsilon vectors
             comp_domain.n.resize(comp_domain.z.shape());
@@ -319,60 +321,124 @@ class Simulation
 
             //store fmax in the proper place
             sim_param.fmax = input.simulation_parameters.at(0);  
-            if (input.simulation_parameters.at(1) == 0)
-            {
-                sim_param.source_type = "gaussian";
-            }
-            else if(input.simulation_parameters.at(1) == 1)
-            {
-                sim_param.source_type = "sinusoidal";
 
-            }
-            else if(input.simulation_parameters.at(1) == 2)
+            //Get the proper source type based on the input file...
+            switch((int) input.simulation_parameters.at(1))
             {
-                sim_param.source_type = "square";
+                case 0:
+                    sim_param.source_type = "gaussian";
+                    break;
+                case 1:
+                    sim_param.source_type = "sinusoidal";
+                    break;
+                case 2:
+                    sim_param.source_type = "square";
+                    break;
+                case 3:
+                    sim_param.source_type = "modulatedsine";
+                    break;
+                default:
+                    cout << "ERROR: Invalid source type!";
+                    comp_domain.check = -1;
+                    exit(EXIT_FAILURE);
+                    break;
             }
-            else if(input.simulation_parameters.at(1) == 3)
-            {
-                sim_param.source_type = "modulatedsine";
-            }
-            else{
-                cout << "ERROR: Invalid source type!";
-                comp_domain.check = -1;
-                exit(EXIT_FAILURE);
-            }
-
             //Compute the source that will be used in the project.
             compute_source();
             
-            //Resize the fields
-            sim_fields.E.resize(comp_domain.z.shape());
-            sim_fields.H.resize(comp_domain.z.shape());
-            sim_fields.m_E.resize(comp_domain.z.shape());
-            sim_fields.m_H.resize(comp_domain.z.shape());
-
-            //Initialize fields to 0
-            view(sim_fields.E,range(0,sim_fields.E.size())) = 0;
-            view(sim_fields.H,range(0,sim_fields.E.size())) = 0;
-
-            //Compute the update coefficients
-            sim_fields.m_E = (c_0*sim_param.dt)/(comp_domain.epsilon*sim_param.dz);
-            sim_fields.m_H = (c_0*sim_param.dt)/(comp_domain.mu*sim_param.dz);
-
+            /*
+            At this point, the code needs to check if it is in serial or parallel mode. 
+            Meaning, all of the pre-processing for both serial and parallel versions are done in this method.
+            The only data transferred to the subdomain class are the simulation parameters and the
+            computational domain vectors
+            
+            */
             unsigned long int row = sim_param.Nt;
             unsigned long int col = sim_param.Nz;
-            //Resize the different save matrices
-            output.E.resize({row,col});
-            output.H.resize({row,col});
+            if(multithread == false)
+            {
+                //Resize the fields
+                sim_fields.E.resize(comp_domain.z.shape());
+                sim_fields.H.resize(comp_domain.z.shape());
+                sim_fields.m_E.resize(comp_domain.z.shape());
+                sim_fields.m_H.resize(comp_domain.z.shape());
 
-            //Print shape
-            //for (auto& el : output.E.shape()) {cout << el << ", ";}
-            //cout << output.E.size() <<endl;
+                //Initialize fields to 0
+                view(sim_fields.E,range(0,sim_fields.E.size())) = 0;
+                view(sim_fields.H,range(0,sim_fields.E.size())) = 0;
 
-            //cout << comp_domain.z.size() << "   " << comp_domain.mu.size() << endl;
+                //Compute the update coefficients
+                sim_fields.m_E = (c_0*sim_param.dt)/(comp_domain.epsilon*sim_param.dz);
+                sim_fields.m_H = (c_0*sim_param.dt)/(comp_domain.mu*sim_param.dz);
+
+                
+                //Resize the different save matrices
+                output.E.resize({row,col});
+                output.H.resize({row,col});
+
+                //Print shape
+                //for (auto& el : output.E.shape()) {cout << el << ", ";}
+                //cout << output.E.size() <<endl;
+
+                //cout << comp_domain.z.size() << "   " << comp_domain.mu.size() << endl;
+
+                
+            }
+            else if(multithread == true)
+            {
+                /*
+                In this part, do the following: (this assumes that the multithreading part is the FDTD-Schwarz Serial Version)
+                1. Compute the size of each subdomain.
+                2. Compute the size of each overlapping region.
+                3. Find out which subdomain to inject the source.
+                4. call the pre-process subdomain method.
+                */
+
+                //Exception Handling to make sure that the number of subdomain is correct.
+                try
+                {
+                    if(sim_param.num_subdomains % 2 == 0 && sim_param.num_subdomains <= 64) // Divisible by 2 (2^x number of subdomains)
+                    {
+                        cout << "Proper number of subdomains are detected..." << endl;
+                    }
+                    else
+                    {
+                        throw -1;
+                    }
+                }
+                catch(...)
+                {
+                    cout << "Error: Invalid number of subdomain" << endl;
+                    comp_domain.check = -1;
+                    exit(EXIT_FAILURE);
+                }
+
+                /*
+                Layout of a subdomain:
+                ||--overlapping region--|--subdomain--|--overlapping region--||
+                */
+
+                //Computing the size of each subdomain
+                sim_param.subdomain_size = sim_param.Nz/sim_param.num_subdomains;
+
+                //Computing the size of overlapping region
+                sim_param.overlap_size = sim_param.subdomain_size*0.25; //25% of the subdomain size
+
+                //Find out which subdomain to to insert the source.
+                //At this point, we can just assume that the source will always be injected into the 1st subdomain (center position)
+
+                //Call the preprocess subdomain to create the subdomain objects.
+                preprocess_subdomain(sim_param.num_subdomains,sim_param.subdomain_size,sim_param.overlap_size);
+
+
+
+            }
+            
+
+
 
             //Computing df - frequency step in Freq. Response 
-            
+                
             sim_param.df = 1/(sim_param.dt*sim_param.Nt);
             
 
@@ -412,6 +478,7 @@ class Simulation
             cout << "fmax_fft: " << sim_param.fmax_fft << endl;
             cout << "Save Matrices Sizes:" << endl;
             cout << "Reflectance: " << output.Reflectance.size() << " | Transmittance: " << output.Transmittance.size() << " | Conservation of Energy: " << output.Con_of_Energy.size() << endl;
+        
             return comp_domain;
         }
         
@@ -460,10 +527,49 @@ class Simulation
             return 0;
         }
 
+
+        int preprocess_subdomain(unsigned int n_subdomain=0,unsigned int size=0, unsigned int overlap_size=0)
+        {
+            //Create new subdomain objects based on the number of subdomains
+            for(int sdomain_index=0;sdomain_index < n_subdomain; sdomain_index++)
+            {
+                //Create a new object
+                subdomains.push_back(Subdomain(sim_param,comp_domain,size,overlap_size,sdomain_index));
+                switch(sdomain_index)
+                {
+                    case 0:
+                        subdomains.front().subdomain_param.source_inject = true;
+                        break;
+                }
+                
+
+                
+            }
+            //Flag the first and last subdomain...
+            
+            
+
+            
+
+            return 0;
+        }
+
+
+
+
         //FDTD ALgorithm only (serial version)
         save_data simulate(string boundary_condition = "", string excitation = "")
         {
-            
+            //Checking if the pre-processing is done successfully...
+            cout << "========================================================================" << endl;
+            cout << "Checking to make sure that the pre-processing is done...." << endl;
+            if(comp_domain.check == -1)
+            {
+                cout << "Pre-processing has failed. Exiting program" << endl;
+                exit(EXIT_FAILURE);
+            }
+
+            cout << "Pre-processing is completed!" << endl;
             cout << "========================================================================" << endl;
             cout << "Starting 1-D FDTD Simulation..." << endl;
             cout << "Boundary Condition: " << boundary_condition << " | Source Excitation Method: " << excitation << endl;
@@ -632,7 +738,7 @@ class Simulation
             //sim_fields.Con_of_Energy = sim_fields.Reflectance + sim_fields.Transmittance;
             cout << endl << "End of simulation." << endl;
 
-            cout << "Computing FFT using FFTW library..." << endl;
+            cout << "Computing Frequency Response using FFTW library..." << endl;
 
             //Compute FFT using FFTW lib
             //Resize the save data
@@ -651,10 +757,10 @@ class Simulation
             view(E_0,all(),0) = col(output.E,0);
             view(E_n,all(),0) = col(output.E,end_index-1);
 
-            cout << "Compute FFTW..." << source.shape()[0] << ", " << source.shape()[1] << endl;
-            cout << sim_source_fields.Esrc.shape()[0] << ", " << sim_source_fields.Esrc.shape()[1] << endl;
-            cout << "Esrc (Xtensor): " << sim_source_fields.Esrc << endl;
-            cout << "Esrc (Xarray): " << view(source,all(),0).shape()[0] << endl;
+            //cout << "Compute Frequency Response using FFTW Library..." << source.shape()[0] << ", " << source.shape()[1] << endl;
+            //cout << sim_source_fields.Esrc.shape()[0] << ", " << sim_source_fields.Esrc.shape()[1] << endl;
+            //cout << "Esrc (Xtensor): " << sim_source_fields.Esrc << endl;
+            //cout << "Esrc (Xarray): " << view(source,all(),0).shape()[0] << endl;
 
 
             //Compute for the Fourier transform
@@ -667,6 +773,10 @@ class Simulation
             cout << "After FFTW_Freq " << output.Source_FFT.shape()[0] << ", " << output.Source_FFT.shape()[1] << endl;
             col(output.Freq_Axis,0) = linspace<double>(0,(sim_param.fmax_fft)*sim_param.df,(output.Source_FFT.shape()[0]));
             cout << "After Freq Axis" << endl;
+
+            //Set the simulation_success flag to true
+            output.simulation_success = true;
+
             return output;
         }
 
@@ -748,6 +858,15 @@ class Simulation
                 HDF5 - produces single file but can have key-value pairs
             */
 
+            //Make sure that the simulation is done successfully...
+            if(output.simulation_success == false)
+            {
+                cout << "Simulation of FDTD is not successful. Exiting program..." << endl;
+                exit(EXIT_FAILURE);
+
+            }
+
+            cout << "Saving the simulated data into output file/s...." << endl;
             //get the current date
             auto now = chrono::system_clock::now();
             auto today = chrono::system_clock::to_time_t(now);

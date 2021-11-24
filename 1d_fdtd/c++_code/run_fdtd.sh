@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+#This will only work in the release build!!!
 #Sets the directory of the output file as well as the output file
 fdtd_out=main.out
 fdtd_bin=./src/bin/$fdtd_out

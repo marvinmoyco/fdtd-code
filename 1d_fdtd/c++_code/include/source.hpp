@@ -11,6 +11,7 @@ class Source{
         source_parameters source_param;
         source_output_d source_output;
         computational_domain source_comp_dom;
+        
 
         Source(simulation_parameters sim_param,computational_domain comp_dom)
         {

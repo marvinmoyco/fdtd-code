@@ -17,18 +17,19 @@ save_data output;
 
 int main(int argc, char* argv[])
 {
-  //cout << " Argc: " << argc << endl;
-  //Simulation sim("./csv/input/input.csv");
+  
+  //Create a simulation object...
   Simulation sim(argv[1]);
-  computational_domain check = sim.create_comp_domain(0,0,100);
-  if(check.check != -1)
-  {
-    //output = sim.simulate("pabc","tfsf");
-    //sim.save_to_file("marvin");
-    output = sim.simulate(argv[2],argv[3]);
-    sim.save_to_file(argv[4],argv[5],argv[6]);
-    return 0;
-  }
+
+  //Perform pre-processing...
+  computational_domain check = sim.create_comp_domain(0,0,100,1,false);
+
+  //Start the simulation...
+  output = sim.simulate(argv[2],argv[3]);
+
+  //Save the simulation data....
+  sim.save_to_file(argv[4],argv[5],argv[6]);
+
 
 
 
