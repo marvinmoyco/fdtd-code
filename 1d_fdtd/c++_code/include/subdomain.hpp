@@ -11,10 +11,13 @@ class Subdomain
         subdomain_data subdomain_param;
         source_output_d subdomain_source;
         double boundary_data[2] = {0.0,0.0}; //1st element = Left side, 2nd element = Right side
-
+        
+        //Initializing error vectors for convergence...
+        xtensor<double,1> E_error{0,0};
+        xtensor<double,1> H_error{0,0}; 
 
         //Constructor
-        Subdomain(simulation_parameters sim_param, computational_domain domain,unsigned int size, unsigned int overlap_size, unsigned int id)
+        Subdomain(simulation_parameters sim_param, source_output_d sources,computational_domain domain,unsigned int size, unsigned int overlap_size, unsigned int id)
         {
             //Transfer necessary data from Simulation class to Subdomain class...
             subdomain_param.subdomain_id = id;
@@ -57,6 +60,11 @@ class Subdomain
             {
 
             }
+
+            if(id == 0)
+            {
+                subdomain_source = sources;
+            }
              
         }
 
@@ -78,7 +86,9 @@ class Subdomain
            subdomain_param.boundary_condition = boundary_condition;
            subdomain_param.excitation_method = excitation_method;
 
-           //Start of the FDTD Space....
+             //
+            //Start of the FDTD Space....
+           //
            //Initialize variable indices
            unsigned int start = 0;
            unsigned int stop = 0;
@@ -115,6 +125,12 @@ class Subdomain
                }
                
            }
+           else{ 
+               //Use Dirichlet boundary method on all LEFT internal boundary of subdomains that
+               //are not the 1st subdomain...
+
+               s_fields.E(start) = 0;
+           }
 
            //Update H from E...
            view(s_fields.H,range(start,stop-1)) = view(s_fields.H,range(start,stop-1)) + (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1)));
@@ -143,6 +159,12 @@ class Subdomain
                     s_fields.H(stop-1) = 0;
                 }
                 
+            }
+            else
+            {
+                //Use Dirichlet Method on all RIGHT internal boundary of subdomains
+                //that is not the last subdomain...
+                s_fields.H(stop-1) = 0;
             }
 
             //Update E from H...
@@ -173,7 +195,25 @@ class Subdomain
             return s_fields;
         }
 
-        
+
+
+        bool compute_L2norm(string side="")
+        {
+            /*
+                Computes the L2 norm using the linalg module in xtensor...
+            */
+            if(side == "left")
+            {
+                E_error(0) = linalg::norm(view(s_fields.E,range(0,subdomain_param.overlap_size)),2);
+                H_error(0) = linalg::norm(view(s_fields.H,range(0,subdomain_param.overlap_size)),2);
+            }
+            else if(side == "right")
+            {
+                E_error(1) = linalg::norm(view(s_fields.E,range(subdomain_param.overlap_size+subdomain_param.subdomain_size,s_fields.E.size())),2);
+                H_error(1) = linalg::norm(view(s_fields.H,range(subdomain_param.overlap_size+subdomain_param.subdomain_size,s_fields.H.size())),2);
+            }
+            return true;
+        }
 };
 
 #endif

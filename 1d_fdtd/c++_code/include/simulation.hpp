@@ -783,7 +783,38 @@ class Simulation
         //FDTD Schwarz Serial Version
         void simulate_fdtd_schwarz()
         {
+            //This is the FDTD Time Loop
+            for(int curr_iter=0;curr_iter<sim_param.Nt;curr_iter++)
+            {
+                for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
+                {
+                    //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
+                    subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
+                
+                    //Transfer the internal boundary data of the adjacent subdomains here....
 
+
+                }
+
+                //Check for convergence here....
+
+
+                //Update the FFT here....
+
+                
+            }
+        }
+
+        bool check_convergence()
+        {
+            bool computed_l2norm = false;
+            int counter = 0;
+            for(int s_domain=0;s_domain<sim_param.num_subdomains-1;s_domain++)
+            {
+                computed_l2norm = subdomains[s_domain].compute_L2norm("right");
+                
+            }
+            return true;
         }
 
         int write_to_csv(string output_file = "",xtensor<double,2> data ={{0,0,0},{0,0,0}})
