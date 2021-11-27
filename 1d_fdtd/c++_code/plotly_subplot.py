@@ -43,7 +43,7 @@ n = data['Refractive Index (vector)'][:]
 Nt = int(np.ceil(np.array(data['Total number of time iteration (Nt)'])/2))
 
 dz = float(np.array(data['Cell size (dz)']))
-spacer = int(np.array(data['Amount of spacing (number of cells)']))*dz
+spacer = int(np.array(data['Amount of spacing in the left side (number of cells)']))*dz
 #print(z.shape,E.shape,Nt)
 input_layer = data['Input Layer size'][:]
 #print(input_layer,spacer)

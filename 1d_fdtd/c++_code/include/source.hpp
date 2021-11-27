@@ -27,7 +27,11 @@ class Source{
             source_comp_dom.injection_point = comp_dom.injection_point;
         }
 
-        int GaussianSource(double t0_coeff = 6.0,double prop_coeff = 6.0,double tau_coeff = 12.0,double nmax = 1,double nsrc = 1)
+        int GaussianSource(double t0_coeff = 6.0,
+                           double prop_coeff = 6.0,
+                           double tau_coeff = 12.0,
+                           double nmax = 1,
+                           double nsrc = 1)
         {
             //Calculate the necessary variables
             initialize(t0_coeff,prop_coeff,tau_coeff,nmax);
@@ -61,7 +65,11 @@ class Source{
             return 0;
         }
         
-        int SinusoidalSource(double t0_coeff = 3,double prop_coeff = 3.0,double tau_coeff = 3,double nmax = 1,double nsrc = 1)
+        int SinusoidalSource(double t0_coeff = 3,
+                             double prop_coeff = 3.0,
+                             double tau_coeff = 3,
+                             double nmax = 1,
+                             double nsrc = 1)
         {
             //Calculate the necessary variables
             initialize(t0_coeff,prop_coeff,tau_coeff,nmax);
@@ -108,7 +116,10 @@ class Source{
         }
 
 
-        int SquareWaveSource(double delay = 0, double width = 0, double nmax = 1, double nsrc = 1)
+        int SquareWaveSource(double delay = 0,
+                             double width = 0,
+                             double nmax = 1,
+                             double nsrc = 1)
         {
             initialize(delay,width,12,nmax);
             //Calculate the necessary variables
@@ -143,7 +154,11 @@ class Source{
             return 0;
         }
         
-        int ModulatedSineSource(double t0_coeff = 3,double prop_coeff = 3.0,double tau_coeff = 3,double nmax = 1,double nsrc = 1)
+        int ModulatedSineSource(double t0_coeff = 3,
+                                double prop_coeff = 3.0,
+                                double tau_coeff = 3,
+                                double nmax = 1,
+                                double nsrc = 1)
         {
             //Calculate the necessary variables
             initialize(t0_coeff,prop_coeff,tau_coeff,nmax);

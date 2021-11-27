@@ -17,19 +17,21 @@ class Subdomain
         xtensor<double,1> H_error{0,0}; 
 
         //Constructor
-        Subdomain(simulation_parameters sim_param, source_output_d sources,computational_domain domain,unsigned int size, unsigned int overlap_size, unsigned int id)
+        Subdomain(simulation_parameters sim_param, source_output_d sources,computational_domain domain,unsigned int size, unsigned int overlap_size, unsigned int non_overlap_size, unsigned int id)
         {
             //Transfer necessary data from Simulation class to Subdomain class...
             subdomain_param.subdomain_id = id;
             subdomain_param.subdomain_size = size;
             subdomain_param.overlap_size = overlap_size;
+            subdomain_param.non_overlap_size = non_overlap_size;
             subdomain_param.dz = sim_param.dz;
             subdomain_param.dt = sim_param.dt;
             subdomain_param.Nz = sim_param.Nz;
             subdomain_param.Nt = sim_param.Nt;
             subdomain_param.num_subdomains = sim_param.num_subdomains;
 
-            subdomain_param.spacers = sim_param.spacers;
+            subdomain_param.left_spacers = sim_param.left_spacers;
+            subdomain_param.right_spacers = sim_param.right_spacers;
             subdomain_param.injection_point = sim_param.injection_point;
 
             subdomain = domain;
@@ -48,11 +50,11 @@ class Subdomain
 
 
             //Compute the update coefficients...
-            if(id == 0)
+            if(subdomain_param.subdomain_id == 0)
             {
 
             }
-            else if(id == subdomain_param.num_subdomains - 1)
+            else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
             {
 
             }
@@ -61,7 +63,7 @@ class Subdomain
 
             }
 
-            if(id == 0)
+            if(subdomain_param.subdomain_id == 0)
             {
                 subdomain_source = sources;
             }
@@ -92,12 +94,12 @@ class Subdomain
            //Initialize variable indices
            unsigned int start = 0;
            unsigned int stop = 0;
-            if(id == 0) //If the subdomain is the 1st one...
+            if(subdomain_param.subdomain_id == 0) //If the subdomain is the 1st one...
             {
                 start = subdomain_param.overlap_size;
                 stop = s_fields.E.size();
             }
-            else if(id == subdomain_param.num_subdomains - 1) // If it is the last..
+            else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) // If it is the last..
             {
                 start = 0;
                 stop = s_fields.E.size() - subdomain_param.overlap_size;
@@ -111,7 +113,7 @@ class Subdomain
 
 
            //Store boundary data for 1st subdomain...
-           if(id == 0)
+           if(subdomain_param.subdomain_id == 0)
            {
                if(boundary_condition == "pabc")
                {
@@ -119,7 +121,7 @@ class Subdomain
                     s_fields.H_start.pop_front();
                     s_fields.H_start.push_back(s_fields.E(start+1));
                }
-               else if(boundary_condition == "dirichlet")
+               else if(subdomain_param.boundary_condition == "dirichlet")
                {
                    s_fields.E(start) = 0;
                }
@@ -136,9 +138,9 @@ class Subdomain
            view(s_fields.H,range(start,stop-1)) = view(s_fields.H,range(start,stop-1)) + (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1)));
 
 
-            if(id == 0) //Insert the Hsrc when  you are at the 1st subdomain...
+            if(subdomain_param.subdomain_id == 0) //Insert the Hsrc when  you are at the 1st subdomain...
             {
-                if(excitation_method == "tfsf")
+                if(subdomain_param.excitation_method == "tfsf")
                 {
                     s_fields.H(subdomain_param.injection_point-1) -= (s_fields.m_H(subdomain_param.injection_point-1)*subdomain_source.Esrc(curr_iteration));
                 }
@@ -146,15 +148,15 @@ class Subdomain
 
 
             //Store boundary terms at the end of the domain (last subdomain)...
-            if(id == subdomain_param.num_subdomains - 1)
+            if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
             {
-                if(boundary_condition == "tfsf")
+                if(subdomain_param.boundary_condition == "tfsf")
                 {
                     s_fields.H(stop-1) = s_fields.E_end.front();
                     s_fields.E_end.pop_front();
                     s_fields.E_end.push_back(s_fields.H(stop-2));
                 }
-                else if(boundary_condition == "dirichlet")
+                else if(subdomain_param.boundary_condition == "dirichlet")
                 {
                     s_fields.H(stop-1) = 0;
                 }
@@ -171,19 +173,19 @@ class Subdomain
             view(s_fields.E,range(start+1,stop)) =  view(s_fields.E,range(start+1,stop)) + (view(s_fields.m_E,range(start+1,stop))*(view(s_fields.H,range(start+1,stop))-view(s_fields.H,range(start,stop-1))));
 
             //Insert the Esrc component in the 1st subdomain...
-            if(id == 0)
+            if(subdomain_param.subdomain_id == 0)
             {
-                if(excitation_method == "hard")
+                if(subdomain_param.excitation_method == "hard")
                 {
                     s_fields.E(subdomain_param.injection_point) = subdomain_source.Esrc(curr_iteration);
                 
                 }
-                else if(excitation_method = "soft")
+                else if(subdomain_param.excitation_method == "soft")
                 {
                     s_fields.E(subdomain_param.injection_point) += subdomain_source.Esrc(curr_iteration);
                 
                 }
-                else if(excitation_method = "tfsf")
+                else if(subdomain_param.excitation_method == "tfsf")
                 {
                     s_fields.E(subdomain_param.injection_point) -= (s_fields.m_E(subdomain_param.injection_point)*subdomain_source.Hsrc(curr_iteration));
                 
@@ -201,6 +203,7 @@ class Subdomain
         {
             /*
                 Computes the L2 norm using the linalg module in xtensor...
+                using xtensor-BLAS...
             */
             if(side == "left")
             {

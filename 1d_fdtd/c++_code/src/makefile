@@ -18,6 +18,7 @@ DBIR = debug
 #Good way to do this is to place all dependencies in a single folder and use LDIR to access them
 xtensor_dir = $(LDIR)/xtensor/include
 xtl_dir = $(LDIR)/xtl/include
+xtensor_blas_dir = $(LDIR)/xtensor-blas/include
 xtensor_io_dir = $(LDIR)/xtensor-io/include
 xtensor_fftw_dir = $(LDIR)/xtensor-fftw/include
 highfive_dir = $(LDIR)/HighFive/include
@@ -34,7 +35,7 @@ lib_dir_hdf5 = -L/usr/lib/x86_64-linux-gnu/hdf5/serial/ -lhdf5
 
 #-Wall: Shows any error/warning in compilation
 #-O0: Optimization -O0 is lowest unoptimized
-XTENSOR_FLAGS = -isystem $(xtensor_dir) -isystem $(xtl_dir) -isystem $(xtensor_io_dir) -isystem $(xtensor_fftw_dir)
+XTENSOR_FLAGS = -isystem $(xtensor_dir) -isystem $(xtl_dir) -isystem $(xtensor_io_dir) -isystem $(xtensor_fftw_dir) -isystem $(xtensor_blas_dir)
 HDF5_FLAGS = -isystem $(highfive_dir) -isystem $(libhdf5_dir) 
 
 R_CPPFLAGS= -std=$(STD_VER) -Wall -Werror -O0 -isystem $(IDIR) $(XTENSOR_FLAGS) $(HDF5_FLAGS) 
@@ -68,7 +69,7 @@ debug: $(D_BIN).out
 
 $(D_BIN).out: $(D_OBJ).o
 	@echo 'Linking the object files in debugging build....'
-	$(CXX) $^ $(lib_dir_hdf5) -lfftw3 -o $@
+	$(CXX) $^ $(lib_dir_hdf5) -lfftw3 -lblas -llapack -DHAVE_CBLAS=1 -o $@
 
 
 $(D_OBJ).o: $(source) $(DEPS)

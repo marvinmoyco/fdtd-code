@@ -17,6 +17,8 @@
 
 //Xtensor preprocessor directives
 #include "xtensor/xarray.hpp"
+#include <xtensor/xbuilder.hpp>     // xt::arange
+#include "xtensor/xtensor.hpp"
 #include "xtensor/xio.hpp"
 #include "xtensor/xview.hpp"
 #include "xtensor/xcsv.hpp"
@@ -27,6 +29,7 @@
 #include "xtensor-fftw/basic.hpp"   // rfft, irfft
 #include "xtensor-fftw/helper.hpp"  // rfftscale
 #include "xtensor-io/xhighfive.hpp"
+#include "xtensor-blas/xlinalg.hpp"
 
 /*
 Temporary g++ command
@@ -52,6 +55,7 @@ typedef struct Subdomain_data
     unsigned int subdomain_id;
     unsigned int subdomain_size;
     unsigned int overlap_size;
+    unsigned int non_overlap_size;
     unsigned int num_subdomains = 0;
     bool source_inject = false;
     bool preprocessed = false;
@@ -59,8 +63,9 @@ typedef struct Subdomain_data
     double dt = 0;
     double Nz = 0;
     double Nt = 0;
-    int spacers = 0;
-    int injection_point = 0;
+    unsigned int left_spacers = 0;
+    unsigned int right_spacers = 0;
+    unsigned int injection_point = 0;
 
     string boundary_condition = "";
     string excitation_method = "";
@@ -87,12 +92,14 @@ typedef struct Simulation_parameters{
     double fmax_fft = 0; //Max freq that can resolved by FDTD in DFT
     double sim_time = 0;
     double n_freq = 0; //For Fourier Transform, indicates how many points
-    int spacers = 0;
-    int injection_point = 0;
+    unsigned int left_spacers = 0;
+    unsigned int right_spacers = 0;
+    unsigned int injection_point = 0;
     
     unsigned int subdomain_size = 0;
     unsigned int num_subdomains = 0;
     unsigned int overlap_size = 0;
+    unsigned int non_overlap_size = 0;
 
     string source_type = "";
     string boundary_cond = "";

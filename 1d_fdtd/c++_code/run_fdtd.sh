@@ -36,7 +36,7 @@ echo Running the compiled program.....
 
 #Execute the program
 #Format of input arguments: (1) input file directory (2) Boundary Condition (3) Excitation method (4) Custom Output Filename (5) Output File type (6) Output directory
-log_file=$(date '+%Y-%m-%d')_log.txt
+log_file=$(date '+%Y-%m-%d')_$(custom_name).log
 $fdtd_bin $input_dir $boundary_cond $excitation_method $custom_name $output_file_type $output_dir |& tee $output_dir/$log_file
 echo Check the simulation logs in $output_dir/$log_file to check the simulation details
 echo ================================================================
