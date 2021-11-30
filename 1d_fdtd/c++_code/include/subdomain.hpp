@@ -22,7 +22,7 @@ class Subdomain
             //Transfer necessary data from Simulation class to Subdomain class...
             subdomain_param.subdomain_id = id;
             subdomain_param.subdomain_size = size;
-            subdomain_param.overlap_size = overlap_size;
+            subdomain_param.overlap = overlap_size;
             subdomain_param.non_overlap_size = non_overlap_size;
             subdomain_param.dz = sim_param.dz;
             subdomain_param.dt = sim_param.dt;
@@ -37,7 +37,7 @@ class Subdomain
             subdomain = domain;
             cout << "Created a new subdomain!" << endl;
             //Initializing the fields and vectors
-            unsigned long total_size = subdomain_param.subdomain_size + 2*(subdomain_param.overlap_size);
+            unsigned long total_size = subdomain_param.subdomain_size + 2*(subdomain_param.overlap);
             s_fields.E.resize({total_size});
             s_fields.H.resize({total_size});
             s_fields.m_E.resize({total_size});
@@ -96,13 +96,13 @@ class Subdomain
            unsigned int stop = 0;
             if(subdomain_param.subdomain_id == 0) //If the subdomain is the 1st one...
             {
-                start = subdomain_param.overlap_size;
+                start = subdomain_param.overlap;
                 stop = s_fields.E.size();
             }
             else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) // If it is the last..
             {
                 start = 0;
-                stop = s_fields.E.size() - subdomain_param.overlap_size;
+                stop = s_fields.E.size() - subdomain_param.overlap;
             }
             else{ //If it is in between the 1st and last subdomain...
 
@@ -207,13 +207,13 @@ class Subdomain
             */
             if(side == "left")
             {
-                E_error(0) = linalg::norm(view(s_fields.E,range(0,subdomain_param.overlap_size)),2);
-                H_error(0) = linalg::norm(view(s_fields.H,range(0,subdomain_param.overlap_size)),2);
+                E_error(0) = linalg::norm(view(s_fields.E,range(0,subdomain_param.overlap)),2);
+                H_error(0) = linalg::norm(view(s_fields.H,range(0,subdomain_param.overlap)),2);
             }
             else if(side == "right")
             {
-                E_error(1) = linalg::norm(view(s_fields.E,range(subdomain_param.overlap_size+subdomain_param.subdomain_size,s_fields.E.size())),2);
-                H_error(1) = linalg::norm(view(s_fields.H,range(subdomain_param.overlap_size+subdomain_param.subdomain_size,s_fields.H.size())),2);
+                E_error(1) = linalg::norm(view(s_fields.E,range(subdomain_param.overlap+subdomain_param.subdomain_size,s_fields.E.size())),2);
+                H_error(1) = linalg::norm(view(s_fields.H,range(subdomain_param.overlap+subdomain_param.subdomain_size,s_fields.H.size())),2);
             }
             return true;
         }

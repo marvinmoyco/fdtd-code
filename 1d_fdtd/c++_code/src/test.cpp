@@ -7,6 +7,7 @@
 #include <vector>
 #include <xtensor/xtensor.hpp>
 #include "xtensor/xview.hpp"
+#include "xtensor/xpad.hpp"
 using namespace std;
 using namespace xt;
 int main()
@@ -17,7 +18,9 @@ int main()
     vector<size_t> b = {a1};
     xtensor<double,1> pad = zeros<double>(b);
     cout << pad << endl;
-    auto y = concatenate(xtuple(x,pad),0);
+    cout << endl << endl;
+    //Padding using the pad function
+    xtensor<double,1> y = concatenate(xtuple(x,pad),0);
     cout << endl;
     cout << y << endl;
     xtensor<double,2> new_y = y.reshape({3,-1});

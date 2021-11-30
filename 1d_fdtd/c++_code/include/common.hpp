@@ -30,6 +30,7 @@
 #include "xtensor-fftw/helper.hpp"  // rfftscale
 #include "xtensor-io/xhighfive.hpp"
 #include "xtensor-blas/xlinalg.hpp"
+#include "xtensor/xpad.hpp"
 
 /*
 Temporary g++ command
@@ -54,7 +55,7 @@ typedef struct Subdomain_data
 {
     unsigned int subdomain_id;
     unsigned int subdomain_size;
-    unsigned int overlap_size;
+    unsigned int overlap;
     unsigned int non_overlap_size;
     unsigned int num_subdomains = 0;
     bool source_inject = false;
@@ -85,8 +86,8 @@ typedef struct Subdomain_fields
 typedef struct Simulation_parameters{
     double dz = 0; //Cell length
     double dt = 0;
-    double Nz = 0;
-    double Nt = 0;
+    unsigned int Nz = 0;
+    unsigned int Nt = 0;
     double fmax = 0;
     double df = 0; // for the Fourier Transform'
     double fmax_fft = 0; //Max freq that can resolved by FDTD in DFT
@@ -101,6 +102,8 @@ typedef struct Simulation_parameters{
     unsigned int overlap_size = 0;
     unsigned int non_overlap_size = 0;
 
+    bool multithread = false; //To know whether it is serial or parallel
+
     string source_type = "";
     string boundary_cond = "";
     string excitation_method = "";
@@ -111,8 +114,10 @@ typedef struct Comp_domain{
     int injection_point = 0;
     int check = 0;
     xtensor<double,1> z; //Computational domain base vector. Basis for other vectors
-    xtensor<double,1> mu; //Magnetic permeability vector
-    xtensor<double,1> epsilon; // Electric permittivity vector
+    xarray<double> mu;
+    xarray<double> epsilon;
+    //xtensor<double,1> mu; //Magnetic permeability vector
+    //xtensor<double,1> epsilon; // Electric permittivity vector
     xtensor<double,1> n; //Refractive index vector
 } computational_domain;
 

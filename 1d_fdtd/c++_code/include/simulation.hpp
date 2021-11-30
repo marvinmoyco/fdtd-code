@@ -132,13 +132,19 @@ class Simulation
                 cout << "Layer # \t Layer size \t Layer mu \t Layer epsilon" << endl;
                 for (int i =0; i<(int) n_models;i++)
                 {
-                    cout << "Layer " << i+1 << ": \t";
-                    input.layer_size(i) = temp_l_size(i);
-                    input.magnetic_permeability(i)= temp_mu(i);
-                    input.electric_permittivity(i) = temp_epsilon(i);
-                    cout << input.layer_size(i) << " \t \t" 
-                         << input.magnetic_permeability(i) << " \t \t" 
-                         << input.electric_permittivity(i) << endl;
+                    if(temp_l_size(i) == 0){
+                        continue;
+                    }
+                    else{
+                        cout << "Layer " << i+1 << ": \t";
+                        input.layer_size(i) = temp_l_size(i);
+                        input.magnetic_permeability(i)= temp_mu(i);
+                        input.electric_permittivity(i) = temp_epsilon(i);
+                        cout << input.layer_size(i) << " \t \t" 
+                            << input.magnetic_permeability(i) << " \t \t" 
+                            << input.electric_permittivity(i) << endl;
+                    }
+                    
                     
                 }
 
@@ -237,7 +243,7 @@ class Simulation
                 
             }
             //Adjust Nz to be divisible by the numbe of subdomains
-            while(fmod(sim_param.Nz,num_subdomains) != 0)
+            while((sim_param.Nz % sim_param.num_subdomains) != 0)
             {
                 
                 //To make Nz divisible by number of subdomains, add 1 cell to the left spacer region until it becomes divisible by it
@@ -375,6 +381,7 @@ class Simulation
             */
             unsigned long int row = sim_param.Nt;
             unsigned long int col = sim_param.Nz;
+            sim_param.multithread = multithread;
             if(multithread == false)
             {
                 //FDTD Basic Version (Serial)
@@ -418,11 +425,14 @@ class Simulation
 
                 //Exception Handling to make sure that the number of subdomain and the overlap size is correct.
                 //2^x
+                
                 try
                 {
                     //Check to verify that the number of subdomains is valid...
+                    cout << "Number of subdomains: " << sim_param.num_subdomains << endl;
                     if(sim_param.num_subdomains % 2 == 0 && sim_param.num_subdomains <= 64) // Divisible by 2 (2^x number of subdomains)
                     {
+                        
                         cout << "Proper number of subdomains are detected..." << endl;
                     }
                     else
@@ -430,14 +440,7 @@ class Simulation
                         throw -1;
                     }
 
-                    if(overlap > sim_param.Nz/2)
-                    {
-                        cout << "Valid range of overlap size detected..." << endl;
-                    }
-                    else
-                    {
-                        throw -1;
-                    }
+              
                 }
                 catch(...)
                 {
@@ -461,49 +464,83 @@ class Simulation
                 else //If it is the amount of overlap (in cells)...
                 {
                     sim_param.overlap_size = overlap;
+                    //Check if the overlap_size is valid (if Nz + overlap is divisible by the number of subdomain)
+                    while((sim_param.Nz + sim_param.overlap_size) % sim_param.num_subdomains != 0)
+                    {
+                        sim_param.overlap_size += 1;
+                    }
+                    
                 }
-                
-                //Concatenate overlap size to the whole computational domain..
-                vector<size_t> overlap_shape = {sim_param.overlap_size};
-                xtensor<double,1> overlap = zeros<double>(overlap_shape);
-                view(overlap,all()) = NAN;
-                comp_domain.mu = concatenate(xtuple(comp_domain.mu,overlap),0);
-                comp_domain.epsilon = concatenate(xtuple(comp_domain.epsilon,overlap),0);
 
+                //Computing the sizes of subdomain for pre-processing
+                sim_param.non_overlap_size = (sim_param.Nz - ((sim_param.num_subdomains -1)*sim_param.overlap_size))/sim_param.num_subdomains;
 
-                //Reshape the mu and epsilon into 2D array (while maintaing a fixed numbe of subdomains, or rows)
-                vector<size_t> mu_epsilon_shape = {sim_param.num_subdomains, -1};
-                xtensor<double,2> mu_2D = comp_domain.mu.reshape(mu_epsilon_shape);
-                xtensor<double,2> epsilon_2D = comp_domain.epsilon.reshape(mu_epsilon_shape);
-                
-                
-                //range(x,a,b) = x[a,b) 
-                //Create a new tensor based on the overlap in the right side of the reshaped 2D matrix
-                xtensor<double,1> mu_overlap = concatenate(xtuple(
-                                                                  view(mu_2D,mu_2D.shape()[0] - 1,range(mu_2D.shape()[1] - sim_param.overlap_size, mu_2D.shape()[1])),
-                                                                  view(mu_2D,range(0,mu_2D.shape()[0]),range(mu_2D.shape()[1] - sim_param.overlap_size, mu_2D.shape()[1]))),
-                                                                  0);
-                xtensor<double,1> epsilon_overlap = concatenate(xtuple(
-                                                                  view(epsilon_2D,epsilon_2D.shape()[0] - 1,range(epsilon_2D.shape()[1] - sim_param.overlap_size, epsilon_2D.shape()[1])),
-                                                                  view(epsilon_2D,range(0,epsilon_2D.shape()[0]),range(epsilon_2D.shape()[1] - sim_param.overlap_size, epsilon_2D.shape()[1]))),
-                                                                  0);
-                
-                
-                //Stack the overlap (in the left side) and the reshaped 2D matrix
-                //After this line of codes, the rows of both mu and epsilon should correspond to their respective subdomains already..
-                mu_2D = hstack(xtuple(
-                                      transpose(atleast_2d(mu_overlap)),
-                                      mu_2D
-                                     ));
+                /*
+                 * The method used here is similar to how a manual STFT is done with 
+                 * frame_size = subdomain size
+                 * hop_size = how much the 'frame' moves in the computational domain.
+                 */  
 
-                epsilon_2D = hstack(xtuple(
-                                      transpose(atleast_2d(epsilon_overlap)),
-                                      epsilon_2D
-                                     ));
+                unsigned int frame_size = sim_param.non_overlap_size + 2*sim_param.overlap_size;
+                unsigned int start = 0;
+                unsigned int stop = frame_size;
+                unsigned int hop_size = sim_param.non_overlap_size + sim_param.overlap_size;
+
+                cout << "Non_overlap size: " << sim_param.non_overlap_size << " | Overlap size: " << sim_param.overlap_size << endl;
+                cout << "Frame size: " << frame_size << " | Hop size: " << hop_size << endl;
+
+                //Pad the computed mu and epsilon vectors with 0.
+                auto padded_mu = pad(comp_domain.mu,sim_param.overlap_size,pad_mode::constant,0);
+                auto padded_epsilon = pad(comp_domain.epsilon,sim_param.overlap_size,pad_mode::constant,0);
 
                 
+                cout << "Padded mu: " << padded_mu << endl
+                     << "Padded epsilon: " << padded_epsilon << endl;
+                
+         
+                //Initialize 2D matrices..
+                xtensor<double,2> mu_2D;
+                xtensor<double,2> epsilon_2D;
 
+                //Get the subsets for each subdomain.
+                for(int i=0;i<sim_param.num_subdomains;i++)
+                {   
+                    cout << "=====================================" << endl;
+                    cout << "Start: " << start << " | Stop: " << stop << endl;
 
+                    if(i == 0)
+                    {
+                        //In the 1st subdomain, the vector is only needed to be inserted to the 2D matrix..
+                        mu_2D = atleast_2d(view(padded_mu,range(start,stop)));
+                        epsilon_2D = atleast_2d(view(padded_epsilon,range(start,stop)));
+                    }
+                    else
+                    {
+                        /*
+                        * After the 1st subdomain, we need to stack (vertically) the values inside the frame to create a 2D matrix
+                        * where each row is the subdomain while the columns are the cells inside the subdomains.
+                        */
+                        mu_2D = vstack(xtuple(
+                                                mu_2D,
+                                                atleast_2d(view(padded_mu,range(start,stop)))
+                        ));
+
+                        epsilon_2D = vstack(xtuple(
+                                                epsilon_2D,
+                                                atleast_2d(view(padded_epsilon,range(start,stop)))
+                        ));
+                    }
+
+                    //Adjust the indices by the hop size
+                    start += hop_size;
+                    stop += hop_size;
+                   // cout << "Stacked MU "<<  i << ": " << endl << mu_2D << endl;
+                }
+
+                cout << "Stacked MU: " << endl << mu_2D << endl
+                     << "Stacked EPSILON: " << epsilon_2D << endl;
+
+ 
                 //Find out which subdomain to to insert the source.
                 //At this point, we can just assume that the source will always be injected into the 1st subdomain (center position)
 
@@ -513,8 +550,6 @@ class Simulation
 
 
             }
-            
-
 
 
             //Computing df - frequency step in Freq. Response 
@@ -634,6 +669,13 @@ class Simulation
                 //TO BE TESTED
                 subdomains[sdomain_index].subdomain.mu = row(mu_2D,sdomain_index);
                 subdomains[sdomain_index].subdomain.epsilon = row(epsilon_2D,sdomain_index);
+
+                //Modify the preprocessed flag
+                subdomains[sdomain_index].subdomain_param.preprocessed = true;
+                cout << "============================================" << endl;
+                cout << "Subdomain " << sdomain_index + 1 << endl;
+                cout << "Mu: " << endl << subdomains[sdomain_index].subdomain.mu << endl;
+                cout << "Epsilon: " << endl << subdomains[sdomain_index].subdomain.epsilon << endl;
                 
 
                 
@@ -648,10 +690,24 @@ class Simulation
         }
 
 
-
+        //This is a calling function in general to simulate FDTD. It can distinguish between serial and parallel config.
+        save_data simulate(string boundary_condition = "", string excitation_method = "")
+        {
+            //Check if the configuration is serial or parallel...
+            if(multithread == false)
+            {
+                //call the simulate_serial function..
+                auto output_data = simulate_serial(boundary_condition,excitation_method);
+            }
+            else if(multithread == true)
+            {
+                
+            }
+            return output;
+        }
 
         //FDTD ALgorithm only (serial version)
-        save_data simulate(string boundary_condition = "", string excitation = "")
+        save_data simulate_serial(string boundary_condition = "", string excitation = "")
         {
             //Checking if the pre-processing is done successfully...
             cout << "========================================================================" << endl;
