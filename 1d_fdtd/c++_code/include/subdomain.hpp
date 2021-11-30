@@ -10,7 +10,9 @@ class Subdomain
         computational_domain subdomain;
         subdomain_data subdomain_param;
         source_output_d subdomain_source;
-        double boundary_data[2] = {0.0,0.0}; //1st element = Left side, 2nd element = Right side
+
+        //Intermediary variable for transferring data
+        double boundary_data[2] = {0.0,0.0}; //1st element = This subdomain, 2nd element = Adjacent subdomain
         
         //Initializing error vectors for convergence...
         xtensor<double,1> E_error{0,0};
@@ -37,11 +39,11 @@ class Subdomain
             subdomain = domain;
             cout << "Created a new subdomain!" << endl;
             //Initializing the fields and vectors
-            unsigned long total_size = subdomain_param.subdomain_size + 2*(subdomain_param.overlap);
-            s_fields.E.resize({total_size});
-            s_fields.H.resize({total_size});
-            s_fields.m_E.resize({total_size});
-            s_fields.m_H.resize({total_size});
+            
+            s_fields.E.resize(subdomain.epsilon.shape());
+            s_fields.H.resize(subdomain.epsilon.shape());
+            s_fields.m_E.resize(subdomain.epsilon.shape());
+            s_fields.m_H.resize(subdomain.epsilon.shape());
 
             //s_fields.m_E = (c_0*sim_param.dt)/(comp_domain.epsilon*sim_param.dz);
             //s_fields.m_H = (c_0*sim_param.dt)/(comp_domain.mu*sim_param.dz);
@@ -52,21 +54,33 @@ class Subdomain
             //Compute the update coefficients...
             if(subdomain_param.subdomain_id == 0)
             {
-
+                //Do not include the extra padding at the start..
+                view(s_fields.m_E,range(subdomain_param.overlap,_)) = (c_0*subdomain_param.dt)/(view(subdomain.epsilon,range(subdomain_param.overlap,_))*subdomain_param.dz);
+                view(s_fields.m_H,range(subdomain_param.overlap,_)) = (c_0*subdomain_param.dt)/(view(subdomain.mu,range(subdomain_param.overlap,_))*subdomain_param.dz);
             }
             else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
             {
-
+                //Do not include the extra padding at the end..
+                view(s_fields.m_E,range(_,s_fields.m_E.shape()[0] - 1- subdomain_param.overlap)) = (c_0*subdomain_param.dt)/(view(subdomain.epsilon,range(_,s_fields.m_E.shape()[0] - 1- subdomain_param.overlap))*subdomain_param.dz);
+                view(s_fields.m_H,range(_,s_fields.m_H.shape()[0] - 1- subdomain_param.overlap)) = (c_0*subdomain_param.dt)/(view(subdomain.mu,range(_,s_fields.m_H.shape()[0] - 1- subdomain_param.overlap))*subdomain_param.dz);
+            
             }
             else
             {
-
+                 
+                s_fields.m_E = (c_0*subdomain_param.dt)/(subdomain.epsilon*subdomain_param.dz);
+                s_fields.m_H = (c_0*subdomain_param.dt)/(subdomain.mu*subdomain_param.dz);
+            
             }
 
             if(subdomain_param.subdomain_id == 0)
             {
                 subdomain_source = sources;
+
+                //Convert the injection point index (from the whole comp domain to the subdomain) by adding the amount of padding in the left side.
+                subdomain_param.injection_point += subdomain_param.overlap;
             }
+
              
         }
 
@@ -197,6 +211,66 @@ class Subdomain
             return s_fields;
         }
 
+        bool transfer_boundary_data(Subdomain adj_subdomain,string side = "right")
+        {
+            if(side == "left")
+            {
+                 //Transfer the boundary data ONLY IF the subdomains are not the first one.
+                if(subdomain_param.subdomain_id > 0 )
+                {
+                    //for E-fields
+                    //Get the boundary data from both subdomains...
+                    boundary_data[0] = s_fields.E(0);
+                    boundary_data[1] = adj_subdomain.s_fields.E(adj_subdomain.s_fields.E.size()-1);
+
+                    //Transfer the boundary E-Field data...
+                    s_fields.E(subdomain_param.overlap) = boundary_data[1];
+                    adj_subdomain.s_fields.E(s_fields.E.size()-1-adj_subdomain.subdomain_param.overlap) = boundary_data[0];
+
+                    //for H-fields
+                    //Get the boundary data from both subdomains...
+                    boundary_data[0] = s_fields.H(0);
+                    boundary_data[1] = adj_subdomain.s_fields.H(adj_subdomain.s_fields.H.size()-1);
+
+                    //Transfer the boundary E-Field data...
+                    s_fields.H(subdomain_param.overlap) = boundary_data[1];
+                    adj_subdomain.s_fields.H(s_fields.H.size()-1-adj_subdomain.subdomain_param.overlap) = boundary_data[0];
+
+                }
+                return true;
+            }
+            else if(side == "right")
+            {
+                //Transfer the boundary data ONLY IF the subdomains are not the last one.
+                if(subdomain_param.subdomain_id < subdomain_param.num_subdomains )
+                {
+                    //for E-fields
+                    //Get the boundary data from both subdomains...
+                    boundary_data[0] = s_fields.E(s_fields.E.size()-1); //Correct
+                    boundary_data[1] = adj_subdomain.s_fields.E(0);
+
+                    //Transfer the boundary E-Field data...
+                    s_fields.E(s_fields.E.size()-1-subdomain_param.overlap) = boundary_data[1];
+                    adj_subdomain.s_fields.E(adj_subdomain.subdomain_param.overlap) = boundary_data[0];
+
+                    //for H-fields
+                    //Get the boundary data from both subdomains...
+                    boundary_data[0] = s_fields.H(s_fields.H.size()-1);
+                    boundary_data[1] = adj_subdomain.s_fields.H(0);
+
+                    //Transfer the boundary E-Field data...
+                    s_fields.H(s_fields.H.size()-1-subdomain_param.overlap) = boundary_data[1];
+                    adj_subdomain.s_fields.H(adj_subdomain.subdomain_param.overlap) = boundary_data[0];
+
+                }
+                return true;
+
+            }
+            else{
+                cout << "Incorrect input arguments." << endl;
+                return false;
+            }
+        }
 
 
         bool compute_L2norm(string side="")

@@ -103,7 +103,8 @@ typedef struct Simulation_parameters{
     unsigned int non_overlap_size = 0;
 
     bool multithread = false; //To know whether it is serial or parallel
-
+    
+    string algorithm = "fdtd";
     string source_type = "";
     string boundary_cond = "";
     string excitation_method = "";

@@ -159,9 +159,10 @@ class Simulation
         computational_domain create_comp_domain(int spacer_cells = 0,
                                                 int injection_point = 0, 
                                                 double n_freq = 0, 
-                                                unsigned int num_subdomains=1, 
+                                                unsigned int num_subdomains=1,
+                                                double overlap=0, 
                                                 bool multithread = false, 
-                                                double overlap=0)
+                                                string algorithm = "fdtd-schwarz")
         {
             /*
                 This function is the "pre-processing" stage of the simulation. All of the needed pre-requisite computations are done before the actual
@@ -382,7 +383,8 @@ class Simulation
             unsigned long int row = sim_param.Nt;
             unsigned long int col = sim_param.Nz;
             sim_param.multithread = multithread;
-            if(multithread == false)
+            sim_param.algorithm = algorithm;
+            if(sim_param.algorithm == "fdtd")
             {
                 //FDTD Basic Version (Serial)
 
@@ -413,7 +415,7 @@ class Simulation
 
                 
             }
-            else if(multithread == true)
+            else if(sim_param.algorithm == "fdtd-schwarz")
             {
                 /*
                 In this part, do the following: (this assumes that the multithreading part is the FDTD-Schwarz Serial Version)
@@ -694,14 +696,15 @@ class Simulation
         save_data simulate(string boundary_condition = "", string excitation_method = "")
         {
             //Check if the configuration is serial or parallel...
-            if(multithread == false)
+            if(sim_param.algorithm == "fdtd")
             {
                 //call the simulate_serial function..
                 auto output_data = simulate_serial(boundary_condition,excitation_method);
             }
-            else if(multithread == true)
+            else if(sim_param.algorithm == "fdtd-schwarz")
             {
-                
+                //Call the fdtd-schwarz method if the 
+                simulate_fdtd_schwarz();
             }
             return output;
         }
@@ -937,30 +940,79 @@ class Simulation
         }
 
         //FDTD Schwarz Serial Version
-        void simulate_fdtd_schwarz()
+        void simulate_fdtd_schwarz(string direction = "right")
         {
-            //This is the FDTD Time Loop
-            for(int curr_iter=0;curr_iter<sim_param.Nt;curr_iter++)
+            
+            if(sim_param.multithread == false)
             {
+                /*
+                * Part of the code when OpenMP is not implemented (FDTD-Schwarz in Serial configuration)
+                * Iterates through every subdomain so concurrent simulation will not be possible.
+                */
 
-                //Iterate through the subdomain objects...
-                //While loop and dependent on the return value of the convergence function...
-                for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
+
+                //This is the FDTD Time Loop
+                for(int curr_iter=0;curr_iter<sim_param.Nt;curr_iter++)
                 {
-                    //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
-                    subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
-                
-                    //Transfer the internal boundary data of the adjacent subdomains here....
+                    bool isConverged = false;
+                    //Loop the FDTD-Schwarz until the data has converged...
+                    while(isConverged == false)
+                    {
+                        //Iterate through the subdomain objects...
+                        //While loop and dependent on the return value of the convergence function...
+                        for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
+                        {
+                            //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
+                            subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
+                        
+                            //Transfer the internal boundary data of the adjacent subdomains here....
+                            //Toggle here if you want the direction to be left or right in transferring the boundary data...
+                            if (direction == "right")
+                            {
+                                if(subdom_index == sim_param.num_subdomains -1)
+                                {
+                                    //Skip the last subdomain (since there is no adjacent subdomain in the right side)
+                                    continue;
+                                }
+                                subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index + 1],direction);
+                            }
+                            else if(direction == "left")
+                            {
+                                if(subdom_index == 0)
+                                {   
+                                    //Skip the first subdomain (since there is no adjacent subdomain in the left side)
+                                    continue;
+                                }
+                                subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index - 1],direction);
+                            }
+                            
 
+                        }
+
+                        //Check for convergence here....
+                        //isConverged = convergence_function()
+
+                        
+
+
+                        //Continue the loop if not converged...
+
+                    }
+
+                    //If converged, reconstruct the whole comp domain here...
+
+
+                    //Update the FFT here....
 
                 }
-
-                //Check for convergence here....
-
-
-                //Update the FFT here....
-
                 
+            }
+            else if(sim_param.multithread == true)
+            {
+                /*
+                * Part of the code when OpenMP is utilized. For loop is still used but each iteration will be a separate thread.
+                */
+               cout << "OPENMP PART OF THE CODE...." << endl;
             }
         }
 

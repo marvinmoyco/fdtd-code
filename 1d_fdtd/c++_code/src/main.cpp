@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
   Simulation sim(argv[1]);
 
   //Perform pre-processing...
-  computational_domain check = sim.create_comp_domain(0,0,100,4,true,5);
+  computational_domain check = sim.create_comp_domain(0,0,100,4,5,true,"fdtd-schwarz");
 
   //Start the simulation...
   output = sim.simulate(argv[2],argv[3]);
