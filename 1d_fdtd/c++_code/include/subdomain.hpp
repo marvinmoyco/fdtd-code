@@ -225,7 +225,7 @@ class Subdomain
 
                     //Transfer the boundary E-Field data...
                     s_fields.E(subdomain_param.overlap) = boundary_data[1];
-                    adj_subdomain.s_fields.E(s_fields.E.size()-1-adj_subdomain.subdomain_param.overlap) = boundary_data[0];
+                    adj_subdomain.s_fields.E(s_fields.E.size()-adj_subdomain.subdomain_param.overlap) = boundary_data[0];
 
                     //for H-fields
                     //Get the boundary data from both subdomains...
@@ -234,7 +234,7 @@ class Subdomain
 
                     //Transfer the boundary E-Field data...
                     s_fields.H(subdomain_param.overlap) = boundary_data[1];
-                    adj_subdomain.s_fields.H(s_fields.H.size()-1-adj_subdomain.subdomain_param.overlap) = boundary_data[0];
+                    adj_subdomain.s_fields.H(s_fields.H.size()-adj_subdomain.subdomain_param.overlap) = boundary_data[0];
 
                 }
                 return true;
@@ -250,7 +250,7 @@ class Subdomain
                     boundary_data[1] = adj_subdomain.s_fields.E(0);
 
                     //Transfer the boundary E-Field data...
-                    s_fields.E(s_fields.E.size()-1-subdomain_param.overlap) = boundary_data[1];
+                    s_fields.E(s_fields.E.size()-subdomain_param.overlap) = boundary_data[1];
                     adj_subdomain.s_fields.E(adj_subdomain.subdomain_param.overlap) = boundary_data[0];
 
                     //for H-fields
@@ -259,7 +259,7 @@ class Subdomain
                     boundary_data[1] = adj_subdomain.s_fields.H(0);
 
                     //Transfer the boundary E-Field data...
-                    s_fields.H(s_fields.H.size()-1-subdomain_param.overlap) = boundary_data[1];
+                    s_fields.H(s_fields.H.size()-subdomain_param.overlap) = boundary_data[1];
                     adj_subdomain.s_fields.H(adj_subdomain.subdomain_param.overlap) = boundary_data[0];
 
                 }

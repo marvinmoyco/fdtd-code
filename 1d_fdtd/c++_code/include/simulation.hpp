@@ -384,10 +384,12 @@ class Simulation
             unsigned long int col = sim_param.Nz;
             sim_param.multithread = multithread;
             sim_param.algorithm = algorithm;
+
+            //FDTD Basic Version (Serial)
+            //This is also needed for FDTD-Schwarz for the reconstruction of the comp domain...
+
             if(sim_param.algorithm == "fdtd")
             {
-                //FDTD Basic Version (Serial)
-
                 //Resize the fields
                 sim_fields.E.resize(comp_domain.z.shape());
                 sim_fields.H.resize(comp_domain.z.shape());
@@ -413,9 +415,8 @@ class Simulation
 
                 //cout << comp_domain.z.size() << "   " << comp_domain.mu.size() << endl;
 
-                
             }
-            else if(sim_param.algorithm == "fdtd-schwarz")
+            if(sim_param.algorithm == "fdtd-schwarz")
             {
                 /*
                 In this part, do the following: (this assumes that the multithreading part is the FDTD-Schwarz Serial Version)
@@ -549,6 +550,9 @@ class Simulation
                 //Call the preprocess subdomain to create the subdomain objects.
                 preprocess_subdomain(mu_2D,epsilon_2D,sim_param.num_subdomains,sim_param.subdomain_size,sim_param.overlap_size);
 
+                //Resize the different save matrices
+                output.E.resize({row,col});
+                output.H.resize({row,col});
 
 
             }
@@ -954,14 +958,18 @@ class Simulation
                 //This is the FDTD Time Loop
                 for(int curr_iter=0;curr_iter<sim_param.Nt;curr_iter++)
                 {
+
                     bool isConverged = false;
+
                     //Loop the FDTD-Schwarz until the data has converged...
                     while(isConverged == false)
                     {
+
                         //Iterate through the subdomain objects...
                         //While loop and dependent on the return value of the convergence function...
                         for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
                         {
+
                             //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
                             subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
                         
@@ -969,6 +977,7 @@ class Simulation
                             //Toggle here if you want the direction to be left or right in transferring the boundary data...
                             if (direction == "right")
                             {
+
                                 if(subdom_index == sim_param.num_subdomains -1)
                                 {
                                     //Skip the last subdomain (since there is no adjacent subdomain in the right side)
@@ -978,6 +987,7 @@ class Simulation
                             }
                             else if(direction == "left")
                             {
+
                                 if(subdom_index == 0)
                                 {   
                                     //Skip the first subdomain (since there is no adjacent subdomain in the left side)
@@ -1000,7 +1010,7 @@ class Simulation
                     }
 
                     //If converged, reconstruct the whole comp domain here...
-
+                    reconstruct_comp_domain(curr_iter);
 
                     //Update the FFT here....
 
@@ -1015,6 +1025,52 @@ class Simulation
                cout << "OPENMP PART OF THE CODE...." << endl;
             }
         }
+
+        bool reconstruct_comp_domain(unsigned int curr_iteration = 0)
+        {
+            /*
+            * This function compiles all of the computed field values into a single 1D vector.
+            * The reconstructed 1D vector will be used in plotting and FFT computations.
+            * At this point, the vecotrs sim_fields.E and sim_fields.H has no size so we will use hstack()...
+            */
+
+           
+            unsigned int start = sim_param.overlap_size;
+            unsigned int stop = sim_param.non_overlap_size + sim_param.overlap_size;
+            
+
+            //Iterate through the subdomains...
+            for(int subdom_index=0;subdom_index < sim_param.num_subdomains; subdom_index++)
+            {
+                if(subdom_index == 0)
+                {
+                    //Start to get some value on the sim_fields by saving the data of the 1st subdomain..
+                    sim_fields.E = view(subdomains[subdom_index].s_fields.E,range(start,_));
+                    sim_fields.H = view(subdomains[subdom_index].s_fields.H,range(start,_));
+
+                }
+                else if(subdom_index == sim_param.num_subdomains -1)
+                {
+                    //When at the end of the domain, do not include the extra padding..
+                    sim_fields.E = hstack(xtuple(sim_fields.E,view(subdomains[subdom_index].s_fields.E,range(start,stop))));
+                    sim_fields.H = hstack(xtuple(sim_fields.H,view(subdomains[subdom_index].s_fields.H,range(start,stop))));
+                }
+                else{
+                    //When the subdomain is in the middle (not leftmost or rightmost), get all values except the overlap region on the left
+                    sim_fields.E = hstack(xtuple(sim_fields.E,view(subdomains[subdom_index].s_fields.E,range(start,_))));
+                    sim_fields.H = hstack(xtuple(sim_fields.H,view(subdomains[subdom_index].s_fields.H,range(start,_))));
+                }
+            }
+
+
+            //Save this to a row in the 2D matrix of output struct...
+            row(output.E,curr_iteration) = sim_fields.E;
+            row(output.H,curr_iteration) = sim_fields.H;
+
+            return true;
+
+        }
+
 
         bool check_convergence()
         {
