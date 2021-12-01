@@ -164,7 +164,7 @@ class Subdomain
             //Store boundary terms at the end of the domain (last subdomain)...
             if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
             {
-                if(subdomain_param.boundary_condition == "tfsf")
+                if(subdomain_param.boundary_condition == "pabc")
                 {
                     s_fields.H(stop-1) = s_fields.E_end.front();
                     s_fields.E_end.pop_front();

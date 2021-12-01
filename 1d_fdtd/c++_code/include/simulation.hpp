@@ -173,7 +173,8 @@ class Simulation
                 3. n_freq - Number of frequency points to be used in the Frequency Response.
                 4. num_subdomains - Number of subdomains created in FDTD-Schwarz Algorithm.
                 5. multithread - flag to determine whether the algorithm used is serial or parallel.
-                6. overlap - amount of overlap used in Schwarz method. Range (0,1) 0% to 100%.
+                6. overlap - amount of overlap used in Schwarz method. Range (0,1) 0% to 100% of spacer region. If the overlap size is greater than 1, it is number cells.
+                7. algorithm - toggles between basic fdtd and fdtd-schwarz algorithm.
             */
 
             
@@ -386,8 +387,6 @@ class Simulation
             sim_param.algorithm = algorithm;
 
             //FDTD Basic Version (Serial)
-            //This is also needed for FDTD-Schwarz for the reconstruction of the comp domain...
-
             if(sim_param.algorithm == "fdtd")
             {
                 //Resize the fields
@@ -416,13 +415,13 @@ class Simulation
                 //cout << comp_domain.z.size() << "   " << comp_domain.mu.size() << endl;
 
             }
-            if(sim_param.algorithm == "fdtd-schwarz")
+            else if(sim_param.algorithm == "fdtd-schwarz")
             {
                 /*
-                In this part, do the following: (this assumes that the multithreading part is the FDTD-Schwarz Serial Version)
-                1. Compute the size of each subdomain.
-                2. Compute the size of each overlapping region.
-                3. Find out which subdomain to inject the source.
+                In this part, do the following: 
+                1. Compute the size of each overlapping region.
+                2. Compute the size of each subdomain.
+                3. Find out which subdomain to inject the source. (assumption: always in the 1st subdomain.)
                 4. call the pre-process subdomain method.
                 */
 
@@ -462,7 +461,7 @@ class Simulation
                 //Computing the size of overlapping region
                 if(overlap > 0 && overlap < 1) //If the overlap input is a percentage...
                 {
-                    sim_param.overlap_size = sim_param.Nz*overlap; //25% of the original computational domain...
+                    sim_param.overlap_size = sim_param.left_spacers*overlap; //25% of the original computational domain...
                 }
                 else //If it is the amount of overlap (in cells)...
                 {
@@ -672,7 +671,6 @@ class Simulation
                         break;
                 }
                 //Store the computed mu and epsilon for each subdomain (for computation of update coeff)...
-                //TO BE TESTED
                 subdomains[sdomain_index].subdomain.mu = row(mu_2D,sdomain_index);
                 subdomains[sdomain_index].subdomain.epsilon = row(epsilon_2D,sdomain_index);
 
@@ -686,7 +684,7 @@ class Simulation
 
                 
             }
-            //Flag the first and last subdomain...
+           
             
             
 
