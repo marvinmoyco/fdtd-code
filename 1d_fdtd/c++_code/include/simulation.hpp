@@ -1020,7 +1020,90 @@ class Simulation
                 /*
                 * Part of the code when OpenMP is utilized. For loop is still used but each iteration will be a separate thread.
                 */
-               cout << "OPENMP PART OF THE CODE...." << endl;
+                cout << "OPENMP PART OF THE CODE...." << endl;
+                //This is the FDTD Time Loop
+                for(int curr_iter=0;curr_iter<sim_param.Nt;curr_iter++)
+                {
+
+                    bool isConverged = false;
+
+                    //Loop the FDTD-Schwarz until the data has converged...
+                    while(isConverged == false)
+                    {
+
+                        //Iterate through the subdomain objects...
+                        //While loop and dependent on the return value of the convergence function...
+                        #pragma omp parallel //Create a parallel region using OpenMP
+                        {
+                            //Get the thread id...
+                            int thread_id = omp_get_thread_num();
+
+                            //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
+                            //In multithread, each thread will call their own subdomain object...
+                            subdomains[thread_id].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
+                        
+                            //Transfer the internal boundary data of the adjacent subdomains here....
+                            //Toggle here if you want the direction to be left or right in transferring the boundary data...
+                            if (direction == "right")
+                            {
+                                //Skip the last subdomain (since there is no adjacent subdomain in the right side)
+                                if(thread_id != sim_param.num_subdomains -1)
+                                {
+                                    
+                                    /*
+                                    * Wait for all subdomain to finish before going here.
+                                    * In this way, we can use the left or right direction in openMP since
+                                    * this guarantees that all subdomains MUST BE FINISHED BEFORE executing the method below
+                                    */
+                                    #pragma omp barrier
+
+                                    //Make this such that only 1 thread executes this method at a time to prevent race conditions.
+                                    #pragma omp critical
+                                    {
+                                        subdomains[thread_id].transfer_boundary_data(subdomains[thread_id + 1],direction);
+                                    }
+                                } 
+                            }
+                            else if(direction == "left")
+                            {
+
+                                //Skip the first subdomain (since there is no adjacent subdomain in the left side)
+                                if(thread_id == 0)
+                                {   
+                                    
+                                    /*
+                                    * Wait for all subdomain to finish before going here.
+                                    * In this way, we can use the left or right direction in openMP since
+                                    * this guarantees that all subdomains MUST BE FINISHED BEFORE executing the method below
+                                    */
+                                    #pragma omp barrier
+
+                                    //Make this such that only 1 thread executes this method at a time to prevent race conditions.
+                                    #pragma omp critical
+                                    {
+                                        subdomains[thread_id].transfer_boundary_data(subdomains[thread_id - 1],direction);
+                                    }
+                                }
+                            } 
+                        }
+                        
+
+                        //Check for convergence here....
+                        //isConverged = convergence_function()
+
+                        
+
+
+                        //Continue the loop if not converged...
+
+                    }
+
+                    //If converged, reconstruct the whole comp domain here...
+                    reconstruct_comp_domain(curr_iter);
+
+                    //Update the FFT here....
+
+                }
             }
         }
 

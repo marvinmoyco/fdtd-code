@@ -14,6 +14,8 @@
 #include <thread>
 #include <list>
 #include <complex>
+#include <omp.h>
+#include <mutex>  
 
 //Xtensor preprocessor directives
 #include "xtensor/xarray.hpp"
