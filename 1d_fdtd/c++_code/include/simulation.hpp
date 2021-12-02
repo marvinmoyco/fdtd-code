@@ -424,10 +424,8 @@ class Simulation
                 3. Find out which subdomain to inject the source. (assumption: always in the 1st subdomain.)
                 4. call the pre-process subdomain method.
                 */
-
                 //Exception Handling to make sure that the number of subdomain and the overlap size is correct.
                 //2^x
-                
                 try
                 {
                     //Check to verify that the number of subdomains is valid...
@@ -538,11 +536,8 @@ class Simulation
                     stop += hop_size;
                    // cout << "Stacked MU "<<  i << ": " << endl << mu_2D << endl;
                 }
-
                 cout << "Stacked MU: " << endl << mu_2D << endl
                      << "Stacked EPSILON: " << epsilon_2D << endl;
-
- 
                 //Find out which subdomain to to insert the source.
                 //At this point, we can just assume that the source will always be injected into the 1st subdomain (center position)
 
@@ -680,16 +675,7 @@ class Simulation
                 cout << "Subdomain " << sdomain_index + 1 << endl;
                 cout << "Mu: " << endl << subdomains[sdomain_index].subdomain.mu << endl;
                 cout << "Epsilon: " << endl << subdomains[sdomain_index].subdomain.epsilon << endl;
-                
-
-                
             }
-           
-            
-            
-
-            
-
             return 0;
         }
 
@@ -944,25 +930,20 @@ class Simulation
         //FDTD Schwarz Serial Version
         void simulate_fdtd_schwarz(string direction = "right")
         {
-            
             if(sim_param.multithread == false)
             {
                 /*
                 * Part of the code when OpenMP is not implemented (FDTD-Schwarz in Serial configuration)
                 * Iterates through every subdomain so concurrent simulation will not be possible.
                 */
-
-
                 //This is the FDTD Time Loop
                 for(int curr_iter=0;curr_iter<sim_param.Nt;curr_iter++)
                 {
 
                     bool isConverged = false;
-
                     //Loop the FDTD-Schwarz until the data has converged...
                     while(isConverged == false)
                     {
-
                         //Iterate through the subdomain objects...
                         //While loop and dependent on the return value of the convergence function...
                         for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
@@ -993,27 +974,22 @@ class Simulation
                                 }
                                 subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index - 1],direction);
                             }
-                            
-
                         }
 
                         //Check for convergence here....
                         //isConverged = convergence_function()
 
-                        
-
-
                         //Continue the loop if not converged...
-
                     }
-
                     //If converged, reconstruct the whole comp domain here...
                     reconstruct_comp_domain(curr_iter);
-
                     //Update the FFT here....
-
                 }
-                
+                /*
+                                    * Wait for all subdomain to finish before going here.
+                                    * In this way, we can use the left or right direction in openMP since
+                                    * this guarantees that all subdomains MUST BE FINISHED BEFORE executing the method below
+                                    */
             }
             else if(sim_param.multithread == true)
             {
@@ -1021,16 +997,14 @@ class Simulation
                 * Part of the code when OpenMP is utilized. For loop is still used but each iteration will be a separate thread.
                 */
                 cout << "OPENMP PART OF THE CODE...." << endl;
+                omp_set_num_threads(sim_param.num_subdomains);
                 //This is the FDTD Time Loop
                 for(int curr_iter=0;curr_iter<sim_param.Nt;curr_iter++)
                 {
-
                     bool isConverged = false;
-
                     //Loop the FDTD-Schwarz until the data has converged...
                     while(isConverged == false)
                     {
-
                         //Iterate through the subdomain objects...
                         //While loop and dependent on the return value of the convergence function...
                         #pragma omp parallel //Create a parallel region using OpenMP
@@ -1042,67 +1016,41 @@ class Simulation
                             //In multithread, each thread will call their own subdomain object...
                             subdomains[thread_id].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
                         
+                            #pragma omp barrier
+
+
                             //Transfer the internal boundary data of the adjacent subdomains here....
                             //Toggle here if you want the direction to be left or right in transferring the boundary data...
-                            if (direction == "right")
+                            #pragma omp critical
                             {
-                                //Skip the last subdomain (since there is no adjacent subdomain in the right side)
-                                if(thread_id != sim_param.num_subdomains -1)
+                                if (direction == "right")
                                 {
-                                    
-                                    /*
-                                    * Wait for all subdomain to finish before going here.
-                                    * In this way, we can use the left or right direction in openMP since
-                                    * this guarantees that all subdomains MUST BE FINISHED BEFORE executing the method below
-                                    */
-                                    #pragma omp barrier
-
-                                    //Make this such that only 1 thread executes this method at a time to prevent race conditions.
-                                    #pragma omp critical
+                                    //Skip the last subdomain (since there is no adjacent subdomain in the right side)
+                                    if(thread_id != sim_param.num_subdomains -1)
                                     {
+                                        //Make this such that only 1 thread executes this method at a time to prevent race conditions.
                                         subdomains[thread_id].transfer_boundary_data(subdomains[thread_id + 1],direction);
-                                    }
-                                } 
-                            }
-                            else if(direction == "left")
-                            {
-
-                                //Skip the first subdomain (since there is no adjacent subdomain in the left side)
-                                if(thread_id == 0)
-                                {   
-                                    
-                                    /*
-                                    * Wait for all subdomain to finish before going here.
-                                    * In this way, we can use the left or right direction in openMP since
-                                    * this guarantees that all subdomains MUST BE FINISHED BEFORE executing the method below
-                                    */
-                                    #pragma omp barrier
-
-                                    //Make this such that only 1 thread executes this method at a time to prevent race conditions.
-                                    #pragma omp critical
-                                    {
+                                    } 
+                                }
+                                else if(direction == "left")
+                                {
+                                    //Skip the first subdomain (since there is no adjacent subdomain in the left side)
+                                    if(thread_id == 0)
+                                    {   
+                                        //Make this such that only 1 thread executes this method at a time to prevent race conditions.
                                         subdomains[thread_id].transfer_boundary_data(subdomains[thread_id - 1],direction);
                                     }
                                 }
                             } 
                         }
                         
-
                         //Check for convergence here....
                         //isConverged = convergence_function()
-
-                        
-
-
                         //Continue the loop if not converged...
-
                     }
-
                     //If converged, reconstruct the whole comp domain here...
                     reconstruct_comp_domain(curr_iter);
-
                     //Update the FFT here....
-
                 }
             }
         }
@@ -1114,8 +1062,7 @@ class Simulation
             * The reconstructed 1D vector will be used in plotting and FFT computations.
             * At this point, the vecotrs sim_fields.E and sim_fields.H has no size so we will use hstack()...
             */
-
-           
+        
             unsigned int start = sim_param.overlap_size;
             unsigned int stop = sim_param.non_overlap_size + sim_param.overlap_size;
             
@@ -1142,14 +1089,10 @@ class Simulation
                     sim_fields.H = hstack(xtuple(sim_fields.H,view(subdomains[subdom_index].s_fields.H,range(start,_))));
                 }
             }
-
-
             //Save this to a row in the 2D matrix of output struct...
             row(output.E,curr_iteration) = sim_fields.E;
             row(output.H,curr_iteration) = sim_fields.H;
-
             return true;
-
         }
 
 
