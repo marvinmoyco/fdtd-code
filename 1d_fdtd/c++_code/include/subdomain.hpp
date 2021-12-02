@@ -10,6 +10,7 @@ class Subdomain
         computational_domain subdomain;
         subdomain_data subdomain_param;
         source_output_d subdomain_source;
+        save_data_subdomain subdomain_output;
 
         //Intermediary variable for transferring data
         double boundary_data[2] = {0.0,0.0}; //1st element = This subdomain, 2nd element = Adjacent subdomain

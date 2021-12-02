@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
   output = sim.simulate(argv[2],argv[3]);
 
   //Save the simulation data....
-  sim.save_to_file(argv[4],argv[5],argv[6]);
+  sim.save_to_file(argv[4],argv[5],argv[6],true);
 
 
 

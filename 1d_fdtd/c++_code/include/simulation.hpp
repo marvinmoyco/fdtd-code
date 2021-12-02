@@ -1174,7 +1174,7 @@ class Simulation
             return dump(file, dataset_path,data,dump_mode::overwrite);
         }
 
-        int save_to_file(string name = "",string type = "npy",string output_dir = "")
+        int save_to_file(string name = "",string type = "npy",string output_dir = "",bool comprehensive = false,string sim_username = "none", string sim_description = "none")
         {
             /*
             
@@ -1292,75 +1292,155 @@ class Simulation
                 HighFive::File file(h5_file_name, HighFive::File::Overwrite);
 
                 cout << "Saving simulation parameters" << "-----";
-                //Store simulation parameters...
-                write_to_hdf5(file, string("/Date of Simulation"), date_string);
-                write_to_hdf5(file, string("/Cell size (dz)"), sim_param.dz);
-                write_to_hdf5(file, string("/Total number of cells (Nz)"), sim_param.Nz);
-                write_to_hdf5(file, string("/Time step (dt)"), sim_param.dt);
-                write_to_hdf5(file, string("/Total number of time iteration (Nt)"), sim_param.Nt);
-                write_to_hdf5(file, string("/Frequency of Interest (fmax)"), sim_param.fmax);
-                write_to_hdf5(file, string("/Frequency Resolution (df)"), sim_param.df);
-                write_to_hdf5(file, string("/Upper frequency limit (FFT)"), sim_param.fmax_fft);
-                write_to_hdf5(file, string("/Total Simulation Time"), sim_param.sim_time);
-                write_to_hdf5(file, string("/Number of frequencies (FFT)"), sim_param.n_freq);
-                write_to_hdf5(file, string("/Amount of spacing in the left side (number of cells)"), sim_param.left_spacers);
-                write_to_hdf5(file, string("/Amount of spacing in the right side (number of cells)"), sim_param.right_spacers);
-                write_to_hdf5(file, string("/Source injection point (cell index)"), sim_param.injection_point);
-                write_to_hdf5(file, string("/Source Type"), sim_param.source_type);
-                write_to_hdf5(file, string("/Boundary Condition"), sim_param.boundary_cond);
-                write_to_hdf5(file, string("/Source Excitation Method"), sim_param.excitation_method);
+
+                /*
+                * Storing metadata: parent folder "metadata"
+                */
+                cout << "Saving simulation metadata -----";
+                write_to_hdf5(file, string("/metadata/date"), date_string);
+                //To be implemented...
+                write_to_hdf5(file, string("/metadata/user"), sim_username);
+                write_to_hdf5(file, string("/metadata/description"), sim_description);
+                cout << "---> Saved!" << endl;
+
+                /*
+                * Storing simulation data: parent folder "sim data"
+                * Storing input data: parent folder "input"
+                */
+                cout << "Saving simulation data...." << endl;
+                cout << "Saving input data -----";
+                //Store input data (parsed from the input file)
+                write_to_hdf5(file, string("/input/layer size"), input.layer_size);
+                write_to_hdf5(file, string("/input/magnetic permeability"), input.magnetic_permeability);
+                write_to_hdf5(file, string("/input/electric permittivity"), input.electric_permittivity);
+                write_to_hdf5(file, string("/input/sim param"), input.simulation_parameters);
+                cout << "---> Saved!" << endl;
+
+                /*
+                * Storing simulation parameters: parent folder "sim param"
+                */
+                write_to_hdf5(file, string("/sim param/dz"), sim_param.dz);
+                write_to_hdf5(file, string("/sim param/Nz"), sim_param.Nz);
+                write_to_hdf5(file, string("/sim param/dt"), sim_param.dt);
+                write_to_hdf5(file, string("/sim param/Nt"), sim_param.Nt);
+                write_to_hdf5(file, string("/sim param/fmax"), sim_param.fmax);
+                write_to_hdf5(file, string("/sim param/df"), sim_param.df);
+                write_to_hdf5(file, string("/sim param/fft upper freq"), sim_param.fmax_fft);
+                write_to_hdf5(file, string("/sim param/inj point"), sim_param.injection_point);
+                write_to_hdf5(file, string("/sim param/boundary cond"), sim_param.boundary_cond);
+                write_to_hdf5(file, string("/sim param/excitation method"), sim_param.excitation_method);
+                write_to_hdf5(file, string("/sim param/algorithm"), sim_param.algorithm);
+                write_to_hdf5(file, string("/sim param/num subdomains"), sim_param.num_subdomains);
+                write_to_hdf5(file, string("/sim param/num freqs"), sim_param.n_freq);
+                write_to_hdf5(file, string("/sim param/left spacer"), sim_param.left_spacers);
+                write_to_hdf5(file, string("/sim param/right spacer"), sim_param.right_spacers);
+        
+               
+                if (sim_param.algorithm == "fdtd-schwarz")
+                {
+                    //Save these parameters if the algorithm is FDTD-Schwarz only
+                    write_to_hdf5(file, string("/sim param/overlap size"), sim_param.overlap_size);
+                    write_to_hdf5(file, string("/sim param/subdomain size"), sim_param.subdomain_size);
+                    write_to_hdf5(file, string("/sim param/non overlap size"), sim_param.non_overlap_size);
+                
+                }
                 cout << "--->" << "Saved" << endl;
 
 
+                /*
+                * Storing computational domain parameters: parent folder "comp domain"
+                */
+
                 cout << "Saving Computational Domain parameters -----";
                 //Store computational domain parameters
-                write_to_hdf5(file, string("/Computational domain z (vector)"), comp_domain.z);
-                write_to_hdf5(file, string("/Magnetic permeability mu (vector)"), comp_domain.mu);
-                write_to_hdf5(file, string("/Electric permittivity epsilon (vector)"), comp_domain.epsilon);
-                write_to_hdf5(file, string("/Refractive Index (vector)"), comp_domain.n);
+                write_to_hdf5(file, string("/comp domain/z"), comp_domain.z);
+                write_to_hdf5(file, string("/comp domain/mu"), comp_domain.mu);
+                write_to_hdf5(file, string("/comp domain/epsilon"), comp_domain.epsilon);
+                write_to_hdf5(file, string("/comp domain/n"), comp_domain.n);
                 cout << "---> Saved!" << endl;
 
-                cout << "Saving Input data -----";
-                //Store input data (parsed from the input file)
-                write_to_hdf5(file, string("/Input Layer size"), input.layer_size);
-                write_to_hdf5(file, string("/Magnetic Permeability"), input.magnetic_permeability);
-                write_to_hdf5(file, string("/Electric Permittivity"), input.electric_permittivity);
-                cout << "---> Saved!" << endl;
+                
+                /*
+                * Storing Source parameters: parent folder "source"
+                */
 
                 cout << "Saving Source parameters -----";
-                //Store source parameters
-                write_to_hdf5(file, string("/Source tau"), sim_source->source_param.tau);
-                write_to_hdf5(file, string("/Source t0"), sim_source->source_param.t0);
-                write_to_hdf5(file, string("/Source t_prop"), sim_source->source_param.t_prop);
-                write_to_hdf5(file, string("/Esrc"), sim_source_fields.Esrc);
-                write_to_hdf5(file, string("/Hsrc"), sim_source_fields.Hsrc);
-                write_to_hdf5(file, string("/t_E"), sim_source_fields.t_E);
-                write_to_hdf5(file, string("/t_H"), sim_source_fields.t_H);
-                write_to_hdf5(file, string("/t"), sim_source_fields.t);
+                
+                write_to_hdf5(file, string("/source/type"), sim_param.source_type);
+                write_to_hdf5(file, string("/source/Esrc"), sim_source_fields.Esrc);
+                write_to_hdf5(file, string("/source/Hsrc"), sim_source_fields.Hsrc);
+                write_to_hdf5(file, string("/source/t_E"), sim_source_fields.t_E);
+                write_to_hdf5(file, string("/source/t_H"), sim_source_fields.t_H);
+
+                if(comprehensive == true)
+                {
+                    write_to_hdf5(file, string("/source/t"), sim_source_fields.t);
+                    write_to_hdf5(file, string("/source/tau"), sim_source->source_param.tau);
+                    write_to_hdf5(file, string("/source/t0"), sim_source->source_param.t0);
+                    write_to_hdf5(file, string("/source/tprop"), sim_source->source_param.t_prop);
+                }
+                
                 cout << "---> Saved!" << endl;
 
 
-                cout << "Saving Simulation Data -----";
-                //Store the main simulation data
-                write_to_hdf5(file, string("/m_E"), sim_fields.m_E);
-                write_to_hdf5(file, string("/m_H"), sim_fields.m_H);
-                write_to_hdf5(file, string("/FFT Frequency Range"), sim_fields.Freq_range);
-                write_to_hdf5(file, string("/FFT Kernel Frequency Vector"), sim_fields.Kernel_Freq);
-                write_to_hdf5(file, string("/E"), output.E);
-                write_to_hdf5(file, string("/H"), output.H);
-                write_to_hdf5(file, string("/Reflectance"), output.Reflectance);
-                write_to_hdf5(file, string("/Transmittance"), output.Transmittance);
-                write_to_hdf5(file, string("/Conservation of Energy"), output.Con_of_Energy);
-                write_to_hdf5(file, string("/Source"), output.Source);
-                write_to_hdf5(file, string("/Freq_Axis"), output.Freq_Axis);
-                write_to_hdf5(file, string("/Source_FFT"), output.Source_FFT);
+                cout << "Saving Output Data-----";
                 
-                //Saving the FFTW-computed data
-                write_to_hdf5(file,string("/FFTW_R"),output.FFTW_R);
-                write_to_hdf5(file,string("/FFTW_T"),output.FFTW_T);
-                write_to_hdf5(file,string("/FFTW_C"),output.FFTW_C);
-                write_to_hdf5(file,string("/FFTW_S"),output.FFTW_S);
-                write_to_hdf5(file,string("/FFTW_Freq"),output.FFTW_Freq);
+                if(sim_param.algorithm == "fdtd-schwarz")
+                {
+                    //Save the subdomain data...
+                    for(int i=0;i<sim_param.num_subdomains;i++)
+                    {
+                        string base_path = string("/output/subdomain/") + to_string(subdomains[i].subdomain_param.subdomain_id); 
+                        //Iterate through every subdomain...
+
+                        //Save main data
+                        write_to_hdf5(file, base_path + string("/inj point"), subdomains[i].subdomain_param.injection_point);
+                        write_to_hdf5(file, base_path + string("/m_E"), subdomains[i].s_fields.m_E);
+                        write_to_hdf5(file, base_path + string("/m_H"), subdomains[i].s_fields.m_H);
+                        write_to_hdf5(file, base_path + string("/E"), subdomains[i].subdomain_output.E);
+                        write_to_hdf5(file, base_path + string("/H"), subdomains[i].subdomain_output.H);
+                        write_to_hdf5(file, base_path + string("/source inj"), subdomains[i].subdomain_param.source_inject);
+                        //To be implemented
+                        //write_to_hdf5(file, base_path + string("/wall time"), subdomains[i].subdomain_output.wall_time);
+                        //write_to_hdf5(file, base_path + string("/algo time"), subdomains[i].subdomain_output.algo_time);
+
+                        //Save optional data...
+                        if(comprehensive == true)
+                        {
+                            write_to_hdf5(file, base_path + string("/mu"), subdomains[i].subdomain.mu);
+                            write_to_hdf5(file, base_path + string("/epsilon"), subdomains[i].subdomain.epsilon);
+                        }
+                        
+                        
+                    }
+                }
+
+                //Store the main simulation data
+                write_to_hdf5(file, string("/output/m_E"), sim_fields.m_E);
+                write_to_hdf5(file, string("/output/m_H"), sim_fields.m_H);
+                write_to_hdf5(file, string("/output/E"), output.E);
+                write_to_hdf5(file, string("/output/H"), output.H);
+                write_to_hdf5(file, string("/output/freq range"), sim_fields.Freq_range);
+                write_to_hdf5(file, string("/output/reflectance"), output.Reflectance);
+                write_to_hdf5(file, string("/output/transmittance"), output.Transmittance);
+                write_to_hdf5(file, string("/output/conservation of energy"), output.Con_of_Energy);
+                write_to_hdf5(file, string("/output/freq axis"), output.Freq_Axis);
+                write_to_hdf5(file, string("/output/source fft"), output.Source_FFT);
+                //To be IMPLEMENTED
+                //write_to_hdf5(file, string("/output/wall time"), output.wall_time);
+                //write_to_hdf5(file, string("/output/algo time"), output.algo_time);
+
+                if(comprehensive == true)
+                {
+                    write_to_hdf5(file, string("/output/source"), output.Source);
+                    write_to_hdf5(file, string("/output/kernel freq"), sim_fields.Kernel_Freq);
+                    write_to_hdf5(file,string("/output/FFTW_R"),output.FFTW_R);
+                    write_to_hdf5(file,string("/output/FFTW_T"),output.FFTW_T);
+                    write_to_hdf5(file,string("/output/FFTW_C"),output.FFTW_C);
+                    write_to_hdf5(file,string("/output/FFTW_S"),output.FFTW_S);
+                    write_to_hdf5(file,string("/output/FFTW_Freq"),output.FFTW_Freq);
+                }
+                
                 cout << "---> Saved!" << endl;
 
 
