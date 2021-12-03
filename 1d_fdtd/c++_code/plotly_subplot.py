@@ -19,33 +19,33 @@ if len(sys.argv) == 3:
 #Read Electric field
 data = h5py.File(filename,mode='r')
 print(data.keys())
-z = data['Computational domain z (vector)'][:]
-E = np.nan_to_num(data['E'][:,:])
-H = np.nan_to_num(data['H'][:,:])
-R = np.nan_to_num(data['Reflectance'][:,:])
-T = np.nan_to_num(data['Transmittance'][:,:])
-C = np.nan_to_num(data['Conservation of Energy'][:,:])
+z = data['comp domain']['z'][:]
+E = np.nan_to_num(data['output']['E'][:,:])
+H = np.nan_to_num(data['output']['H'][:,:])
+R = np.nan_to_num(data['output']['reflectance'][:,:])
+T = np.nan_to_num(data['output']['transmittance'][:,:])
+C = np.nan_to_num(data['output']['conservation of energy'][:,:])
 
 
 #Read source data
-t = data['t'][:]
-t_E = data['t_E'][:]
-Esrc = data['Esrc'][:]
-t_H = data['t_H'][:]
-Hsrc = data['Hsrc'][:]
+t = data['source']['t'][:]
+t_E = data['source']['t_E'][:]
+Esrc = data['source']['Esrc'][:]
+t_H = data['source']['t_H'][:]
+Hsrc = data['source']['Hsrc'][:]
 print(Esrc,Hsrc)
 print(R,T)
 print(C)
 print(E,H)
-sim_date = np_to_str((data['Date of Simulation']))
-source_type = np_to_str(data['Source Type'])
-n = data['Refractive Index (vector)'][:]
-Nt = int(np.ceil(np.array(data['Total number of time iteration (Nt)'])/2))
+sim_date = np_to_str((data['metadata']['date']))
+source_type = np_to_str(data['source']['type'])
+n = data['comp domain']['n'][:]
+Nt = int(np.ceil(np.array(data['sim param']['Nt'])/2))
 
-dz = float(np.array(data['Cell size (dz)']))
-spacer = int(np.array(data['Amount of spacing in the left side (number of cells)']))*dz
+dz = float(np.array(data['sim param']['dz']))
+spacer = int(np.array(data['sim param']['left spacer']))*dz
 #print(z.shape,E.shape,Nt)
-input_layer = data['Input Layer size'][:]
+input_layer = data['input']['layer size'][:]
 #print(input_layer,spacer)
 
 #Create subplotsd
