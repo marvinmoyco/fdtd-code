@@ -1171,7 +1171,7 @@ class Simulation
 
             return 0;
         }
-    
+
         auto write_to_hdf5(HighFive::File file, string dataset_path, auto data)
         {
             //format dump(filename, key,value)
