@@ -188,7 +188,7 @@ class Simulation
                                    !input.simulation_parameters.empty();
                 if(check_input)
                 {
-                    cout << "Input are properly entered! Continuing the program...." << endl;
+                    cout << "Inputs are properly entered! Continuing the program...." << endl;
                 }
                 else
                 {
@@ -197,7 +197,7 @@ class Simulation
             }
             catch(...)
             {
-                cout << "Error: Input are not yet entered." << endl;
+                cout << "Error: Inputs are not yet entered." << endl;
                 comp_domain.check = -1;
 
                 exit(EXIT_FAILURE);
@@ -446,7 +446,7 @@ class Simulation
                 }
                 catch(...)
                 {
-                    cout << "Error: Invalid number of subdomain" << endl;
+                    cout << "Error: Invalid number of subdomains" << endl;
                     comp_domain.check = -1;
                     exit(EXIT_FAILURE);
                 }
@@ -998,10 +998,9 @@ class Simulation
                         }
 
                         //Check for convergence here....
-                        //isConverged = convergence_function()
+                        //isConverged = check_convergence(); 
 
                         
-
 
                         //Continue the loop if not converged...
 
@@ -1072,17 +1071,48 @@ class Simulation
 
         bool check_convergence()
         {
-            bool computed_l2norm = false;
-            int counter = 0;
-            for(int s_domain=0;s_domain<sim_param.num_subdomains-1;s_domain++)
+            bool computed_l2norm[2] = {false, false};
+            double E_eps;
+            double H_eps; 
+
+            // Initialize a vector that will store the truth values for each comparison
+            xtensor<bool,1> truth_vec;
+            truth_vec.resize({sim_param.num_subdomains}); 
+
+            bool isConverged = true; 
+
+            // Loops through each subdomain
+            for(int s_domain =  0; s_domain < sim_param.num_subdomains - 1; s_domain++)
             {
-                computed_l2norm = subdomains[s_domain].compute_L2norm("right");
+                // Compute the L2 norm of the left and right overlapping regions of current subdomain 
+                computed_l2norm[0] = subdomains[s_domain].compute_L2norm("left");
+                computed_l2norm[1] = subdomains[s_domain].compute_L2norm("right");
+
+                // Compute the L2 norm of the E_error and H_error vectors
+                E_eps = linalg::norm(subdomains[s_domain].E_error,2);
+                H_eps = linalg::norm(subdomains[s_domain].H_error,2);
+
+                // Comparing to machine epsilon
+                if (E_eps <= numeric_limits<double>::epsilon() && H_eps <= numeric_limits<double>::epsilon())
+                {
+                    truth_vec[s_domain] = true; 
+                } else
+                {
+                    truth_vec[s_domain] = false; 
+                }   
+                
+                // Checks each element of the vector truth_vec
+                if (truth_vec[s_domain] == false)
+                {
+                    isConverged = false; 
+                }
                 
             }
-
+            //subdomains(0).E_error 
+            
             //Compare final L2 norm sa machine epsilon
             //  numeric_limits<double>::epsilon()
-            return true;
+            return isConverged;
         }
 
         int write_to_csv(string output_file = "",xtensor<double,2> data ={{0,0,0},{0,0,0}})
@@ -1141,7 +1171,7 @@ class Simulation
 
             return 0;
         }
-
+    
         auto write_to_hdf5(HighFive::File file, string dataset_path, auto data)
         {
             //format dump(filename, key,value)
