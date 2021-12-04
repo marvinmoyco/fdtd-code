@@ -10,6 +10,7 @@ class Subdomain
         computational_domain subdomain;
         subdomain_data subdomain_param;
         source_output_d subdomain_source;
+        save_data_subdomain subdomain_output;
 
         //Intermediary variable for transferring data
         double boundary_data[2] = {0.0,0.0}; //1st element = This subdomain, 2nd element = Adjacent subdomain
@@ -19,7 +20,13 @@ class Subdomain
         xtensor<double,1> H_error{0,0}; 
 
         //Constructor
-        Subdomain(simulation_parameters sim_param, source_output_d sources,computational_domain domain,unsigned int size, unsigned int overlap_size, unsigned int non_overlap_size, unsigned int id)
+        Subdomain(simulation_parameters sim_param, 
+                  source_output_d sources,
+                  computational_domain domain,
+                  unsigned int size, 
+                  unsigned int overlap_size, 
+                  unsigned int non_overlap_size, 
+                  unsigned int id)
         {
             //Transfer necessary data from Simulation class to Subdomain class...
             subdomain_param.subdomain_id = id;
@@ -61,8 +68,10 @@ class Subdomain
             else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
             {
                 //Do not include the extra padding at the end..
-                view(s_fields.m_E,range(_,s_fields.m_E.shape()[0] - 1- subdomain_param.overlap)) = (c_0*subdomain_param.dt)/(view(subdomain.epsilon,range(_,s_fields.m_E.shape()[0] - 1- subdomain_param.overlap))*subdomain_param.dz);
-                view(s_fields.m_H,range(_,s_fields.m_H.shape()[0] - 1- subdomain_param.overlap)) = (c_0*subdomain_param.dt)/(view(subdomain.mu,range(_,s_fields.m_H.shape()[0] - 1- subdomain_param.overlap))*subdomain_param.dz);
+                view(s_fields.m_E,range(_,s_fields.m_E.shape()[0] - 1- subdomain_param.overlap)) = (c_0*subdomain_param.dt)/(view(subdomain.epsilon,range(_,s_fields.m_E.shape()[0] - 1
+                                                                                                    - subdomain_param.overlap))*subdomain_param.dz);
+                view(s_fields.m_H,range(_,s_fields.m_H.shape()[0] - 1- subdomain_param.overlap)) = (c_0*subdomain_param.dt)/(view(subdomain.mu,range(_,s_fields.m_H.shape()[0] - 1
+                                                                                                    - subdomain_param.overlap))*subdomain_param.dz);
             
             }
             else

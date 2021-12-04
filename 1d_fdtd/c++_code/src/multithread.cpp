@@ -11,7 +11,7 @@
 #include "xtensor/xcomplex.hpp"
 #include "xtensor/xnpy.hpp"
 
-#define N_THREADS 2
+#define N_THREADS 4
 
 using namespace std;
 using namespace xt;
@@ -20,8 +20,23 @@ mutex mtx;
 int main() 
 {
     //Set the number of threads to be created before creating "parallel regions"
-    omp_set_num_threads(N_THREADS);
-    xtensor<double,2> x = zeros<double>({10000,10000});
+    omp_set_num_threads(2);
+
+    #pragma omp parallel
+    {
+        int thread_id = omp_get_thread_num();
+            
+        mtx.lock();
+        cout <<"Thread id: " << thread_id << " | i: " << thread_id << endl;
+        mtx.unlock();
+        
+        #pragma omp barrier
+        mtx.lock();
+        cout << "Finished! Thread id: " << thread_id << endl;
+        mtx.unlock();
+    }
+
+    /*xtensor<double,2> x = zeros<double>({10000,10000});
     xtensor<double,1> x_1 = zeros<double>({1000});
     cout << "x: " << x << endl;
     cout << "=================================================================" << endl;
@@ -76,6 +91,6 @@ int main()
     //cout << "x_1: " << x_1 << endl;
 
     
-    cout << "y = " << y << endl;
+    cout << "y = " << y << endl;*/
     return 0;
 }

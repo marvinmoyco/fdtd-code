@@ -48,6 +48,7 @@
     |
 
     * [FFTW 3 Library](http://www.fftw.org/) - can be installed using *sudo apt install libfftw3-dev*
+* [xtensor-blas](https://github.com/xtensor-stack/xtensor-blas) - Used in computing L2 norm (using linalg module)
 
 **Python Libraries:**
 * [numpy](https://numpy.org/doc/stable/) - Main numerical library for linear algebra and scientific computing in Python.

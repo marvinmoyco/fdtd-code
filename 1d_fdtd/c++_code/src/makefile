@@ -38,8 +38,8 @@ lib_dir_hdf5 = -L/usr/lib/x86_64-linux-gnu/hdf5/serial/ -lhdf5
 XTENSOR_FLAGS = -isystem $(xtensor_dir) -isystem $(xtl_dir) -isystem $(xtensor_io_dir) -isystem $(xtensor_fftw_dir) -isystem $(xtensor_blas_dir)
 HDF5_FLAGS = -isystem $(highfive_dir) -isystem $(libhdf5_dir) 
 
-R_CPPFLAGS= -std=$(STD_VER) -Wall -Werror -O0 -isystem $(IDIR) $(XTENSOR_FLAGS) $(HDF5_FLAGS) 
-D_CPPFLAGS= -std=$(STD_VER) -Wall -Werror -Og -ggdb -isystem $(IDIR) $(XTENSOR_FLAGS) $(HDF5_FLAGS) 
+R_CPPFLAGS= -std=$(STD_VER) -Wall -Werror -O0 -fopenmp -isystem $(IDIR) $(XTENSOR_FLAGS) $(HDF5_FLAGS) 
+D_CPPFLAGS= -std=$(STD_VER) -Wall -Werror -Og -ggdb -fopenmp -isystem $(IDIR) $(XTENSOR_FLAGS) $(HDF5_FLAGS) 
 
 source = main.cpp
  
@@ -69,7 +69,7 @@ debug: $(D_BIN).out
 
 $(D_BIN).out: $(D_OBJ).o
 	@echo 'Linking the object files in debugging build....'
-	$(CXX) $^ $(lib_dir_hdf5) -lfftw3 -lblas -llapack -DHAVE_CBLAS=1 -o $@
+	$(CXX) $^ $(lib_dir_hdf5) -fopenmp -lfftw3 -lblas -llapack -DHAVE_CBLAS=1 -o $@
 
 
 $(D_OBJ).o: $(source) $(DEPS)
@@ -84,7 +84,7 @@ release: $(R_BIN).out
 
 $(R_BIN).out: $(R_OBJ).o
 	@echo 'Linking the object files in release build....'
-	$(CXX) $^ $(lib_dir_hdf5) -lfftw3 -o $@
+	$(CXX) $^ $(lib_dir_hdf5) -fopenmp -lfftw3 -lblas -llapack -DHAVE_CBLAS=1 -o $@
 
 $(R_OBJ).o: $(source) $(DEPS)
 	@echo 'Compiling the source file in release build....'

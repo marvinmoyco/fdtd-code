@@ -22,13 +22,13 @@ int main(int argc, char* argv[])
   Simulation sim(argv[1]);
 
   //Perform pre-processing...
-  computational_domain check = sim.create_comp_domain(0,0,100,4,5,true,"fdtd-schwarz");
+  computational_domain check = sim.create_comp_domain(0,0,100,1,0,false,"fdtd");
 
   //Start the simulation...
   output = sim.simulate(argv[2],argv[3]);
 
   //Save the simulation data....
-  sim.save_to_file(argv[4],argv[5],argv[6]);
+  sim.save_to_file(argv[4],argv[5],argv[6],true);
 
 
 

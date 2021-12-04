@@ -14,6 +14,8 @@
 #include <thread>
 #include <list>
 #include <complex>
+#include <omp.h>
+#include <mutex>  
 
 //Xtensor preprocessor directives
 #include "xtensor/xarray.hpp"
@@ -192,7 +194,20 @@ typedef struct Save_Data{
 
     bool simulation_success = false;
 
+    double algo_time =0;
+    double wall_time = 0;
+
 } save_data;
+
+typedef struct Save_Data_Subdomain{
+    xtensor<double,2> E;
+    xtensor<double,2> H;
+    double algo_time =0;
+    double wall_time = 0;
+
+    bool simulation_success = false;
+
+} save_data_subdomain;
 
 
 #endif
