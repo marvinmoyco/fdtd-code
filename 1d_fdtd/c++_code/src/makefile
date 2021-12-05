@@ -91,7 +91,6 @@ $(R_OBJ).o: $(source) $(DEPS)
 	$(CXX) $< -c $(R_CPPFLAGS) -o $@
 
 
-
 clean:
 	@echo 'Cleaning the directory....'
 	rm $(ODIR)/*.o $(BDIR)/*.out $(DBIR)/$(ODIR)/*.o $(DBIR)/$(BDIR)/*.out
