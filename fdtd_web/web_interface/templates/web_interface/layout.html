@@ -16,13 +16,13 @@
             <div>
               <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                  <a class="nav-link" href="#">All Posts</a>
+                  <a class="nav-link" href="{%url 'web_interface:simulations' %}}">All Simulations</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Log In</a>
+                    <a class="nav-link" href="{% url 'web_interface:new_simulation' %}">Create a new simulation</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Register</a>
+                    <a class="nav-link" href="{% url 'web_interface:about' %}">About</a>
                 </li>
               </ul>
             </div>

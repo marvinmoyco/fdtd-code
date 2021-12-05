@@ -4,11 +4,13 @@ from django.contrib.auth.models import AbstractUser
 
 
 
-class User(AbstractUser):
-    pass
+
 
 
 class Simulation(models.Model):
-    user = models.ForeignKey("User", on_delete=models.CASCADE, related_name="simulation")
+    id = models.AutoField(primary_key=True)
+    user_email = models.EmailField(default=None)
     timestamp = models.DateTimeField(auto_now_add=True)
+    output_data = models.FileField(default=None,upload_to=f'simulations/{id}')
+    log_data = models.BinaryField(null=True,default=None)
     

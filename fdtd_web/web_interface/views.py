@@ -13,5 +13,11 @@ from .models import *
 def index(request):
     return render(request, "web_interface/index.html")
 
-def simulation(request):
+def simulations(request):
     pass
+
+
+def about(request):
+    return render(request, "web_interface/about.html")
+
+
