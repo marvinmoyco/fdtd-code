@@ -13,7 +13,10 @@ from .models import *
 def index(request):
     return render(request, "web_interface/index.html")
 
-def simulations(request):
+def simulation(request,id):
+    pass
+
+def add_simulation(request):
     pass
 
 
