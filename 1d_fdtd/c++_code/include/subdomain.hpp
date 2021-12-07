@@ -288,6 +288,7 @@ class Subdomain
                 Computes the L2 norm using the linalg module in xtensor...
                 using xtensor-BLAS...
             */
+
             if(side == "left")
             {
                 E_error(0) = linalg::norm(view(s_fields.E,range(0,subdomain_param.overlap)),2);
@@ -298,7 +299,39 @@ class Subdomain
                 E_error(1) = linalg::norm(view(s_fields.E,range(subdomain_param.overlap+subdomain_param.subdomain_size,s_fields.E.size())),2);
                 H_error(1) = linalg::norm(view(s_fields.H,range(subdomain_param.overlap+subdomain_param.subdomain_size,s_fields.H.size())),2);
             }
+
+
             return true;
+        }
+
+        xtensor<double,1> overlapValues = zeros<double>({subdomain_param.overlap});
+
+        xtensor<double,1> getOverlapValues(char field, string side = "")
+        {
+            if(field == 'E')
+            {
+                if(side == "left")
+                {
+                    overlapValues = view(s_fields.E,range(0,subdomain_param.overlap)); 
+                }
+                else if(side == "right")
+                {
+                    overlapValues = view(s_fields.E,range(subdomain_param.overlap+subdomain_param.subdomain_size,s_fields.E.size()));
+                }
+            } 
+            else if(field == 'H')
+            {
+                if(side == "left")
+                {
+                    overlapValues = view(s_fields.H,range(0,subdomain_param.overlap)); 
+                }
+                else if(side == "right")
+                {
+                    overlapValues = view(s_fields.H,range(subdomain_param.overlap+subdomain_param.subdomain_size,s_fields.H.size()));
+                }
+            }
+            
+            return overlapValues; 
         }
 };
 
