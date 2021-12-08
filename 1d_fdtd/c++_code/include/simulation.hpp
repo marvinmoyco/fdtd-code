@@ -1104,13 +1104,13 @@ class Simulation
             xtensor<double,2> A_H = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size}); 
             xtensor<double,2> B_H = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size});
 
+            // Initialize matrices that will store (A - B)
+            xtensor<double,2> E_sub = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size});
+            xtensor<double,2> H_sub = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size});
+
             // Initialize error vectors
             xtensor<double,1> E_error = zeros<double>({sim_param.num_subdomains-1}); 
             xtensor<double,1> H_error = zeros<double>({sim_param.num_subdomains-1});
-
-            // Initialize vectors that will store (A - B)
-            xtensor<double,1> E_sub = zeros<double>({sim_param.num_subdomains-1});
-            xtensor<double,1> H_sub = zeros<double>({sim_param.num_subdomains-1});
 
             // Initialize a vector that will store the truth values for each comparison
             xtensor<bool,1> truth_vec;
@@ -1134,11 +1134,11 @@ class Simulation
             // Subtracts the two vectors (A - B) and gets the norm; checks each element if <= epsilon
             for(int n =  0; n < sim_param.num_subdomains-1; n++)
             {
-                E_sub = view(A_E, n, all()) - view(B_E, n, all()); 
-                H_sub = view(A_H, n, all()) - view(B_H, n, all()); 
+                view(E_sub, n, all()) = view(A_E, n, all()) - view(B_E, n, all()); 
+                view(H_sub, n, all()) = view(A_H, n, all()) - view(B_H, n, all()); 
 
-                E_error(n) = linalg::norm(E_sub,2); 
-                H_error(n) = linalg::norm(H_sub,2); 
+                E_error(n) = linalg::norm(view(E_sub, n, all()),2); 
+                H_error(n) = linalg::norm(view(H_sub, n, all()),2);  
 
                 if (E_error(n) <= numeric_limits<double>::epsilon() && 
                     H_error(n) <= numeric_limits<double>::epsilon()   )

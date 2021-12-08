@@ -68,8 +68,8 @@ bool check_convergence()
     xtensor<double,1> H_error = zeros<double>({4-1});
 
     // Initialize vectors that will store A - B 
-    xtensor<double,1> E_sub = zeros<double>({4-1});
-    xtensor<double,1> H_sub = zeros<double>({4-1});
+    xtensor<double,2> E_sub = zeros<double>({4-1,3});
+    xtensor<double,2> H_sub = zeros<double>({4-1,3});
 
 
     // Initialize a vector that will store the truth values for each comparison
@@ -83,15 +83,38 @@ bool check_convergence()
     xtensor<double,1> HleftValues = {3,3,3}; 
     xtensor<double,1> HrightValues = {4,4,4}; 
 
+    xtensor<double,1> subdomains = ones<double>({4}); 
     // Loops through each subdomain
     for(int count =  0; count < 4 - 1; count++)
     {
-        view(A_E, count, all()) = subdomains[count].getOverlapValues('E',"right");
-        view(A_H, count, all()) = subdomains[count].getOverlapValues('H',"right");
+        view(A_E, count, all()) = subdomains[count]*ErightValues;
+        view(A_H, count, all()) = subdomains[count]*HrightValues;
 
-        view(B_E, count, all()) = subdomains[count + 1].getOverlapValues('E', "left"); 
-        view(B_H, count, all()) = subdomains[count + 1].getOverlapValues('H', "left");
+        view(B_E, count, all()) = subdomains[count + 1]*EleftValues;
+        view(B_H, count, all()) = subdomains[count + 1]*HleftValues;
     }
+
+    cout << "A_E\n" << A_E << endl;
+    cout << "A_H\n" << A_H << endl;
+    cout << "B_E\n" << B_E << endl;
+    cout << "B_H\n" << B_H << endl;
+
+    A_E = ones<double>({3,3}); 
+    
+    B_E = ones<double>({3,3});
+
+    view(B_E, 0, all()) = view(B_E, 0, all()) - numeric_limits<double>::epsilon();
+
+    A_H = ones<double>({3,3});
+
+    B_H = ones<double>({3,3});
+    
+    view(B_H, 0, all()) = view(B_H, 0, all()) - numeric_limits<double>::epsilon(); 
+
+    cout << "A_E\n" << A_E << endl;
+    cout << "A_H\n" << A_H << endl;
+    cout << "B_E\n" << B_E << endl;
+    cout << "B_H\n" << B_H << endl;
 
     for(int n =  0; n < 4-1; n++)
     {
@@ -99,11 +122,11 @@ bool check_convergence()
         //H_error = linalg::norm(view(A_H, n, all()) - view(B_H, n, all(), 2));
 
         //view(E_error, n, all()) = linalg::norm(E_sub, n, all()); 
-        E_sub = view(A_E, n, all()) - view(B_E, n, all()); 
-        H_sub = view(A_H, n, all()) - view(B_H, n, all()); 
+        view(E_sub, n, all()) = view(A_E, n, all()) - view(B_E, n, all()); 
+        view(H_sub, n, all()) = view(A_H, n, all()) - view(B_H, n, all()); 
 
-        E_error(n) = linalg::norm(E_sub,2); 
-        H_error(n) = linalg::norm(H_sub,2); 
+        E_error(n) = linalg::norm(view(E_sub, n, all()),2); 
+        H_error(n) = linalg::norm(view(H_sub, n, all()),2); 
 
         if (E_error(n) <= numeric_limits<double>::epsilon() && H_error(n) <= numeric_limits<double>::epsilon())
         {
@@ -117,7 +140,13 @@ bool check_convergence()
         {
             isConverged = false; 
         }
-    }
+    }  
+
+    cout << "E_sub\n" << E_sub << endl;
+    cout << "H_sub\n" << H_sub << endl;
+    cout << "E_error\n" << E_error << endl;
+    cout << "H_erorr\n" << H_error << endl;
+    cout << "truth vec\n" << truth_vec << endl; 
     return isConverged;
 }
 
@@ -128,8 +157,13 @@ int main()
     xtensor<double,2> A = ones<double>({3,3}); 
     xtensor<double,2> B = ones<double>({3,3})*2; 
 
-    cout << view(A, 0, all()) - view(B, 0, all()) << endl;
-    //cout << B << endl; 
+    // cout << view(A, 0, all()) - view(B, 0, all()) << endl;
+    // cout << B << endl; 
+
+    //bool isConverged; 
+    //isConverged = check_convergence(); 
+    cout << check_convergence() << endl; 
+
 
 
 
