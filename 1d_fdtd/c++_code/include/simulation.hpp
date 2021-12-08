@@ -27,7 +27,7 @@ class Simulation
         Simulation(string input_file="")
         {
 
-            if(input_file.empty())  // If there is no input file path, use terminal or stdin/stdout for input/
+            if(input_file == "manual")  // If there is no input file path, use terminal or stdin/stdout for input/
             {
                 /*
                 Guide to indices of simulation_parameter vector
@@ -45,7 +45,7 @@ class Simulation
                 cout << "Initializing simulation object" << endl;
                 cout << "Maximum frequency (in Hz): ";
                 cin >> fmax;
-                cout << "Source Type (0 - Gaussian, 1 - Sinusoidal): ";
+                cout << "Source Type (0 - Gaussian, 1 - Sinusoidal, 2 - Square Pulse, 3 - Modulated Sine Wave): ";
                 cin >> source_type;
                 cout << "Number of layers: ";
                 cin >> n_model;

@@ -147,6 +147,7 @@ bool check_convergence()
     cout << "E_error\n" << E_error << endl;
     cout << "H_erorr\n" << H_error << endl;
     cout << "truth vec\n" << truth_vec << endl; 
+    cout << "Epsilon: " << numeric_limits<double>::epsilon() << endl;
     return isConverged;
 }
 

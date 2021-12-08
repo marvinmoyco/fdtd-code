@@ -8,8 +8,9 @@ echo ================================================================
 echo Directory of compiled source code: $fdtd_bin
 
 #Set the directory and filename of the input file
-input_file=input.csv
+#input_file=input.csv
 input_dir=../../../inputs/$input_file
+#input_dir=manual
 
 echo Directory of input file: $input_dir
 
@@ -30,6 +31,27 @@ read -p 'Enter custom name for output file/s: ' custom_name
 #Output file type: 'csv' or  'npy'
 read -p 'Select output file type [csv/npy/hdf5]: ' output_file_type
 
+#Type of algorithm to be used: 'fdtd' or 'fdtd-schwarz'
+read -p 'Select algorithm [fdtd/fdtd-schwarz]: ' algorithm
+
+#Number of subdomains for 'fdtd-schwarz' algorithm [greater than or equal to 1]
+read -p 'How many subdomains will be used: ' num_subdomains
+
+#Toggle if multithreading will be used 
+read -p 'Will multithreading be used? [true/false]: ' multithreading
+
+#Enter overlap size (must be greater than 0 and less than Nz)
+read -p 'How much overlap between subdomains? [greater than 0]: ' overlap_size
+
+#Check if it will be comprehensive in saving data or not
+read -p 'Comprehensive data saving? [true/false]: ' comprehensive
+
+#Username or Name of user
+read -p 'Username/Name: ' user_name
+
+#Short description of the simulation
+read -p 'Description of the simulation: ' sim_description
+
 echo ================================================================
 echo Running the compiled program.....
 
@@ -37,7 +59,8 @@ echo Running the compiled program.....
 #Execute the program
 #Format of input arguments: (1) input file directory (2) Boundary Condition (3) Excitation method (4) Custom Output Filename (5) Output File type (6) Output directory
 log_file=$(date '+%Y-%m-%d')_$(custom_name).log
-$fdtd_bin $input_dir $boundary_cond $excitation_method $custom_name $output_file_type $output_dir |& tee $output_dir/$log_file
+
+$fdtd_bin $input_dir $boundary_cond $excitation_method $custom_name $output_file_type $output_dir $algorithm $num_subdomains $multithreading $overlap_size $comprehensive $user_name $sim_description |& tee $output_dir/$log_file
 echo Check the simulation logs in $output_dir/$log_file to check the simulation details
 echo ================================================================
 

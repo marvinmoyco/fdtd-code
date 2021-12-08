@@ -1,6 +1,11 @@
 pabc
 tfsf
-h5
+normal
 hdf5
-source
-video
+fdtd-schwarz
+2
+false
+5
+true
+marvin
+Test simulation in free space.
