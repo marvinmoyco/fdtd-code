@@ -19,7 +19,8 @@ if len(sys.argv) == 3:
 #Read Electric field
 data = h5py.File(filename,mode='r')
 print(data.keys())
-z = data['comp domain']['z'][:]
+print(np.array(data['sim param']['Nz']))
+z = np.arange(start=1,stop=34)
 E = np.nan_to_num(data['output']['E'][:,:])
 H = np.nan_to_num(data['output']['H'][:,:])
 R = np.nan_to_num(data['output']['reflectance'][:,:])
@@ -33,10 +34,10 @@ t_E = data['source']['t_E'][:]
 Esrc = data['source']['Esrc'][:]
 t_H = data['source']['t_H'][:]
 Hsrc = data['source']['Hsrc'][:]
-print(Esrc,Hsrc)
-print(R,T)
-print(C)
-print(E,H)
+#print(Esrc,Hsrc)
+##print(R,T)
+#print(C)
+#print(E,H)
 sim_date = np_to_str((data['metadata']['date']))
 source_type = np_to_str(data['source']['type'])
 n = data['comp domain']['n'][:]

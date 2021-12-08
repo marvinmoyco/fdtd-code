@@ -26,7 +26,9 @@ class Subdomain
                   unsigned int size, 
                   unsigned int overlap_size, 
                   unsigned int non_overlap_size, 
-                  unsigned int id)
+                  unsigned int id,
+                  auto mu,
+                  auto epsilon)
         {
             //Transfer necessary data from Simulation class to Subdomain class...
             subdomain_param.subdomain_id = id;
@@ -43,15 +45,20 @@ class Subdomain
             subdomain_param.right_spacers = sim_param.right_spacers;
             subdomain_param.injection_point = sim_param.injection_point;
 
-            subdomain = domain;
+            //subdomain = domain;
+             //Store the computed mu and epsilon for each subdomain (for computation of update coeff)...
+            subdomain.mu = mu;
+            subdomain.epsilon = epsilon;
             cout << "Created a new subdomain!" << endl;
+            cout << "Injection point: " << subdomain_param.injection_point << endl;
             //Initializing the fields and vectors
             
             s_fields.E.resize(subdomain.epsilon.shape());
             s_fields.H.resize(subdomain.epsilon.shape());
             s_fields.m_E.resize(subdomain.epsilon.shape());
             s_fields.m_H.resize(subdomain.epsilon.shape());
-
+            cout << "Field shapes: " << endl;
+            cout << "E shape: (" <<  s_fields.E.shape()[0] << ",) | H shape: (" << s_fields.H.shape()[0] << ",)" << endl; 
             //s_fields.m_E = (c_0*sim_param.dt)/(comp_domain.epsilon*sim_param.dz);
             //s_fields.m_H = (c_0*sim_param.dt)/(comp_domain.mu*sim_param.dz);
 
@@ -100,71 +107,74 @@ class Subdomain
             First step in the Schwarz Method - Solving the PDE on the subdomain, in this case the FDTD algorithm space loop.
             */
 
-           //Check whether the pre-processing is successful...
-           if(subdomain_param.preprocessed == false)
-           {
-               cout << "Pre-processing has failed. Exiting program..." << endl;
-               exit(EXIT_FAILURE);
-           }
-
-           //Check the boundary condition if you are a subdomain at the end...
-           subdomain_param.boundary_condition = boundary_condition;
-           subdomain_param.excitation_method = excitation_method;
-
-             //
-            //Start of the FDTD Space....
-           //
-           //Initialize variable indices
-           unsigned int start = 0;
-           unsigned int stop = 0;
-            if(subdomain_param.subdomain_id == 0) //If the subdomain is the 1st one...
+            //Check whether the pre-processing is successful...
+            if(subdomain_param.preprocessed == false)
             {
-                start = subdomain_param.overlap;
-                stop = s_fields.E.size();
+                cout << "Pre-processing has failed. Exiting program..." << endl;
+                exit(EXIT_FAILURE);
             }
-            else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) // If it is the last..
+
+            //Check the boundary condition if you are a subdomain at the end...
+            subdomain_param.boundary_condition = boundary_condition;
+            subdomain_param.excitation_method = excitation_method;
+            cout << "Boundary condition" << subdomain_param.boundary_condition << " | Excitation method: " << subdomain_param.excitation_method << endl;
+                //
+                //Start of the FDTD Space....
+            //
+            //Initialize variable indices
+            unsigned int start = 0;
+            unsigned int stop = 0;
+                if(subdomain_param.subdomain_id == 0) //If the subdomain is the 1st one...
+                {
+                    start = subdomain_param.overlap;
+                    stop = s_fields.E.size();
+                }
+                else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) // If it is the last..
+                {
+                    start = 0;
+                    stop = s_fields.E.size() - subdomain_param.overlap;
+                }
+                else{ //If it is in between the 1st and last subdomain...
+
+                    start = 0;
+                    stop = s_fields.E.size();
+
+                }
+                //cout << "Indices (start,stop): (" << start << "," << stop << ")" << endl;
+
+            //Store boundary data for 1st subdomain...
+            if(subdomain_param.subdomain_id == 0)
             {
-                start = 0;
-                stop = s_fields.E.size() - subdomain_param.overlap;
+                if(boundary_condition == "pabc")
+                {
+                        s_fields.E(start) = s_fields.H_start.front();
+                        s_fields.H_start.pop_front();
+                        s_fields.H_start.push_back(s_fields.E(start+1));
+                }
+                else if(subdomain_param.boundary_condition == "dirichlet")
+                {
+                    s_fields.E(start) = 0;
+                }
+                
             }
-            else{ //If it is in between the 1st and last subdomain...
+            else{ 
+                //Use Dirichlet boundary method on all LEFT internal boundary of subdomains that
+                //are not the 1st subdomain...
 
-                start = 0;
-                stop = s_fields.E.size();
-
+                //s_fields.E(start) = 0;
+                s_fields.E(start) = s_fields.E(start) + (s_fields.m_E(start)*(s_fields.E(start)-0));
             }
-
-
-           //Store boundary data for 1st subdomain...
-           if(subdomain_param.subdomain_id == 0)
-           {
-               if(boundary_condition == "pabc")
-               {
-                    s_fields.E(start) = s_fields.H_start.front();
-                    s_fields.H_start.pop_front();
-                    s_fields.H_start.push_back(s_fields.E(start+1));
-               }
-               else if(subdomain_param.boundary_condition == "dirichlet")
-               {
-                   s_fields.E(start) = 0;
-               }
-               
-           }
-           else{ 
-               //Use Dirichlet boundary method on all LEFT internal boundary of subdomains that
-               //are not the 1st subdomain...
-
-               s_fields.E(start) = 0;
-           }
-
-           //Update H from E...
-           view(s_fields.H,range(start,stop-1)) = view(s_fields.H,range(start,stop-1)) + (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1)));
+            //cout << "Updating H from E..." << endl;
+            //cout << "LHS shape: " << view(s_fields.H,range(start,stop-1)).shape()[0] << " | RHS Shape: " << (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1))).shape()[0] << endl;
+            //Update H from E...
+            view(s_fields.H,range(start,stop-1)) = view(s_fields.H,range(start,stop-1)) + (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1)));
 
 
             if(subdomain_param.subdomain_id == 0) //Insert the Hsrc when  you are at the 1st subdomain...
             {
                 if(subdomain_param.excitation_method == "tfsf")
                 {
+                    cout << "Inserting source in H TFSF" << endl;
                     s_fields.H(subdomain_param.injection_point-1) -= (s_fields.m_H(subdomain_param.injection_point-1)*subdomain_source.Esrc(curr_iteration));
                 }
             }
@@ -189,7 +199,8 @@ class Subdomain
             {
                 //Use Dirichlet Method on all RIGHT internal boundary of subdomains
                 //that is not the last subdomain...
-                s_fields.H(stop-1) = 0;
+                //s_fields.H(stop-1) = 0;
+                s_fields.H(stop-1) = s_fields.H(stop-1) + (s_fields.m_H(stop-1)*(0-s_fields.E(stop-1)));
             }
 
             //Update E from H...
@@ -200,16 +211,19 @@ class Subdomain
             {
                 if(subdomain_param.excitation_method == "hard")
                 {
+                    cout << "Inserting source in Hard method" << endl;
                     s_fields.E(subdomain_param.injection_point) = subdomain_source.Esrc(curr_iteration);
                 
                 }
                 else if(subdomain_param.excitation_method == "soft")
                 {
+                    cout << "Inserting source in soft method" << endl;
                     s_fields.E(subdomain_param.injection_point) += subdomain_source.Esrc(curr_iteration);
                 
                 }
                 else if(subdomain_param.excitation_method == "tfsf")
                 {
+                    cout << "Inserting source in E TFSF" << endl;
                     s_fields.E(subdomain_param.injection_point) -= (s_fields.m_E(subdomain_param.injection_point)*subdomain_source.Hsrc(curr_iteration));
                 
                 }   
@@ -304,10 +318,11 @@ class Subdomain
             return true;
         }
 
-        xtensor<double,1> overlapValues = zeros<double>({subdomain_param.overlap});
+        
 
         xtensor<double,1> getOverlapValues(char field, string side = "")
         {
+            xtensor<double,1> overlapValues = zeros<double>({subdomain_param.overlap});
             if(field == 'E')
             {
                 if(side == "left")
@@ -316,7 +331,10 @@ class Subdomain
                 }
                 else if(side == "right")
                 {
-                    overlapValues = view(s_fields.E,range(subdomain_param.overlap+subdomain_param.subdomain_size,s_fields.E.size()));
+                    //cout << "Getting the overlap values now..." << endl;
+                   // cout << "Overlap: " << subdomain_param.overlap << " | Subdomain size: " << subdomain_param.subdomain_size << endl;
+                    //cout << "Non overlap size: " << subdomain_param.non_overlap_size << " | Efield size: " << s_fields.E.size() << endl;
+                    overlapValues = view(s_fields.E,range(subdomain_param.overlap+subdomain_param.non_overlap_size,s_fields.E.size()));
                 }
             } 
             else if(field == 'H')
@@ -327,10 +345,10 @@ class Subdomain
                 }
                 else if(side == "right")
                 {
-                    overlapValues = view(s_fields.H,range(subdomain_param.overlap+subdomain_param.subdomain_size,s_fields.H.size()));
+                    overlapValues = view(s_fields.H,range(subdomain_param.overlap+subdomain_param.non_overlap_size,s_fields.H.size()));
                 }
             }
-            
+            //cout << "Overlap shape: " << overlapValues.shape()[0] << endl;
             return overlapValues; 
         }
 };

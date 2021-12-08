@@ -482,6 +482,7 @@ class Simulation
                  */  
 
                 unsigned int frame_size = sim_param.non_overlap_size + 2*sim_param.overlap_size;
+                sim_param.subdomain_size = frame_size;
                 unsigned int start = 0;
                 unsigned int stop = frame_size;
                 unsigned int hop_size = sim_param.non_overlap_size + sim_param.overlap_size;
@@ -542,7 +543,7 @@ class Simulation
                 //At this point, we can just assume that the source will always be injected into the 1st subdomain (center position)
 
                 //Call the preprocess subdomain to create the subdomain objects.
-                preprocess_subdomain(mu_2D,epsilon_2D,sim_param.num_subdomains,sim_param.subdomain_size,sim_param.overlap_size);
+                preprocess_subdomain(mu_2D,epsilon_2D,sim_param.num_subdomains,sim_param.subdomain_size,sim_param.overlap_size,sim_param.non_overlap_size);
 
                 //Resize the different save matrices
                 output.E.resize({row,col});
@@ -658,7 +659,14 @@ class Simulation
             for(int sdomain_index=0;sdomain_index < n_subdomain; sdomain_index++)
             {
                 //Create a new object (creating a vector of Subdomain objects)
-                subdomains.push_back(Subdomain(sim_param,sim_source_fields,comp_domain,size,overlap_size,non_overlap_size,sdomain_index));
+                subdomains.push_back(Subdomain(sim_param,
+                                               sim_source_fields,
+                                               comp_domain,size,
+                                               overlap_size,
+                                               non_overlap_size,
+                                               sdomain_index,
+                                               row(mu_2D,sdomain_index),
+                                               row(epsilon_2D,sdomain_index)));
                 switch(sdomain_index)
                 {
                     case 0:
@@ -666,8 +674,8 @@ class Simulation
                         break;
                 }
                 //Store the computed mu and epsilon for each subdomain (for computation of update coeff)...
-                subdomains[sdomain_index].subdomain.mu = row(mu_2D,sdomain_index);
-                subdomains[sdomain_index].subdomain.epsilon = row(epsilon_2D,sdomain_index);
+                //subdomains[sdomain_index].subdomain.mu = row(mu_2D,sdomain_index);
+                //subdomains[sdomain_index].subdomain.epsilon = row(epsilon_2D,sdomain_index);
 
                 //Modify the preprocessed flag
                 subdomains[sdomain_index].subdomain_param.preprocessed = true;
@@ -692,8 +700,10 @@ class Simulation
             else if(sim_param.algorithm == "fdtd-schwarz")
             {
                 //Call the fdtd-schwarz method if the 
-                simulate_fdtd_schwarz();
+                simulate_fdtd_schwarz("right",boundary_condition,excitation_method);
             }
+            //Set the simulation_success flag to true
+            output.simulation_success = true;
             return output;
         }
 
@@ -921,17 +931,18 @@ class Simulation
             col(output.Freq_Axis,0) = linspace<double>(0,(sim_param.fmax_fft)*sim_param.df,(output.Source_FFT.shape()[0]));
             cout << "After Freq Axis" << endl;
 
-            //Set the simulation_success flag to true
-            output.simulation_success = true;
+            
 
             return output;
         }
 
         //FDTD Schwarz Serial Version
-        void simulate_fdtd_schwarz(string direction = "right")
+        void simulate_fdtd_schwarz(string direction = "right",string boundary_condition = "", string excitation = "")
         {
             cout << "==========================================================" << endl;
             cout << "Multithreading flag: " << sim_param.multithread << endl;
+            sim_param.boundary_cond = boundary_condition;
+            sim_param.excitation_method = excitation;
             if(sim_param.multithread == false)
             {
                 cout << "Entering FDTD-Schwarz with no multithreading..." << endl;
@@ -945,15 +956,17 @@ class Simulation
                     cout << "===============================================================" << endl;
                     cout << "Current iteration: " << curr_iter << endl;
                     bool isConverged = false;
+                    unsigned int numLoops = 0; //Used to count the number of while loop repeats
                     //Loop the FDTD-Schwarz until the data has converged...
                     while(isConverged == false)
                     {
+                        numLoops +=1; // Count a loop...
                         //Iterate through the subdomain objects...
                         //While loop and dependent on the return value of the convergence function...
                         for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
                         {
-                            cout << "Current subdomain: " << subdom_index +1 << endl;
-                            cout << "Running simulate() on each subdomain" << endl;
+                            //cout << "Current subdomain: " << subdom_index +1 << endl;
+                            //cout << "Running simulate() on each subdomain" << endl;
                             //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
                             subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
                         
@@ -965,9 +978,12 @@ class Simulation
                                 if(subdom_index == sim_param.num_subdomains -1)
                                 {
                                     //Skip the last subdomain (since there is no adjacent subdomain in the right side)
+                                    //cout << "Skipping this subdomain..." << endl;
                                     continue;
                                 }
+                                //cout << "Transferring boundary data..." << endl;
                                 subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index + 1],direction);
+                                //cout << "Successfully transferred boundary data!" << endl;
                             }
                             else if(direction == "left")
                             {
@@ -977,17 +993,19 @@ class Simulation
                                     //Skip the first subdomain (since there is no adjacent subdomain in the left side)
                                     continue;
                                 }
-                                cout << "Transferring boundary data..." << endl;
+                                //cout << "Transferring boundary data..." << endl;
                                 subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index - 1],direction);
-                                cout << "Successfully transferred boundary data!" << endl;
+                                //cout << "Successfully transferred boundary data!" << endl;
                             }
                         }
 
                         //Check for convergence here....
+                        //cout << "Checking for convergence..." << endl;
                         isConverged = check_convergence(); 
                         cout << "Convergence after the FDTD-Schwarz Loop: " << isConverged << endl;
                         //Continue the loop if not converged...
                     }
+                    cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
                     //If converged, reconstruct the whole comp domain here...
                     reconstruct_comp_domain(curr_iter);
                     //Update the FFT here....
@@ -1052,7 +1070,7 @@ class Simulation
                         }
                         
                         //Check for convergence here....
-                        //isConverged = convergence_function()
+                        isConverged = check_convergence();
                         //Continue the loop if not converged...
                     }
                     //If converged, reconstruct the whole comp domain here...
@@ -1106,6 +1124,7 @@ class Simulation
         bool check_convergence()
         {
             // Initialize matrices of overlapping region values 
+            cout << "Initializing overlaping region buffers..." << endl;
             xtensor<double,2> A_E = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size}); 
             xtensor<double,2> B_E = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size});
             xtensor<double,2> A_H = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size}); 
@@ -1129,15 +1148,16 @@ class Simulation
             Gets the values of the CURRENT subdomain's RIGHT overlapping region and the  
             NEXT subdomain's LEFT overlapping region
              */ 
+            cout << "Getting the values in the overlapping regions" << endl;
             for(int count =  0; count < sim_param.num_subdomains-1; count++)
             {
-                view(A_E, count, all()) = subdomains[count].getOverlapValues('E',"right");
-                view(A_H, count, all()) = subdomains[count].getOverlapValues('H',"right");
+                row(A_E, count) = subdomains[count].getOverlapValues('E',"right");
+                row(A_H, count) = subdomains[count].getOverlapValues('H',"right");
 
-                view(B_E, count, all()) = subdomains[count + 1].getOverlapValues('E', "left"); 
-                view(B_H, count, all()) = subdomains[count + 1].getOverlapValues('H', "left");
+                row(B_E, count) = subdomains[count + 1].getOverlapValues('E', "left"); 
+                row(B_H, count) = subdomains[count + 1].getOverlapValues('H', "left");
             }
-
+            cout << "Subtracting the overlapping values and getting the L2 norm" << endl;
             // Subtracts the two vectors (A - B) and gets the norm; checks each element if <= epsilon
             for(int n =  0; n < sim_param.num_subdomains-1; n++)
             {
