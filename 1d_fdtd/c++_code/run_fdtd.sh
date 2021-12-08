@@ -8,7 +8,7 @@ echo ================================================================
 echo Directory of compiled source code: $fdtd_bin
 
 #Set the directory and filename of the input file
-#input_file=input.csv
+input_file=input.csv
 input_dir=../../../inputs/$input_file
 #input_dir=manual
 
@@ -58,7 +58,7 @@ echo Running the compiled program.....
 
 #Execute the program
 #Format of input arguments: (1) input file directory (2) Boundary Condition (3) Excitation method (4) Custom Output Filename (5) Output File type (6) Output directory
-log_file=$(date '+%Y-%m-%d')_$(custom_name).log
+log_file=$(date '+%Y-%m-%d')_$custom_name.log
 
 $fdtd_bin $input_dir $boundary_cond $excitation_method $custom_name $output_file_type $output_dir $algorithm $num_subdomains $multithreading $overlap_size $comprehensive $user_name $sim_description |& tee $output_dir/$log_file
 echo Check the simulation logs in $output_dir/$log_file to check the simulation details

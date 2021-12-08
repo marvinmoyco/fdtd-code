@@ -385,7 +385,7 @@ class Simulation
             unsigned long int col = sim_param.Nz;
             sim_param.multithread = multithread;
             sim_param.algorithm = algorithm;
-
+            cout << "Multithread: " << multithread << " | Algorithm: " << algorithm << endl;
             //FDTD Basic Version (Serial)
             if(sim_param.algorithm == "fdtd")
             {
@@ -930,8 +930,11 @@ class Simulation
         //FDTD Schwarz Serial Version
         void simulate_fdtd_schwarz(string direction = "right")
         {
+            cout << "==========================================================" << endl;
+            cout << "Multithreading flag: " << sim_param.multithread << endl;
             if(sim_param.multithread == false)
             {
+                cout << "Entering FDTD-Schwarz with no multithreading..." << endl;
                 /*
                 * Part of the code when OpenMP is not implemented (FDTD-Schwarz in Serial configuration)
                 * Iterates through every subdomain so concurrent simulation will not be possible.
@@ -939,7 +942,8 @@ class Simulation
                 //This is the FDTD Time Loop
                 for(int curr_iter=0;curr_iter<sim_param.Nt;curr_iter++)
                 {
-
+                    cout << "===============================================================" << endl;
+                    cout << "Current iteration: " << curr_iter << endl;
                     bool isConverged = false;
                     //Loop the FDTD-Schwarz until the data has converged...
                     while(isConverged == false)
@@ -948,7 +952,8 @@ class Simulation
                         //While loop and dependent on the return value of the convergence function...
                         for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
                         {
-
+                            cout << "Current subdomain: " << subdom_index +1 << endl;
+                            cout << "Running simulate() on each subdomain" << endl;
                             //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
                             subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
                         
@@ -972,13 +977,15 @@ class Simulation
                                     //Skip the first subdomain (since there is no adjacent subdomain in the left side)
                                     continue;
                                 }
+                                cout << "Transferring boundary data..." << endl;
                                 subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index - 1],direction);
+                                cout << "Successfully transferred boundary data!" << endl;
                             }
                         }
 
                         //Check for convergence here....
-                        //isConverged = check_convergence(); 
-
+                        isConverged = check_convergence(); 
+                        cout << "Convergence after the FDTD-Schwarz Loop: " << isConverged << endl;
                         //Continue the loop if not converged...
                     }
                     //If converged, reconstruct the whole comp domain here...

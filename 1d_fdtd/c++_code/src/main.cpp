@@ -13,7 +13,7 @@
 #include "simulation.hpp"
 save_data output;
 
-/*
+/*hre
 * Input Arguments for compiled program:
 * (1) file_path of input csv or string "manual" for loading of input parameters
 * (2) Boundary condition - "dirichlet" for Dirichlet Boundary Condition or "pabc" for Perfectly Absorbing Boundary Condition
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
   Simulation sim(argv[1]);
 
   //Perform pre-processing...
-  computational_domain check = sim.create_comp_domain(0,0,100,stoul(argv[8]),stod(argv[10]),argv[9],argv[7]);
+  computational_domain check = sim.create_comp_domain(0,0,100,stoul(argv[8]),stod(argv[10]),stoul(argv[9]),argv[7]);
 
   //Start the simulation...
   output = sim.simulate(argv[2],argv[3]);

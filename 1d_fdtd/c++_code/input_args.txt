@@ -4,8 +4,8 @@ normal
 hdf5
 fdtd-schwarz
 2
-false
+0
 5
-true
+1
 marvin
 Test simulation in free space.
