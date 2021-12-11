@@ -35,20 +35,19 @@
 * [xtl](https://github.com/xtensor-stack/xtl) - Dependencies of all xtensor libraries.
 * [xtensor-io](https://github.com/xtensor-stack/xtensor-io) - For I/O operations like saving simulation data into HDF5 files.
 
-   |
-
     * [HgihFive](https://github.com/BlueBrain/HighFive)   
-
-        |
 
         * **libhdf5** - can be installed using *sudo apt install libhdf5-dev*
 
 * [xtensor-fftw](https://github.com/xtensor-stack/xtensor-fftw.git) - Used in a FFT operation in the simulation.
-    
-    |
 
     * [FFTW 3 Library](http://www.fftw.org/) - can be installed using *sudo apt install libfftw3-dev*
-* [xtensor-blas](https://github.com/xtensor-stack/xtensor-blas) - Used in computing L2 norm (using linalg module)
+
+* [xtensor-blas](https://github.com/xtensor-stack/xtensor-blas) - Used in computing L2 norm (using linalg module) 
+
+    * [OpenBlas](https://www.openblas.net/) - can be installed using *sudo apt install libopenblas-dev*
+
+    * [LAPACK](http://www.netlib.org/lapack/) - can be installed using *sudo apt install liblapack-dev*
 
 **Python Libraries:**
 * [numpy](https://numpy.org/doc/stable/) - Main numerical library for linear algebra and scientific computing in Python.
