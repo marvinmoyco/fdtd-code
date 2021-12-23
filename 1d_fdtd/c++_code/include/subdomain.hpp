@@ -12,8 +12,7 @@ class Subdomain
         source_output_d subdomain_source;
         save_data_subdomain subdomain_output;
 
-        //Intermediary variable for transferring data
-        double boundary_data[2] = {0.0,0.0}; //1st element = This subdomain, 2nd element = Adjacent subdomain
+        
         
         //Initializing error vectors for convergence...
         xtensor<double,1> E_error{0,0};
@@ -117,7 +116,7 @@ class Subdomain
             //Check the boundary condition if you are a subdomain at the end...
             subdomain_param.boundary_condition = boundary_condition;
             subdomain_param.excitation_method = excitation_method;
-            cout << "Boundary condition" << subdomain_param.boundary_condition << " | Excitation method: " << subdomain_param.excitation_method << endl;
+            //cout << "Boundary condition" << subdomain_param.boundary_condition << " | Excitation method: " << subdomain_param.excitation_method << endl;
                 //
                 //Start of the FDTD Space....
             //
@@ -174,7 +173,7 @@ class Subdomain
             {
                 if(subdomain_param.excitation_method == "tfsf")
                 {
-                    cout << "Inserting source in H TFSF" << endl;
+                    //cout << "Inserting source in H TFSF" << endl;
                     s_fields.H(subdomain_param.injection_point-1) -= (s_fields.m_H(subdomain_param.injection_point-1)*subdomain_source.Esrc(curr_iteration));
                 }
             }
@@ -211,54 +210,91 @@ class Subdomain
             {
                 if(subdomain_param.excitation_method == "hard")
                 {
-                    cout << "Inserting source in Hard method" << endl;
+                    //cout << "Inserting source in Hard method" << endl;
                     s_fields.E(subdomain_param.injection_point) = subdomain_source.Esrc(curr_iteration);
                 
                 }
                 else if(subdomain_param.excitation_method == "soft")
                 {
-                    cout << "Inserting source in soft method" << endl;
+                    //cout << "Inserting source in soft method" << endl;
                     s_fields.E(subdomain_param.injection_point) += subdomain_source.Esrc(curr_iteration);
                 
                 }
                 else if(subdomain_param.excitation_method == "tfsf")
                 {
-                    cout << "Inserting source in E TFSF" << endl;
+                    //cout << "Inserting source in E TFSF" << endl;
                     s_fields.E(subdomain_param.injection_point) -= (s_fields.m_E(subdomain_param.injection_point)*subdomain_source.Hsrc(curr_iteration));
                 
                 }   
             }
             
+            //Save to 2D matrix...
+            if(curr_iteration > 0)
+            {
+                //If this is not the first iteration, use vstack to stack the data vertically
+                subdomain_output.E = vstack(
+                                            xtuple(subdomain_output.E,atleast_2d(s_fields.E))
+                );
+                subdomain_output.H = vstack(
+                                            xtuple(subdomain_output.H,atleast_2d(s_fields.H))
+                );
+            }
+            else
+            {
+                //If this is the first iteration, save the data to the xtensor
+                subdomain_output.E = atleast_2d(s_fields.E);
+                subdomain_output.H = atleast_2d(s_fields.H);
+            }
 
 
             return s_fields;
         }
 
-        bool transfer_boundary_data(Subdomain adj_subdomain,string side = "right")
+        bool transfer_boundary_data(Subdomain& adj_subdomain,string side = "right",string method = "old")
         {
+            //Intermediary variable for transferring data
+            double boundary_data_E[2] = {0.0,0.0}; //1st element = This subdomain, 2nd element = Adjacent subdomain
+            double boundary_data_H[2] = {0.0,0.0};
             if(side == "left")
             {
                  //Transfer the boundary data ONLY IF the subdomains are not the first one.
                 if(subdomain_param.subdomain_id > 0 )
                 {
-                    //for E-fields
-                    //Get the boundary data from both subdomains...
-                    boundary_data[0] = s_fields.E(0);
-                    boundary_data[1] = adj_subdomain.s_fields.E(adj_subdomain.s_fields.E.size()-1);
+                    if(method == "old")
+                    {
+                        //for E-fields
+                        //Get the boundary data from both subdomains...
+                        boundary_data_E[0] = s_fields.E(0);
+                        boundary_data_E[1] = adj_subdomain.s_fields.E(adj_subdomain.s_fields.E.size()-1);
 
-                    //Transfer the boundary E-Field data...
-                    s_fields.E(subdomain_param.overlap) = boundary_data[1];
-                    adj_subdomain.s_fields.E(s_fields.E.size()-adj_subdomain.subdomain_param.overlap) = boundary_data[0];
+                        //Transfer the boundary E-Field data...
+                        s_fields.E(0) = adj_subdomain.s_fields.E(adj_subdomain.s_fields.E.size()-adj_subdomain.subdomain_param.overlap);
+                        adj_subdomain.s_fields.E(s_fields.E.size()-1) = adj_subdomain.s_fields.E(adj_subdomain.subdomain_param.overlap);
+                        
 
-                    //for H-fields
-                    //Get the boundary data from both subdomains...
-                    boundary_data[0] = s_fields.H(0);
-                    boundary_data[1] = adj_subdomain.s_fields.H(adj_subdomain.s_fields.H.size()-1);
+                        s_fields.E(subdomain_param.overlap) = boundary_data_E[1];
+                        adj_subdomain.s_fields.E(s_fields.E.size()-adj_subdomain.subdomain_param.overlap) = boundary_data_E[0];
+                        
 
-                    //Transfer the boundary E-Field data...
-                    s_fields.H(subdomain_param.overlap) = boundary_data[1];
-                    adj_subdomain.s_fields.H(s_fields.H.size()-adj_subdomain.subdomain_param.overlap) = boundary_data[0];
+                        //for H-fields
+                        //Get the boundary data from both subdomains...
+                        boundary_data_H[0] = s_fields.H(0);
+                        boundary_data_H[1] = adj_subdomain.s_fields.H(adj_subdomain.s_fields.H.size()-1);
 
+                        //Transfer the boundary E-Field data...
+                        s_fields.H(0) = adj_subdomain.s_fields.H(adj_subdomain.s_fields.H.size()-adj_subdomain.subdomain_param.overlap);
+                        adj_subdomain.s_fields.H(s_fields.H.size()-1) = adj_subdomain.s_fields.H(adj_subdomain.subdomain_param.overlap);
+                        
+
+                        s_fields.H(subdomain_param.overlap) = boundary_data_H[1];
+                        adj_subdomain.s_fields.H(s_fields.H.size()-adj_subdomain.subdomain_param.overlap) = boundary_data_H[0];
+                    }
+                    else if(method == "new")
+                    {
+                        //col(subdomain_output.E,0)
+                    }
+                    
+                    
                 }
                 return true;
             }
@@ -267,25 +303,52 @@ class Subdomain
                 //Transfer the boundary data ONLY IF the subdomains are not the last one.
                 if(subdomain_param.subdomain_id < subdomain_param.num_subdomains )
                 {
-                    //for E-fields
-                    //Get the boundary data from both subdomains...
-                    boundary_data[0] = s_fields.E(s_fields.E.size()-1); //Correct
-                    boundary_data[1] = adj_subdomain.s_fields.E(0);
+                    if(method == "old")
+                    {
+                        //for E-fields
+                        //Get the boundary data from both subdomains...
+                        boundary_data_E[0] = s_fields.E(s_fields.E.size()-1); //Correct
+                        boundary_data_E[1] = adj_subdomain.s_fields.E(0);
+                        //cout << "For Electric Field data..." << endl;
+                        //cout << "Before transferring the data..." << endl;
+                        //cout << "Subdomain " + subdomain_param.subdomain_id << " Rightmost value: " << s_fields.E(s_fields.E.size()-1) << endl;
+                        //cout << "Subdomain " + adj_subdomain.subdomain_param.subdomain_id << " Leftmost value: " << adj_subdomain.s_fields.E(0) << endl;
 
-                    //Transfer the boundary E-Field data...
-                    s_fields.E(s_fields.E.size()-subdomain_param.overlap) = boundary_data[1];
-                    adj_subdomain.s_fields.E(adj_subdomain.subdomain_param.overlap) = boundary_data[0];
+                        //Transfer the boundary E-Field data...
+                        s_fields.E(s_fields.E.size()-1) = adj_subdomain.s_fields.E(adj_subdomain.subdomain_param.overlap-1);
+                        adj_subdomain.s_fields.E(0) = s_fields.E(s_fields.E.size()-subdomain_param.overlap);
 
-                    //for H-fields
-                    //Get the boundary data from both subdomains...
-                    boundary_data[0] = s_fields.H(s_fields.H.size()-1);
-                    boundary_data[1] = adj_subdomain.s_fields.H(0);
+                        s_fields.E(s_fields.E.size()-subdomain_param.overlap) = boundary_data_E[1];
+                        adj_subdomain.s_fields.E(adj_subdomain.subdomain_param.overlap-1) = boundary_data_E[0];
 
-                    //Transfer the boundary E-Field data...
-                    s_fields.H(s_fields.H.size()-subdomain_param.overlap) = boundary_data[1];
-                    adj_subdomain.s_fields.H(adj_subdomain.subdomain_param.overlap) = boundary_data[0];
+                        //cout << "After transferring the data..." << endl;
+                        //cout << "Subdomain " + subdomain_param.subdomain_id << " Rightmost value: " << s_fields.E(s_fields.E.size()-subdomain_param.overlap) << endl;
+                        //cout << "Subdomain " + adj_subdomain.subdomain_param.subdomain_id << " Leftmost value: " <<  adj_subdomain.s_fields.E(adj_subdomain.subdomain_param.overlap) << endl;
+                        //for H-fields
+                        //Get the boundary data from both subdomains...
+                        boundary_data_H[0] = s_fields.H(s_fields.H.size()-1); //Correct
+                        boundary_data_H[1] = adj_subdomain.s_fields.H(0);
+                        //cout << "For Electric Field data..." << endl;
+                        //cout << "Before transferring the data..." << endl;
+                        //cout << "Subdomain " + subdomain_param.subdomain_id << " Rightmost value: " << s_fields.E(s_fields.E.size()-1) << endl;
+                        //cout << "Subdomain " + adj_subdomain.subdomain_param.subdomain_id << " Leftmost value: " << adj_subdomain.s_fields.E(0) << endl;
+
+                        //Transfer the boundary E-Field data...
+                        s_fields.E(s_fields.H.size()-1) = adj_subdomain.s_fields.H(adj_subdomain.subdomain_param.overlap-1);
+                        adj_subdomain.s_fields.H(0) = s_fields.H(s_fields.H.size()-subdomain_param.overlap);
+
+                        s_fields.H(s_fields.H.size()-subdomain_param.overlap) = boundary_data_H[1];
+                        adj_subdomain.s_fields.H(adj_subdomain.subdomain_param.overlap-1) = boundary_data_H[0];
+                    }
+                    else if(method == "new")
+                    {
+
+                    }
+                    
 
                 }
+                //cout << "This subdomain: " << s_fields.E << endl;
+                //cout << "Adjacent subdomain: " << adj_subdomain.s_fields.E << endl;
                 return true;
 
             }

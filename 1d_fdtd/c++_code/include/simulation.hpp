@@ -936,7 +936,7 @@ class Simulation
             return output;
         }
 
-        //FDTD Schwarz Serial Version
+        //FDTD Schwarz 
         void simulate_fdtd_schwarz(string direction = "right",string boundary_condition = "", string excitation = "")
         {
             cout << "==========================================================" << endl;
@@ -950,65 +950,251 @@ class Simulation
                 * Part of the code when OpenMP is not implemented (FDTD-Schwarz in Serial configuration)
                 * Iterates through every subdomain so concurrent simulation will not be possible.
                 */
-                //This is the FDTD Time Loop
-                for(int curr_iter=0;curr_iter<sim_param.Nt;curr_iter++)
+
+                string method = "old";
+                if(method == "old")
                 {
-                    cout << "===============================================================" << endl;
-                    cout << "Current iteration: " << curr_iter << endl;
-                    bool isConverged = false;
-                    unsigned int numLoops = 0; //Used to count the number of while loop repeats
-                    //Loop the FDTD-Schwarz until the data has converged...
-                    while(isConverged == false)
+                    //This is the FDTD Time Loop
+                    for(int curr_iter=0;curr_iter<sim_param.Nt/5;curr_iter++)
                     {
-                        numLoops +=1; // Count a loop...
-                        //Iterate through the subdomain objects...
-                        //While loop and dependent on the return value of the convergence function...
-                        for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
+                        cout << "===============================================================" << endl;
+                        cout << "Current iteration: " << curr_iter << "/" << sim_param.Nt/5 << endl;
+                        bool isConverged = false;
+                        unsigned int numLoops = 0; //Used to count the number of while loop repeats
+
+                        xtensor<double,2> currState_E = zeros<double>({sim_param.num_subdomains,sim_param.subdomain_size});
+                        xtensor<double,2> currState_H = zeros<double>({sim_param.num_subdomains,sim_param.subdomain_size});
+                        //Save the current state of the fields in each time iteration..
+                        for(int subdom_index=0;subdom_index < sim_param.num_subdomains;subdom_index++)
                         {
-                            //cout << "Current subdomain: " << subdom_index +1 << endl;
-                            //cout << "Running simulate() on each subdomain" << endl;
-                            //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
-                            subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
-                        
-                            //Transfer the internal boundary data of the adjacent subdomains here....
-                            //Toggle here if you want the direction to be left or right in transferring the boundary data...
-                            if (direction == "right")
-                            {
-
-                                if(subdom_index == sim_param.num_subdomains -1)
-                                {
-                                    //Skip the last subdomain (since there is no adjacent subdomain in the right side)
-                                    //cout << "Skipping this subdomain..." << endl;
-                                    continue;
-                                }
-                                //cout << "Transferring boundary data..." << endl;
-                                subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index + 1],direction);
-                                //cout << "Successfully transferred boundary data!" << endl;
-                            }
-                            else if(direction == "left")
-                            {
-
-                                if(subdom_index == 0)
-                                {   
-                                    //Skip the first subdomain (since there is no adjacent subdomain in the left side)
-                                    continue;
-                                }
-                                //cout << "Transferring boundary data..." << endl;
-                                subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index - 1],direction);
-                                //cout << "Successfully transferred boundary data!" << endl;
-                            }
+                            row(currState_E,subdom_index) = subdomains[subdom_index].s_fields.E;
+                            row(currState_H,subdom_index) = subdomains[subdom_index].s_fields.H;
+                            
                         }
 
+                        //Loop the FDTD-Schwarz until the data has converged...
+                        while(isConverged == false)
+                        {
+                            numLoops +=1; // Count a loop...
+
+                            //Reset the current field values (so that we remain in the current time iteration)
+                            if(numLoops > 1)
+                            {
+                                for(int subdom_index=0;subdom_index < sim_param.num_subdomains;subdom_index++)
+                                {
+                                subdomains[subdom_index].s_fields.E = row(currState_E,subdom_index);
+                                subdomains[subdom_index].s_fields.H = row(currState_H,subdom_index);
+                                    
+                                }
+                            }
+
+                            //Iterate through the subdomain objects...
+                            //While loop and dependent on the return value of the convergence function...
+                            for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
+                            {
+                                
+                                //cout << "Running simulate() on each subdomain" << endl;
+                                //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
+                                subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
+                                //view(subdomains[subdom_index].s_fields.E,all()) = linspace<double>(1,26,26) + subdom_index;
+                                //view(subdomains[subdom_index].s_fields.H,all()) = linspace<double>(1,26,26)+ subdom_index;
+                                
+                            }
+                            //Transfer boundary data ONLY when the subdomains have finished updating the fields
+                            for(int subdom_index=0;subdom_index < sim_param.num_subdomains; subdom_index++)
+                            {
+                    
+                                //Toggle here if you want the direction to be left or right in transferring the boundary data...
+                                if (direction == "right")
+                                {
+
+                                    if(subdom_index == sim_param.num_subdomains -1)
+                                    {
+                                        //Skip the last subdomain (since there is no adjacent subdomain in the right side)
+                                        //cout << "Skipping this subdomain..." << endl;
+                                        continue;
+                                    }
+                                    cout << "|-------";
+                                    cout << "Current subdomain: " << subdom_index +1 << endl;
+                                    //Transfer the internal boundary data of the adjacent subdomains here....
+                                    cout << "----> Current field values (before transferring boundary data):" << endl 
+                                    << "E: " << subdomains[subdom_index].s_fields.E << endl
+                                    << "H: " << subdomains[subdom_index].s_fields.H << endl;
+                                    cout << "|-------";
+                                    cout << "Adjacent subdomain: " << subdom_index +2 << endl;
+                                    //Transfer the internal boundary data of the adjacent subdomains here....
+                                    cout << "----> Current field values (before transferring boundary data):" << endl 
+                                    << "E: " << subdomains[subdom_index+1].s_fields.E << endl
+                                    << "H: " << subdomains[subdom_index+1].s_fields.H << endl;
+                                    //cout << "Transferring boundary data..." << endl;
+                                    subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index + 1],direction);
+
+                                    /*Manually transfer data...
+                                    double boundary_data_e[2] = {0.0,0.0};
+                                    double boundary_data_h[2] = {0.0,0.0};
+
+                                    
+                                    boundary_data_e[0] = subdomains[subdom_index].s_fields.E(subdomains[subdom_index].s_fields.E.size()-1); //Correct
+                                    boundary_data_e[1] = subdomains[subdom_index+1].s_fields.E(0);
+
+                                    
+                                    //Transfer the boundary E-Field data...
+                                    subdomains[subdom_index+1].s_fields.E(0) = subdomains[subdom_index].s_fields.E(subdomains[subdom_index].s_fields.E.size()-subdomains[subdom_index].subdomain_param.overlap);
+                                    subdomains[subdom_index].s_fields.E(subdomains[subdom_index].s_fields.E.size()-1) = subdomains[subdom_index+1].s_fields.E(subdomains[subdom_index+1].subdomain_param.overlap-1);
+
+                                    subdomains[subdom_index].s_fields.E(subdomains[subdom_index].s_fields.E.size()-subdomains[subdom_index].subdomain_param.overlap) = boundary_data_e[1];
+                                    subdomains[subdom_index+1].s_fields.E(subdomains[subdom_index+1].subdomain_param.overlap-1) = boundary_data_e[0];
+                                    
+
+
+                                    boundary_data_h[0] = subdomains[subdom_index].s_fields.H(subdomains[subdom_index].s_fields.H.size()-1);
+                                    boundary_data_h[1] = subdomains[subdom_index+1].s_fields.H(0);
+
+                                    subdomains[subdom_index+1].s_fields.H(0) = subdomains[subdom_index].s_fields.H(subdomains[subdom_index].s_fields.H.size()-subdomains[subdom_index].subdomain_param.overlap);
+                                    subdomains[subdom_index].s_fields.H(subdomains[subdom_index].s_fields.H.size()-1) = subdomains[subdom_index+1].s_fields.H(subdomains[subdom_index+1].subdomain_param.overlap-1);
+
+                                    subdomains[subdom_index].s_fields.H(subdomains[subdom_index].s_fields.H.size()-subdomains[subdom_index].subdomain_param.overlap) = boundary_data_h[1];
+                                    subdomains[subdom_index+1].s_fields.H(subdomains[subdom_index+1].subdomain_param.overlap-1) = boundary_data_h[0];
+                                    //Print boundary data
+
+                                    cout << "boundary_data_e(0) = " << boundary_data_e[0] << " | boundary_data_e(1) = " << boundary_data_e[1] << endl;
+                                    cout << "boundary_data_h(0) = " << boundary_data_h[0] << " | boundary_data_h(1) = " << boundary_data_h[1] << endl;*/
+                                    //cout << "Successfully transferred boundary data!" << endl;
+                                    cout << "|-------";
+                                    cout << "Current subdomain: " << subdom_index +1 << endl;
+                                    cout << "----> Current field values (after transferring boundary data):" << endl 
+                                    << "E: " << subdomains[subdom_index].s_fields.E << endl
+                                    << "H: " << subdomains[subdom_index].s_fields.H << endl;
+                                    cout << "|-------";
+                                    cout << "Adjacent subdomain: " << subdom_index +2 << endl;
+                                    //Transfer the internal boundary data of the adjacent subdomains here....
+                                    cout << "----> Current field values (after transferring boundary data):" << endl 
+                                    << "E: " << subdomains[subdom_index+1].s_fields.E << endl
+                                    << "H: " << subdomains[subdom_index+1].s_fields.H << endl;
+                                }
+                                else if(direction == "left")
+                                {
+
+                                    if(subdom_index == 0)
+                                    {   
+                                        //Skip the first subdomain (since there is no adjacent subdomain in the left side)
+                                        continue;
+                                    }
+                                    //cout << "Transferring boundary data..." << endl;
+                                    subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index - 1],direction);
+                                    //cout << "Successfully transferred boundary data!" << endl;
+                                }
+                            
+                            }
+                            
+                            //Check for convergence here....
+                            //cout << "Checking for convergence..." << endl;
+                            isConverged = check_convergence(); 
+                            cout << "Convergence after the FDTD-Schwarz Loop: " << isConverged << endl;
+                            //Continue the loop if not converged...
+                        }
+                        cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
+                        //If converged, reconstruct the whole comp domain here...
+                        reconstruct_comp_domain(curr_iter);
+                        //Update the FFT here....
+                    }
+                }
+                else if(method == "new")
+                {
+                    //Similar to the old algorithm but the FDTD time loop is inside the convergence loop...
+                    //Loop the FDTD-Schwarz until the data has converged...
+                    unsigned int numLoops = 0; //Used to count the number of while loop repeats
+                     bool isConverged = false;
+                    while(isConverged == false)
+                    {
+                        numLoops++;
+                        //FDTD Time Loop
+                        for(int curr_iter=0;curr_iter < sim_param.Nt/5;curr_iter++)
+                        {
+                            //Iterate through the subdomain objects...
+                            //While loop and dependent on the return value of the convergence function...
+                            for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
+                            {
+                                
+                                //cout << "Running simulate() on each subdomain" << endl;
+                                //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
+                                subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
+                                //view(subdomains[subdom_index].s_fields.E,all()) = linspace<double>(1,26,26) + subdom_index;
+                                //view(subdomains[subdom_index].s_fields.H,all()) = linspace<double>(1,26,26)+ subdom_index;
+                                
+                            }
+                            //Transfer boundary data ONLY when the subdomains have finished updating the fields
+                            for(int subdom_index=0;subdom_index < sim_param.num_subdomains; subdom_index++)
+                            {
+                    
+                                //Toggle here if you want the direction to be left or right in transferring the boundary data...
+                                if (direction == "right")
+                                {
+
+                                    if(subdom_index == sim_param.num_subdomains -1)
+                                    {
+                                        //Skip the last subdomain (since there is no adjacent subdomain in the right side)
+                                        //cout << "Skipping this subdomain..." << endl;
+                                        continue;
+                                    }
+                                    cout << "|-------";
+                                    cout << "Current subdomain: " << subdom_index +1 << endl;
+                                    //Transfer the internal boundary data of the adjacent subdomains here....
+                                    cout << "----> Current field values (before transferring boundary data):" << endl 
+                                    << "E: " << subdomains[subdom_index].s_fields.E << endl
+                                    << "H: " << subdomains[subdom_index].s_fields.H << endl;
+                                    cout << "|-------";
+                                    cout << "Adjacent subdomain: " << subdom_index +2 << endl;
+                                    //Transfer the internal boundary data of the adjacent subdomains here....
+                                    cout << "----> Current field values (before transferring boundary data):" << endl 
+                                    << "E: " << subdomains[subdom_index+1].s_fields.E << endl
+                                    << "H: " << subdomains[subdom_index+1].s_fields.H << endl;
+                                    //cout << "Transferring boundary data..." << endl;
+                                    subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index + 1],direction,method);
+
+                                    cout << "|-------";
+                                    cout << "Current subdomain: " << subdom_index +1 << endl;
+                                    cout << "----> Current field values (after transferring boundary data):" << endl 
+                                    << "E: " << subdomains[subdom_index].s_fields.E << endl
+                                    << "H: " << subdomains[subdom_index].s_fields.H << endl;
+                                    cout << "|-------";
+                                    cout << "Adjacent subdomain: " << subdom_index +2 << endl;
+                                    //Transfer the internal boundary data of the adjacent subdomains here....
+                                    cout << "----> Current field values (after transferring boundary data):" << endl 
+                                    << "E: " << subdomains[subdom_index+1].s_fields.E << endl
+                                    << "H: " << subdomains[subdom_index+1].s_fields.H << endl;
+                                }
+                                else if(direction == "left")
+                                {
+
+                                    if(subdom_index == 0)
+                                    {   
+                                        //Skip the first subdomain (since there is no adjacent subdomain in the left side)
+                                        continue;
+                                    }
+                                    //cout << "Transferring boundary data..." << endl;
+                                    subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index - 1],direction,method);
+                                    //cout << "Successfully transferred boundary data!" << endl;
+                                }
+                            
+                            }
+                            
+                            
+                        }
                         //Check for convergence here....
                         //cout << "Checking for convergence..." << endl;
                         isConverged = check_convergence(); 
                         cout << "Convergence after the FDTD-Schwarz Loop: " << isConverged << endl;
                         //Continue the loop if not converged...
+                        cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
                     }
-                    cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
+                    
                     //If converged, reconstruct the whole comp domain here...
-                    reconstruct_comp_domain(curr_iter);
+                    //reconstruct_comp_domain(curr_iter);
                     //Update the FFT here....
+                    
+
+
                 }
                 /*
                                     * Wait for all subdomain to finish before going here.
@@ -1031,13 +1217,12 @@ class Simulation
                     while(isConverged == false)
                     {
                         //Iterate through the subdomain objects...
-                        //While loop and dependent on the return value of the convergence function...
+                        //While loop and dependent on the return value of convergence function
                         #pragma omp parallel //Create a parallel region using OpenMP
                         {
                             //Get the thread id...
                             int thread_id = omp_get_thread_num();
 
-                            //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
                             //In multithread, each thread will call their own subdomain object...
                             subdomains[thread_id].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
                         
@@ -1124,7 +1309,7 @@ class Simulation
         bool check_convergence()
         {
             // Initialize matrices of overlapping region values 
-            cout << "Initializing overlaping region buffers..." << endl;
+           // cout << "Initializing overlaping region buffers..." << endl;
             xtensor<double,2> A_E = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size}); 
             xtensor<double,2> B_E = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size});
             xtensor<double,2> A_H = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size}); 
@@ -1148,7 +1333,7 @@ class Simulation
             Gets the values of the CURRENT subdomain's RIGHT overlapping region and the  
             NEXT subdomain's LEFT overlapping region
              */ 
-            cout << "Getting the values in the overlapping regions" << endl;
+            //cout << "Getting the values in the overlapping regions" << endl;
             for(int count =  0; count < sim_param.num_subdomains-1; count++)
             {
                 row(A_E, count) = subdomains[count].getOverlapValues('E',"right");
@@ -1157,7 +1342,7 @@ class Simulation
                 row(B_E, count) = subdomains[count + 1].getOverlapValues('E', "left"); 
                 row(B_H, count) = subdomains[count + 1].getOverlapValues('H', "left");
             }
-            cout << "Subtracting the overlapping values and getting the L2 norm" << endl;
+            //cout << "Subtracting the overlapping values and getting the L2 norm" << endl;
             // Subtracts the two vectors (A - B) and gets the norm; checks each element if <= epsilon
             for(int n =  0; n < sim_param.num_subdomains-1; n++)
             {
