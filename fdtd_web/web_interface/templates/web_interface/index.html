@@ -2,6 +2,12 @@
 {% load static %}
 
 {% block body %}
+    {% if has_error %}  
+    <div class="alert alert-danger alert-dismissible" role="alert" id="liveAlertPlaceholder">
+        {{ error_message }}
+        </div>
+    
+    {% endif %}
     <div class="col-11" id="all-simulations-view">
         <h3>ALL SIMULATION VIEW</h3>
     </div>
@@ -12,11 +18,16 @@
 
     <div class="col-11" id="add-simulation-view">
         <h3>New Simulation</h3>
-        <form id="simulation-input-form" action="{% url 'web_interface:add_simulation' %}" method="post">
-            {% csrf_token %}
+        <form id="simulation-input-form" >
+          
             <div class="form-floating mb-3">
                 <input type="text" class="form-control" placeholder="Enter username or name of user..." id="username">
                 <label for="username">Username</label>
+                
+            </div>
+            <div class="form-floating mb-3">
+                <input type="email" class="form-control" placeholder="Enter email" id="user_email">
+                <label for="user_email">Email Address</label>
             </div>
             <div class="form-floating mb-3">
                 <textarea class="form-control" id="sim_description"></textarea>
@@ -60,11 +71,11 @@
                     <div class="row">
                         <div class="col-5">
                             <label>Custom Output Filename</label>
-                            <input type="text" class="form-control" placeholder="Enter any arbitrary string...">
+                            <input type="text" class="form-control" placeholder="Enter any arbitrary string..." id="custom_name">
                         </div>
                         <div class="col-5">
                             <label for="source_excitation">Output File Type</label>
-                            <select class="form-select form-select-lg mb-3" aria-label="Default select example" id="source_excitation">
+                            <select class="form-select form-select-lg mb-3" aria-label="Default select example" id="output_type">
                                 <option selected>Enter the output file type...</option>
                                 <option value="csv">Comma Separated Values (CSV)</option>
                                 <option value="npy">Numpy Array File (NPY)</option>
@@ -93,7 +104,7 @@
                 </fieldset>
                 
             </div>
-            <input type="submit" class="btn btn-primary" value="Submit Input parameters"/>
+            <input type="submit" id="submit-Btn" class="btn btn-primary" value="Submit Input parameters"/>
         </form>
     </div>
     
@@ -104,7 +115,7 @@
                 Created for ECE 198 project. Simple web interface (integrating with C++ program for FDTD Simulations).
             </p>
             <h5>
-                <b>Source Code: </b> <a href="https://github.com/marvinmoyco/fdtd-code/tree/main">https://github.com/marvinmoyco/fdtd-code/tree/main</a>
+                <b>Source Code: </b> <a href="https://github.com/marvinmoyco/fdtd-code/tree/main" target="_blank">https://github.com/marvinmoyco/fdtd-code/tree/main</a>
             </h5>
         </div>
         

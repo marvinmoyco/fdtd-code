@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
     // Use buttons to toggle between views
-    document.querySelector('#all-simulations-btn').addEventListener('click', () => load_simulations());
+    document.querySelector('#all-simulations-btn').addEventListener('click', () => load_simulations(response));
     document.querySelector('#add-simulation-btn').addEventListener('click', add_simulation);
     document.querySelector('#about-btn').addEventListener('click', load_about);
     
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-  function load_simulations() {
+  function load_simulations(response) {
 
       // Adjust the buttons in navbar
     document.querySelector('#all-simulations-btn').setAttribute('class','nav-link active');
@@ -35,7 +35,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#all-simulations-view').style.display = 'block';
     document.querySelector('#add-simulation-view').style.display = 'none';
     document.querySelector('#about-view').style.display = 'none';
-  
+    
+    //Check if the status code is a redirect
+ 
+
+
     console.log("HELLOOOOOOOO");
 
   
@@ -46,6 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
 
+  
+  
   function add_simulation() {
 
     // Adjust the buttons in navbar
@@ -61,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
     const section = this.dataset.section;
-    console.log(section);
+    //console.log(section);
     history.pushState({section: section},"", `${section}`);
     showSection(section);
 
@@ -72,11 +78,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#ModelInput').addEventListener("input",function(){
 
       modelInput = document.querySelector('#ModelInput').options[document.querySelector('#ModelInput').selectedIndex].value;
-      console.log(modelInput);
+      //console.log(modelInput);
 
       //Get the div tag...
       var device_model = document.querySelector('#input-model-group');
-      console.log(device_model);
+      //console.log(device_model);
       device_model.innerHTML = ""; //Empty the div before adding them..
 
       if(modelInput == "csv") //Put a File field in the div..
@@ -241,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       else{ //When the blank is selected
         device_model = document.querySelector('#input-model-group');
-        console.log(device_model);
+        //console.log(device_model);
         device_model.innerHTML = ""; //Empty the div before adding them..
         var alert_file = document.createElement('div');
         alert_file.setAttribute('class','alert alert-danger');
@@ -258,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#algorithm').addEventListener("change",() => {
       var algorithmSelected  = document.querySelector('#algorithm')
                               .options[document.querySelector('#algorithm').selectedIndex].value;
-      console.log(algorithmSelected);
+      //console.log(algorithmSelected);
       if(algorithmSelected == "fdtd-schwarz")
       {
         //document.querySelector('#multithreading-swtich').checked = false;
@@ -279,9 +285,96 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#num_subdomains').addEventListener("change",() => {
       
       document.querySelector('#currVal').innerHTML = subdomains[document.querySelector('#num_subdomains').value];
-      console.log(document.querySelector('#currVal').innerHTML);
+      //console.log(document.querySelector('#currVal').innerHTML);
 
     });
+    
+    
+      //fetch a POST request when the button is clicked
+    document.querySelector('form').onsubmit = () => {
+      
+      console.log(document.querySelector('#ModelInput').value);
+      console.log("Entering onsubmit....");
+      //Fetch a POST request depending on the manual input..
+      if(document.querySelector('#ModelInput').value == "csv")
+      {
+        
+        fetch('new',{
+          method: 'POST',
+          body: JSON.stringify({
+            username: document.querySelector('#username').value,
+            user_email: document.querySelector('#user_email').value,
+            sim_description: document.querySelector('#sim_description').value,
+            input_type: document.querySelector('#ModelInput').value,
+            input_filepath: document.querySelector('#sim_input_filepath').value,
+            boundary_cond: document.querySelector('#boundary_cond').value,
+            source_excitation: document.querySelector('#source_excitation').value,
+            custom_name: document.querySelector('#custom_name').value,
+            output_type: document.querySelector('#output_type').value,
+            algorithm: document.querySelector('#algorithm').value,
+            multithreading: document.querySelector('#multithreading-swtich').checked,
+            num_subdomain: subdomains[document.querySelector('#num_subdomains').value],
+         
+            
+          })
+        })
+        .then(response => response.json())
+        .then(result => {console.log(result)});
+      }
+      else if(document.querySelector('#ModelInput').value == "manual")
+      {
+        var num_layers = document.querySelector('#nmodel').value;
+        var layer_sizes = [];
+        var mus = [];
+        var epsilons = [];
+        var layer_str = "#layer-";
+        var mu_str = "#mu-";
+        var epsilon_str = "#epsilon-";
+        for(let i=1; i<= num_layers; i++){
+          layer_sizes.push(document.querySelector(layer_str + i).value);
+          mus.push(document.querySelector(mu_str + i).value);
+          epsilons.push(document.querySelector(epsilon_str + i).value);
+        }
+        fetch('new',{
+          method: 'POST',
+          body: JSON.stringify({
+            username: document.querySelector('#username').value,
+            user_email: document.querySelector('#user_email').value,
+            sim_description: document.querySelector('#sim_description').value,
+            input_type: document.querySelector('#ModelInput').value,
+            fmax: document.querySelector('#fmax').value,
+            source_type: document.querySelector('#source_type').value,
+            nmodel: document.querySelector('#nmodel').value,
+            layer_size: layer_sizes,
+            mu: mus,
+            epsilon: epsilons,
+            boundary_cond: document.querySelector('#boundary_cond').value,
+            source_excitation: document.querySelector('#source_excitation').value,
+            custom_name: document.querySelector('#custom_name').value,
+            output_type: document.querySelector('#output_type').value,
+            algorithm: document.querySelector('#algorithm').value,
+            multithreading: document.querySelector('#multithreading-swtich').checked,
+            num_subdomain: subdomains[document.querySelector('#currVal').value],
+            
+          })
+        })
+        .then(response => response.json())
+        .then(result => {console.log(result)});
+      }
+      else{
+        fetch('new',{
+          method: 'POST',
+          body: JSON.stringify({
+            has_error: true,
+            error_message: "Error: Incorrect value."
+          })
+        })
+        .then(response => response.json())
+        .then(result => {console.log("Entered POST request....")});
+
+      }
+    };
+    
     
   };
 

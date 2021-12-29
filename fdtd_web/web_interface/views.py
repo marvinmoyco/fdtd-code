@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render
 from django.urls import reverse
 from django.http import JsonResponse
@@ -42,21 +42,28 @@ class New_Simulation(forms.Form):
 def index(request):
     return render(request, "web_interface/index.html")
 
-def simulation(request,id):
-    pass
 
+def simulation(request,id):
+    return render(request, "web_interface:simulation.html")
+
+@csrf_exempt
 def add_simulation(request):
     
     #Check the submitted data in the POST request
-    if request.method == "POST":
-        form = New_Simulation(request.POST)
-        if form.is_valid():
-            pass
-        else:
-            return render(request, "interface/", {
-                "has_error": True,
-                "error_message": "Form submitted is either incomplete/invalid. Try again."
-            })
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required"},status=400)
+
+        
+    data = json.loads(request.body)
+    print(data)
+    if data != None:
+        print("HELOOOOOOOOOOOOOOOOOOOO")
+    else:
+        return render(request, "web_interface/index.html", {
+            "has_error": True,
+            "error_message": "Submitted data is either incomplete/invalid"
+        })
+        
 
     
 

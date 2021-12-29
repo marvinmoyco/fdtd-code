@@ -10,7 +10,9 @@
         {% endblock %}
     </head>
     <body>
-        
+        <div class="alert alert-danger" role="alert" id="invalid_input" hidden>
+          Submitted data is either incomplete/invalid.
+        </div>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <a class="navbar-brand" href="{% url 'web_interface:index' %}">Simulation Interface</a>
           
@@ -19,12 +21,7 @@
                 <li class="nav-item" role="presentation">
                   <a class="nav-link active" href="{% url 'web_interface:index' %}" id="all-simulations-btn" data-bs-toggle="tab" data-section="home" type="button" role="tab" aria-controls="home" aria-selected="true">All Simulations</a>
                 </li>
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="add-simulation-btn" data-bs-toggle="tab" data-section="new" type="button" role="tab" aria-controls="profile" aria-selected="false">Create a new simulation</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="about-btn" data-bs-toggle="tab" data-section="about" type="button" role="tab" aria-controls="contact" aria-selected="false">About</button>
-                </li>
+                
               </ul>
             </div>
           </nav>
