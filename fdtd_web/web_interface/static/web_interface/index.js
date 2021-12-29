@@ -1,3 +1,11 @@
+
+window.onpopstate = function(event) {
+  console.log(event.state.section);
+  showSection(event.state.section);
+}
+
+
+
 document.addEventListener('DOMContentLoaded', function() {
 
     
@@ -16,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function load_simulations() {
 
-    // Adjust the buttons in navbar
+      // Adjust the buttons in navbar
     document.querySelector('#all-simulations-btn').setAttribute('class','nav-link active');
     document.querySelector('#add-simulation-btn').setAttribute('class','nav-link');
     document.querySelector('#about-btn').setAttribute('class','nav-link');
@@ -27,8 +35,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#all-simulations-view').style.display = 'block';
     document.querySelector('#add-simulation-view').style.display = 'none';
     document.querySelector('#about-view').style.display = 'none';
-
+  
     console.log("HELLOOOOOOOO");
+
+  
+
 
 
 
@@ -43,10 +54,18 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#about-btn').setAttribute('class','nav-link');
 
     // Show the view where all simulations are shown and hide other views
-    document.querySelector('#simulation-view').style.display = 'none';
-    document.querySelector('#all-simulations-view').style.display = 'none';
-    document.querySelector('#add-simulation-view').style.display = 'block';
-    document.querySelector('#about-view').style.display = 'none';
+    //document.querySelector('#simulation-view').style.display = 'none';
+    //document.querySelector('#all-simulations-view').style.display = 'none';
+    //document.querySelector('#add-simulation-view').style.display = 'block';
+    //document.querySelector('#about-view').style.display = 'none';
+
+    
+    const section = this.dataset.section;
+    console.log(section);
+    history.pushState({section: section},"", `${section}`);
+    showSection(section);
+
+
 
     var modelInput;
     //Get the value of the select...
@@ -274,9 +293,41 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#about-btn').setAttribute('class','nav-link active');
 
     // Show the view where all simulations are shown and hide other views
-    document.querySelector('#simulation-view').style.display = 'none';
-    document.querySelector('#all-simulations-view').style.display = 'none';
-    document.querySelector('#add-simulation-view').style.display = 'none';
-    document.querySelector('#about-view').style.display = 'block';
+    //document.querySelector('#simulation-view').style.display = 'none';
+    //document.querySelector('#all-simulations-view').style.display = 'none';
+    //document.querySelector('#add-simulation-view').style.display = 'none';
+    //document.querySelector('#about-view').style.display = 'block';
+
+    const section = this.dataset.section;
+    console.log(section);
+    history.pushState({section: section},"", `${section}`);
+    showSection(section);
 
   };  
+
+  function showSection(section) {
+    if(section == 'home'){
+      // Show the view where all simulations are shown and hide other views
+      document.querySelector('#simulation-view').style.display = 'none';
+      document.querySelector('#all-simulations-view').style.display = 'block';
+      document.querySelector('#add-simulation-view').style.display = 'none';
+      document.querySelector('#about-view').style.display = 'none';
+    }
+    else if(section == 'new') {
+       // Show the view where all simulations are shown and hide other views
+       document.querySelector('#simulation-view').style.display = 'none';
+       document.querySelector('#all-simulations-view').style.display = 'none';
+       document.querySelector('#add-simulation-view').style.display = 'block';
+       document.querySelector('#about-view').style.display = 'none';
+    }
+    else if(section == 'about') {
+      // Show the view where all simulations are shown and hide other views
+      document.querySelector('#simulation-view').style.display = 'none';
+      document.querySelector('#all-simulations-view').style.display = 'none';
+      document.querySelector('#add-simulation-view').style.display = 'none';
+      document.querySelector('#about-view').style.display = 'block';
+    }
+    
+    
+    
+  }

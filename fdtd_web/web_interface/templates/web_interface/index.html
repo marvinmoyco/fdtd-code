@@ -12,7 +12,8 @@
 
     <div class="col-11" id="add-simulation-view">
         <h3>New Simulation</h3>
-        <form id="simulation-input-form">
+        <form id="simulation-input-form" action="{% url 'web_interface:add_simulation' %}" method="post">
+            {% csrf_token %}
             <div class="form-floating mb-3">
                 <input type="text" class="form-control" placeholder="Enter username or name of user..." id="username">
                 <label for="username">Username</label>
