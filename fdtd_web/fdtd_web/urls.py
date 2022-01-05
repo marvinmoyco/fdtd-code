@@ -17,6 +17,6 @@ from django.contrib import admin
 from django.urls import path,include
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('interface/',include('web_interface.urls')),
+    path('',include('web_interface.urls')),
     
 ]

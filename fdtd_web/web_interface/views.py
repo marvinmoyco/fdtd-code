@@ -44,26 +44,27 @@ def index(request):
 
 
 def simulation(request,id):
-    return render(request, "web_interface:simulation.html")
+    return render(request, "web_interface/simulation.html")
 
-@csrf_exempt
+
 def add_simulation(request):
     
     #Check the submitted data in the POST request
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required"},status=400)
-
-        
-    data = json.loads(request.body)
-    print(data)
-    if data != None:
+    if request.method == "POST":
+        print("Request.body")
+        print(request.body)
+        print("Request.POST")
+        print(request.POST)
+        #data = json.loads(request.body)
+        #print(data)
         print("HELOOOOOOOOOOOOOOOOOOOO")
+        #Store the data into the database
+        return HttpResponseRedirect(reverse("web_interface:simulation",args=[0]))
     else:
-        return render(request, "web_interface/index.html", {
-            "has_error": True,
-            "error_message": "Submitted data is either incomplete/invalid"
-        })
-        
+        return JsonResponse({"error": "POST request required"},status=400)
+    
+    
+
 
     
 

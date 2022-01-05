@@ -37,8 +37,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#about-view').style.display = 'none';
     
     //Check if the status code is a redirect
- 
-
+    //const section = this.dataset.section;
+    //console.log(section);
+   // history.pushState({section: section},"", `${section}`);
+   // showSection(section);
+//
 
     console.log("HELLOOOOOOOO");
 
@@ -291,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     
       //fetch a POST request when the button is clicked
-    document.querySelector('form').onsubmit = () => {
+    document.querySelector('#submit-Btn').addEventListener('click', () => {
       
       console.log(document.querySelector('#ModelInput').value);
       console.log("Entering onsubmit....");
@@ -373,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(result => {console.log("Entered POST request....")});
 
       }
-    };
+    });
     
     
   };
