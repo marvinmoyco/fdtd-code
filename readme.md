@@ -35,7 +35,7 @@
 * [xtl](https://github.com/xtensor-stack/xtl) - Dependencies of all xtensor libraries.
 * [xtensor-io](https://github.com/xtensor-stack/xtensor-io) - For I/O operations like saving simulation data into HDF5 files.
 
-    * [HgihFive](https://github.com/BlueBrain/HighFive)   
+    * [HgihFive](https://github.com/BlueBrain/HighFive) - C++ library for manipulating HDF5 files (header-only library)
 
         * **libhdf5** - can be installed using *sudo apt install libhdf5-dev*
 
@@ -52,5 +52,5 @@
 **Python Libraries:**
 * [numpy](https://numpy.org/doc/stable/) - Main numerical library for linear algebra and scientific computing in Python.
 * [matplotlib](https://matplotlib.org/stable/contents.html) - Basic plotting library based on MATLAB.
-    *[ffmpeg](https://www.ffmpeg.org/) - Required library when using matplotlib for creating animation (video) of simulation
+    * [ffmpeg](https://www.ffmpeg.org/) - Required library when using matplotlib for creating animation (video) of simulation
 * [plotly](https://plotly.com/python/) - Interactive graphics library for Python.

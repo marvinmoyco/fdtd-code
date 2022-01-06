@@ -1,4 +1,4 @@
-pabc
+dirichlet
 soft
 normal
 hdf5

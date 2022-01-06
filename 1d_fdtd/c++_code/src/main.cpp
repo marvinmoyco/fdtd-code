@@ -42,6 +42,8 @@ int main(int argc, char* argv[])
   //Start the simulation...
   output = sim.simulate(argv[2],argv[3]);
 
+  cout << "Electric field shape: (" << output.E.shape()[0] << "," << output.E.shape()[1] << ")" << endl;
+  cout << "Magnetic field shape: (" << output.H.shape()[0] << "," << output.H.shape()[1] << ")" << endl;
   //Save the simulation data....
   sim.save_to_file(argv[4],argv[5],argv[6],argv[11],argv[12],argv[13]);
 

@@ -20,14 +20,16 @@ if len(sys.argv) == 3:
 data = h5py.File(filename,mode='r')
 print(data.keys())
 print(np.array(data['sim param']['Nz']))
-z = np.arange(start=1,stop=34)
+#z = np.arange(start=1,stop=34)
+z = data['comp domain']['z']
 E = np.nan_to_num(data['output']['E'][:,:])
 H = np.nan_to_num(data['output']['H'][:,:])
 R = np.nan_to_num(data['output']['reflectance'][:,:])
 T = np.nan_to_num(data['output']['transmittance'][:,:])
 C = np.nan_to_num(data['output']['conservation of energy'][:,:])
 
-
+print(E.shape)
+print(H.shape)
 #Read source data
 t = data['source']['t'][:]
 t_E = data['source']['t_E'][:]
@@ -41,7 +43,7 @@ Hsrc = data['source']['Hsrc'][:]
 sim_date = np_to_str((data['metadata']['date']))
 source_type = np_to_str(data['source']['type'])
 n = data['comp domain']['n'][:]
-Nt = int(np.ceil(np.array(data['sim param']['Nt'])/2))
+Nt = int(np.ceil(np.array(data['sim param']['Nt'])))
 
 dz = float(np.array(data['sim param']['dz']))
 spacer = int(np.array(data['sim param']['left spacer']))*dz
