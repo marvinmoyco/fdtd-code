@@ -39,13 +39,49 @@ int main(int argc, char* argv[])
   //Perform pre-processing...
   computational_domain check = sim.create_comp_domain(0,0,100,stoul(argv[8]),stod(argv[10]),stoul(argv[9]),argv[7]);
 
-  //Start the simulation...
-  output = sim.simulate(argv[2],argv[3]);
+  for(int i = 0; i<1000; i++)
+  {
+    if(i % 500 == 0)
+    {
 
-  cout << "Electric field shape: (" << output.E.shape()[0] << "," << output.E.shape()[1] << ")" << endl;
-  cout << "Magnetic field shape: (" << output.H.shape()[0] << "," << output.H.shape()[1] << ")" << endl;
+
+
+
+
+
+
+      int y = i;
+      cout << "Reached " << y << endl;
+
+
+
+
+
+
+
+      
+    }
+    sim.update_sim_param(i,i+1);
+    //printing dz and dt...
+    cout << "=================================================" << endl;
+    cout << "Dz: [ ";
+    for (double i: sim.sim_param.dz_list)
+      cout << i << ", ";
+    cout << " ]" << endl;
+    cout << "Dt: [ ";
+    for (double i: sim.sim_param.dt_list)
+      cout << i << ", ";
+    cout << " ]" << endl;
+  }
+
+
+  //Start the simulation...
+  //output = sim.simulate(argv[2],argv[3]);
+
+  //cout << "Electric field shape: (" << output.E.shape()[0] << "," << output.E.shape()[1] << ")" << endl;
+  //cout << "Magnetic field shape: (" << output.H.shape()[0] << "," << output.H.shape()[1] << ")" << endl;
   //Save the simulation data....
-  sim.save_to_file(argv[4],argv[5],argv[6],argv[11],argv[12],argv[13]);
+  //sim.save_to_file(argv[4],argv[5],argv[6],argv[11],argv[12],argv[13]);
 
 
 

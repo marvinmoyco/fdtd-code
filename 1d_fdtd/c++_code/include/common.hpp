@@ -15,7 +15,8 @@
 #include <list>
 #include <complex>
 #include <omp.h>
-#include <mutex>  
+#include <mutex>
+#include <assert.h>  
 
 //Xtensor preprocessor directives
 #include "xtensor/xarray.hpp"
@@ -104,6 +105,12 @@ typedef struct Simulation_parameters{
     unsigned int overlap_size = 0;
     unsigned int non_overlap_size = 0;
 
+    //For changing the sim parameters in Schwarz
+    unsigned int n_wavelength = 0;
+    unsigned int n_dimension = 0;
+
+    vector<double> dz_list = {};
+    vector<double> dt_list = {};
     bool multithread = false; //To know whether it is serial or parallel
     
     string algorithm = "fdtd";

@@ -23,6 +23,10 @@ class Simulation
         save_data output;
         vector<Subdomain> subdomains;
 
+        //initial resolutions for dz
+        unsigned int init_N_lambda = 10;
+        unsigned int init_N_d = 1;
+
         //Initializing variables in the constructor
         Simulation(string input_file="")
         {
@@ -176,8 +180,6 @@ class Simulation
                 6. overlap - amount of overlap used in Schwarz method. Range (0,1) 0% to 100% of spacer region. If the overlap size is greater than 1, it is number cells.
                 7. algorithm - toggles between basic fdtd and fdtd-schwarz algorithm.
             */
-
-            
             //Try catch here to make sure that the input struct is not empty
             cout << "========================================================================" << endl;
             try
@@ -211,11 +213,11 @@ class Simulation
             
             //Computing cell size based on the smallest wavelength (lambda_min)
             double lambda_min = c_0/(n_max*input.simulation_parameters.at(0));
-            double delta_lambda = lambda_min/20; //denominator is  dependent on how many samples you want for a whole wave
+            double delta_lambda = lambda_min/init_N_lambda; //denominator is  dependent on how many samples you want for a whole wave
             
             //Computing cell size based on the smallest layer size (min. dimension)
             double d_min = amin(input.layer_size)(0);
-            double delta_size = d_min/10;  //denominator is the amount of cells that can resolve the smallest dimension
+            double delta_size = d_min/init_N_d;  //denominator is the amount of cells that can resolve the smallest dimension
             
             //The final cell size is obtained by getting the smallest of delta_lambda and delta_size 
             //to make sure that the comp domain can resolve all the necessary features (wavelength or dimension)
@@ -601,6 +603,428 @@ class Simulation
             return comp_domain;
         }
         
+
+
+        int update_sim_param(unsigned int n_wavelength, unsigned int n_dimension)
+        {
+            cout << "============================================================" << endl;
+            cout << "Changing the simulation parameters: " << endl;
+            cout << "Num of iterations: " << n_wavelength << endl;
+
+
+            //Store the previous value of dz and dt in the vector data structure...
+            sim_param.dz_list.push_back(sim_param.dz);
+            sim_param.dt_list.push_back(sim_param.dt);
+
+
+            //Computing dz and Nz...
+            double n_max =  amax<double>(sqrt(input.magnetic_permeability*input.electric_permittivity))(0);
+            
+            //Computing cell size based on the smallest wavelength (lambda_min)
+            double lambda_min = c_0/(n_max*input.simulation_parameters.at(0));
+            double delta_lambda = lambda_min/n_wavelength; //denominator is  dependent on how many samples you want for a whole wave
+            
+            //Computing cell size based on the smallest layer size (min. dimension)
+            double d_min = amin(input.layer_size)(0);
+            double delta_size = d_min/n_dimension;  //denominator is the amount of cells that can resolve the smallest dimension
+            
+            //The final cell size is obtained by getting the smallest of delta_lambda and delta_size 
+            //to make sure that the comp domain can resolve all the necessary features (wavelength or dimension)
+            
+            sim_param.dz = min(delta_lambda,delta_size); //Dividing by 2 further decreases the cell size to make the resolution finer
+            
+            //Get the total number cells needed for the device model
+            xtensor<double,1> model_ncells = ceil((input.layer_size/sim_param.dz));
+            sim_param.Nz = sum(model_ncells)(0);
+            cout << "Cell amount per layer: " << model_ncells << endl;
+            cout << "Number of cells of the device model: " << sim_param.Nz << " cells" << endl;
+            cout << "Cell size (dz): "<< sim_param.dz << " m" << endl;
+
+            //Check Nz to have more than 1 number of cells. Otherwise, end the function and continue to the next iteration..
+            try
+            {
+                bool check_Nz = sim_param.Nz <= 1;
+                if(check_Nz )
+                {
+                    throw -1;
+                }
+            }
+            catch(...)
+            {
+                cout << "Nz is not valid..." << endl;
+                return 10;
+            }
+
+            //Update the spacer cell values in both the left and right side of the comp domain...
+            sim_param.left_spacers = (int) ceil((sim_param.Nz/2));
+            sim_param.right_spacers = (int) ceil((sim_param.Nz/2));
+            sim_param.Nz += sim_param.Nz;
+
+            //Adjust the injection point to be atleast in the middle of the left spacer
+            while(sim_param.injection_point > sim_param.left_spacers/2)
+            {
+                sim_param.injection_point--;
+            }
+
+            //Adjust Nz to be divisible by the numbe of subdomains
+            while((sim_param.Nz % sim_param.num_subdomains) != 0)
+            {
+                
+                //To make Nz divisible by number of subdomains, add 1 cell to the left spacer region until it becomes divisible by it
+                sim_param.Nz += 1;
+                sim_param.left_spacers +=1;
+            }
+
+            //Check to make sure that the injection point is inside the spacer region. 
+            if(sim_param.injection_point < 0)
+            {
+                cout << "Error detected: Injection point is invalid" << endl;
+                comp_domain.check = -1;
+                exit(EXIT_FAILURE);
+            }
+            else if(sim_param.injection_point > sim_param.left_spacers)
+            {
+                cout << "Error detected: Injection point is inside the device model" <<endl;
+                comp_domain.check = -1;
+                exit(EXIT_FAILURE);
+            }
+            else{
+                if(sim_param.injection_point == 0)
+                {
+                   
+                    sim_param.injection_point = (int) ceil(sim_param.left_spacers/2);
+                }
+                else
+                {
+                    sim_param.injection_point = sim_param.injection_point;
+                }
+            }
+            cout << "Injection point (index/position): " << sim_param.injection_point << "-th cell" <<endl;
+            cout << "Spacer cells (Left): " << sim_param.left_spacers << " cells | " 
+                 << "Spacer cells (Right): " << sim_param.right_spacers << " cells" << endl;
+            cout << "Total number of cells (model + spacers): " << sim_param.Nz << " cells" << endl;
+            cout << "Total length (in m) of the computational domain: " << sim_param.Nz*sim_param.dz << " m" << endl;
+            
+            
+            
+            //Creating the computational domain
+            comp_domain.z = arange(0.0,sim_param.Nz*sim_param.dz,sim_param.dz);
+            //Creating the vectors for mu and epsilon
+            //comp_domain.mu = ones<double>(comp_domain.z.shape());
+            //comp_domain.epsilon = ones<double>(comp_domain.z.shape());
+
+            comp_domain.mu.resize(comp_domain.z.shape());
+            comp_domain.epsilon.resize(comp_domain.z.shape());
+
+            view(comp_domain.mu,all()) = 1.0;
+            view(comp_domain.epsilon,all()) = 1.0;
+
+            //Assigning the mu and epsilon values to the proper index in the comp domain
+            int start = sim_param.left_spacers;
+            int end = sim_param.left_spacers;
+            for (int i=0;i<input.simulation_parameters.at(2);i++)
+            {
+                end += model_ncells(i);
+                //cout << "range[" << start << ":" << end << "]" << "mu value: " << input.magnetic_permeability(i) << endl;
+                view(comp_domain.mu,range(start,end))= input.magnetic_permeability(i);
+                view(comp_domain.epsilon,range(start,end)) = input.electric_permittivity(i);
+                
+                start = end;
+            }
+
+
+            // Computing for the refractive index vector based on the mu and epsilon vectors
+            comp_domain.n.resize(comp_domain.z.shape());
+            comp_domain.n = sqrt(comp_domain.mu*comp_domain.epsilon);
+
+            //cout << comp_domain.n << endl;
+            //Printing the layout of computational domain.
+            cout << "========================================================================" << endl;
+            cout << "Layout of Computational Domain: " << endl;
+            cout << "|----spacer";
+            for(int i =0; i < input.simulation_parameters.at(2);i++)
+            {
+                cout << "----model_layer_" << i+1;
+            }
+            cout << "----spacer----|" << endl << endl;
+            cout << "|---" << sim_param.left_spacers << " cells";
+            for(int i=0;i< input.simulation_parameters.at(2);i++)
+            {
+                cout << "---" << model_ncells(i) << " cells";
+            }
+            cout << "---" << sim_param.right_spacers << " cells---|" << endl;
+
+            //Computing dt or CFL Condition
+            sim_param.dt = (1*sim_param.dz)/(2*c_0);
+            //Check the sim_time input in the csv file
+            if (input.simulation_parameters.at(3) == 0)
+            {
+                sim_param.sim_time = (comp_domain.n(0)*sim_param.Nz*sim_param.dz)/c_0;
+                
+            }
+            else{
+                sim_param.sim_time = input.simulation_parameters.at(3);
+            }
+
+            cout << "========================================================================" << endl;
+            cout << "Time step (dt): " << sim_param.dt << " seconds | Sim time: " << sim_param.sim_time << " seconds" << endl;
+
+            //store fmax in the proper place
+            sim_param.fmax = input.simulation_parameters.at(0);  
+
+            //Get the proper source type based on the input file...
+            switch((int) input.simulation_parameters.at(1))
+            {
+                case 0:
+                    sim_param.source_type = "gaussian";
+                    break;
+                case 1:
+                    sim_param.source_type = "sinusoidal";
+                    break;
+                case 2:
+                    sim_param.source_type = "square";
+                    break;
+                case 3:
+                    sim_param.source_type = "modulatedsine";
+                    break;
+                default:
+                    cout << "ERROR: Invalid source type!";
+                    comp_domain.check = -1;
+                    exit(EXIT_FAILURE);
+                    break;
+            }
+            //Compute the source that will be used in the project.
+            compute_source();
+            
+            /*
+            At this point, the code needs to check if it is in serial or parallel mode. 
+            Meaning, all of the pre-processing for both serial and parallel versions are done in this method.
+            The only data transferred to the subdomain class are the simulation parameters and the
+            computational domain vectors
+            
+            */
+            unsigned long int row = sim_param.Nt;
+            unsigned long int col = sim_param.Nz;
+            
+            cout << "Multithread: " << sim_param.multithread << " | Algorithm: " << sim_param.algorithm << endl;
+            //FDTD Basic Version (Serial)
+            if(sim_param.algorithm == "fdtd")
+            {
+                //Resize the fields
+                sim_fields.E.resize(comp_domain.z.shape());
+                sim_fields.H.resize(comp_domain.z.shape());
+                sim_fields.m_E.resize(comp_domain.z.shape());
+                sim_fields.m_H.resize(comp_domain.z.shape());
+
+                //Initialize fields to 0
+                view(sim_fields.E,range(0,sim_fields.E.size())) = 0;
+                view(sim_fields.H,range(0,sim_fields.E.size())) = 0;
+
+                //Compute the update coefficients
+                sim_fields.m_E = (c_0*sim_param.dt)/(comp_domain.epsilon*sim_param.dz);
+                sim_fields.m_H = (c_0*sim_param.dt)/(comp_domain.mu*sim_param.dz);
+
+                
+                //Resize the different save matrices
+                output.E.resize({row,col});
+                output.H.resize({row,col});
+
+                //Print shape
+                //for (auto& el : output.E.shape()) {cout << el << ", ";}
+                //cout << output.E.size() <<endl;
+
+                //cout << comp_domain.z.size() << "   " << comp_domain.mu.size() << endl;
+
+            }
+            else if(sim_param.algorithm == "fdtd-schwarz")
+            {
+                /*
+                In this part, do the following: 
+                1. Compute the size of each overlapping region.
+                2. Compute the size of each subdomain.
+                3. Find out which subdomain to inject the source. (assumption: always in the 1st subdomain.)
+                4. call the pre-process subdomain method.
+                */
+                //Exception Handling to make sure that the number of subdomain and the overlap size is correct.
+                //2^x
+                try
+                {
+                    //Check to verify that the number of subdomains is valid...
+                    cout << "Number of subdomains: " << sim_param.num_subdomains << endl;
+                    if(sim_param.num_subdomains % 2 == 0 && sim_param.num_subdomains <= 64) // Divisible by 2 (2^x number of subdomains)
+                    {
+                        
+                        cout << "Proper number of subdomains are detected..." << endl;
+                    }
+                    else
+                    {
+                        throw -1;
+                    }
+
+              
+                }
+                catch(...)
+                {
+                    cout << "Error: Invalid number of subdomains" << endl;
+                    comp_domain.check = -1;
+                    exit(EXIT_FAILURE);
+                }
+
+                /*
+                Layout of a subdomain:
+                ||--overlapping region--|--subdomain--|--overlapping region--||
+                */
+
+                //Force the overlap size to 1.
+                sim_param.overlap_size = 1;
+                
+                //Computing the size of overlapping region
+                if(sim_param.overlap_size > 0 && sim_param.overlap_size < 1) //If the overlap input is a percentage...
+                {
+                    sim_param.overlap_size = sim_param.left_spacers*sim_param.overlap_size; //25% of the original computational domain...
+                }
+                else //If it is the amount of overlap (in cells)...
+                {
+                    sim_param.overlap_size = sim_param.overlap_size;
+                    //Check if the overlap_size is valid (if Nz + overlap is divisible by the number of subdomain)
+                    while((sim_param.Nz + sim_param.overlap_size) % sim_param.num_subdomains != 0)
+                    {
+                        sim_param.overlap_size += 1;
+                    }
+                    
+                }
+
+                //Computing the sizes of subdomain for pre-processing
+                sim_param.non_overlap_size = (sim_param.Nz - ((sim_param.num_subdomains -1)*sim_param.overlap_size))/sim_param.num_subdomains;
+
+                /*
+                 * The method used here is similar to how a manual STFT is done with 
+                 * frame_size = subdomain size
+                 * hop_size = how much the 'frame' moves in the computational domain.
+                 */  
+
+                unsigned int frame_size = sim_param.non_overlap_size + 2*sim_param.overlap_size;
+                sim_param.subdomain_size = frame_size;
+                unsigned int start = 0;
+                unsigned int stop = frame_size;
+                unsigned int hop_size = sim_param.non_overlap_size + sim_param.overlap_size;
+
+                cout << "Non_overlap size: " << sim_param.non_overlap_size << " | Overlap size: " << sim_param.overlap_size << endl;
+                cout << "Frame size: " << frame_size << " | Hop size: " << hop_size << endl;
+
+                //Pad the computed mu and epsilon vectors with 0.
+                auto padded_mu = pad(comp_domain.mu,sim_param.overlap_size,pad_mode::constant,0);
+                auto padded_epsilon = pad(comp_domain.epsilon,sim_param.overlap_size,pad_mode::constant,0);
+
+                
+                cout << "Padded mu: " << padded_mu << endl
+                     << "Padded epsilon: " << padded_epsilon << endl;
+                
+         
+                //Initialize 2D matrices..
+                xtensor<double,2> mu_2D;
+                xtensor<double,2> epsilon_2D;
+
+                //Get the subsets for each subdomain.
+                for(int i=0;i<sim_param.num_subdomains;i++)
+                {   
+                    cout << "=====================================" << endl;
+                    cout << "Start: " << start << " | Stop: " << stop << endl;
+
+                    if(i == 0)
+                    {
+                        //In the 1st subdomain, the vector is only needed to be inserted to the 2D matrix..
+                        mu_2D = atleast_2d(view(padded_mu,range(start,stop)));
+                        epsilon_2D = atleast_2d(view(padded_epsilon,range(start,stop)));
+                    }
+                    else
+                    {
+                        /*
+                        * After the 1st subdomain, we need to stack (vertically) the values inside the frame to create a 2D matrix
+                        * where each row is the subdomain while the columns are the cells inside the subdomains.
+                        */
+                        mu_2D = vstack(xtuple(
+                                                mu_2D,
+                                                atleast_2d(view(padded_mu,range(start,stop)))
+                        ));
+
+                        epsilon_2D = vstack(xtuple(
+                                                epsilon_2D,
+                                                atleast_2d(view(padded_epsilon,range(start,stop)))
+                        ));
+                    }
+
+                    //Adjust the indices by the hop size
+                    start += hop_size;
+                    stop += hop_size;
+                   // cout << "Stacked MU "<<  i << ": " << endl << mu_2D << endl;
+                }
+                cout << "Stacked MU: " << endl << mu_2D << endl
+                     << "Stacked EPSILON: " << epsilon_2D << endl;
+                //Find out which subdomain to to insert the source.
+                //At this point, we can just assume that the source will always be injected into the 1st subdomain (center position)
+
+                //Call the preprocess subdomain to create the subdomain objects.
+                preprocess_subdomain(mu_2D,epsilon_2D,sim_param.num_subdomains,sim_param.subdomain_size,sim_param.overlap_size,sim_param.non_overlap_size);
+
+                //Resize the different save matrices
+                output.E.resize({row,col});
+                output.H.resize({row,col});
+
+
+            }
+
+
+            //Computing df - frequency step in Freq. Response 
+                
+            sim_param.df = 1/(sim_param.dt*sim_param.Nt);
+            
+
+            //Initialize the frequency vector for Fourier Transform
+            //sim_param.n_freq = n_freq;
+            sim_param.fmax_fft = 0.5*(1/sim_param.dt); //Upper frequency limit Fs/2
+            sim_param.n_freq = sim_param.Nt; //Make sure to match the num of points in other FFT
+            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax_fft,sim_param.n_freq);
+            cout << "Num. of freq. samples: " << sim_param.n_freq << " | Freq_range shape: (" 
+                 << sim_fields.Freq_range.shape()[0] << "," << sim_fields.Freq_range.shape()[1]  << ") " << endl;
+            //Initialize the sizes of refl,trans, and kernal vectors
+            sim_fields.Kernel_Freq = exp(-1i*2.0*numeric_constants<double>::PI*sim_param.dt*sim_fields.Freq_range);
+            cout << "Kernel shape: (" << sim_fields.Kernel_Freq.shape()[0] << "," << sim_fields.Kernel_Freq.shape()[1] << ")" << endl; 
+
+            //Initialize all related tensors for FFT
+            sim_fields.Reflectance.resize(sim_fields.Kernel_Freq.shape());
+            sim_fields.Transmittance.resize(sim_fields.Kernel_Freq.shape());
+            sim_fields.Con_of_Energy.resize(sim_fields.Kernel_Freq.shape());
+            sim_fields.Source_FFT.resize(sim_fields.Kernel_Freq.shape());
+
+            //Initialize the values to 0
+            view(sim_fields.Reflectance,all()) = 0;
+            view(sim_fields.Transmittance,all()) = 0;
+            view(sim_fields.Con_of_Energy,all()) = 0;
+            view(sim_fields.Source_FFT,all()) = 0;
+
+
+            //Initialize save matrices for FFT;
+            unsigned long col_f = sim_param.n_freq;
+            output.Reflectance.resize({row,col_f});
+            output.Transmittance.resize({row,col_f});
+            output.Con_of_Energy.resize({row,col_f});
+            output.Source_FFT.resize({row,col_f});
+
+            //Print the information computed
+            cout << "========================================================================" << endl;
+            cout << "df: " << sim_param.df << " | Frequency range: " << sim_fields.Freq_range.size() 
+                 << " | Kernel: " << sim_fields.Kernel_Freq.size() << endl;
+            cout << "fmax_fft: " << sim_param.fmax_fft << endl;
+            cout << "Save Matrices Sizes:" << endl;
+            cout << "Reflectance: " << output.Reflectance.size() << " | Transmittance: " 
+                 << output.Transmittance.size() << " | Conservation of Energy: " << output.Con_of_Energy.size() << endl;
+        
+            return 1;
+
+        }
+
+
 
         int compute_source()
         {
