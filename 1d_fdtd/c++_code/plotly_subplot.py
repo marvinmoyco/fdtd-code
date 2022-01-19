@@ -26,7 +26,7 @@ E = np.nan_to_num(data['output']['E'][:,:])
 H = np.nan_to_num(data['output']['H'][:,:])
 R = np.nan_to_num(data['output']['reflectance'][:,:])
 T = np.nan_to_num(data['output']['transmittance'][:,:])
-C = np.nan_to_num(data['output']['conservation of energy'][:,:])
+C = np.nan_to_num(data['output']['conservation_of_energy'][:,:])
 
 print(E.shape)
 print(H.shape)

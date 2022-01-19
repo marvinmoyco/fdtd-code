@@ -30,7 +30,7 @@ class Simulation
         //Initializing variables in the constructor
         Simulation(string input_file="")
         {
-
+            
             if(input_file == "manual")  // If there is no input file path, use terminal or stdin/stdout for input/
             {
                 /*
@@ -103,6 +103,7 @@ class Simulation
             else{ //If there is a filename, process it by load_csv()
                 ifstream input_stream;
                 input_stream.open(input_file);
+                cout << "Starting to create a simulation object..." << endl;
                 auto input_data = load_csv<double>(input_stream,',',1);
                 
                 //Store the data into the intialized vectors
@@ -566,7 +567,7 @@ class Simulation
             sim_param.n_freq = sim_param.Nt; //Make sure to match the num of points in other FFT
             sim_fields.Freq_range = linspace<double>(0,sim_param.fmax_fft,sim_param.n_freq);
             cout << "Num. of freq. samples: " << sim_param.n_freq << " | Freq_range shape: (" 
-                 << sim_fields.Freq_range.shape()[0] << "," << sim_fields.Freq_range.shape()[1] << endl;
+                 << sim_fields.Freq_range.shape()[0] << "," << sim_fields.Freq_range.shape()[1] << ")" << endl;
             //Initialize the sizes of refl,trans, and kernal vectors
             sim_fields.Kernel_Freq = exp(-1i*2.0*numeric_constants<double>::PI*sim_param.dt*sim_fields.Freq_range);
             cout << "Kernel shape: (" << sim_fields.Kernel_Freq.shape()[0] << "," << sim_fields.Kernel_Freq.shape()[1] << ")" << endl; 
@@ -622,11 +623,11 @@ class Simulation
             
             //Computing cell size based on the smallest wavelength (lambda_min)
             double lambda_min = c_0/(n_max*input.simulation_parameters.at(0));
-            double delta_lambda = lambda_min/n_wavelength; //denominator is  dependent on how many samples you want for a whole wave
+            double delta_lambda = lambda_min/(init_N_lambda + n_wavelength); //denominator is  dependent on how many samples you want for a whole wave
             
             //Computing cell size based on the smallest layer size (min. dimension)
             double d_min = amin(input.layer_size)(0);
-            double delta_size = d_min/n_dimension;  //denominator is the amount of cells that can resolve the smallest dimension
+            double delta_size = d_min/(init_N_d + n_dimension);  //denominator is the amount of cells that can resolve the smallest dimension
             
             //The final cell size is obtained by getting the smallest of delta_lambda and delta_size 
             //to make sure that the comp domain can resolve all the necessary features (wavelength or dimension)
@@ -1973,8 +1974,7 @@ class Simulation
                 cout << "Creating HDF5 file...." << endl;
                 HighFive::File file(h5_file_name, HighFive::File::Overwrite);
 
-                cout << "Saving simulation parameters" << "-----";
-
+          
                 /*
                 * Storing metadata: parent folder "metadata"
                 */
@@ -1989,7 +1989,7 @@ class Simulation
                 * Storing simulation data: parent folder "sim data"
                 * Storing input data: parent folder "input"
                 */
-                cout << "Saving simulation data...." << endl;
+                cout << "Saving simulation data: " << endl;
                 cout << "Saving input data -----";
                 //Store input data (parsed from the input file)
                 write_to_hdf5(file, string("/input/layer size"), input.layer_size);
@@ -2001,6 +2001,7 @@ class Simulation
                 /*
                 * Storing simulation parameters: parent folder "sim param"
                 */
+                cout << "Saving simulation parameters -----";
                 write_to_hdf5(file, string("/sim param/dz"), sim_param.dz);
                 write_to_hdf5(file, string("/sim param/Nz"), sim_param.Nz);
                 write_to_hdf5(file, string("/sim param/dt"), sim_param.dt);
@@ -2016,7 +2017,7 @@ class Simulation
                 write_to_hdf5(file, string("/sim param/num freqs"), sim_param.n_freq);
                 write_to_hdf5(file, string("/sim param/left spacer"), sim_param.left_spacers);
                 write_to_hdf5(file, string("/sim param/right spacer"), sim_param.right_spacers);
-        
+                
                
                 if (sim_param.algorithm == "fdtd-schwarz")
                 {
@@ -2026,7 +2027,7 @@ class Simulation
                     write_to_hdf5(file, string("/sim param/non overlap size"), sim_param.non_overlap_size);
                 
                 }
-                cout << "--->" << "Saved" << endl;
+                cout << "---> Saved!" << endl;
 
 
                 /*
@@ -2041,31 +2042,7 @@ class Simulation
                 write_to_hdf5(file, string("/comp domain/n"), comp_domain.n);
                 cout << "---> Saved!" << endl;
 
-                
-                /*
-                * Storing Source parameters: parent folder "source"
-                */
-
-                cout << "Saving Source parameters -----";
-                
-                write_to_hdf5(file, string("/source/type"), sim_param.source_type);
-                write_to_hdf5(file, string("/source/Esrc"), sim_source_fields.Esrc);
-                write_to_hdf5(file, string("/source/Hsrc"), sim_source_fields.Hsrc);
-                write_to_hdf5(file, string("/source/t_E"), sim_source_fields.t_E);
-                write_to_hdf5(file, string("/source/t_H"), sim_source_fields.t_H);
-
-                if(comprehensive == true)
-                {
-                    write_to_hdf5(file, string("/source/t"), sim_source_fields.t);
-                    write_to_hdf5(file, string("/source/tau"), sim_source->source_param.tau);
-                    write_to_hdf5(file, string("/source/t0"), sim_source->source_param.t0);
-                    write_to_hdf5(file, string("/source/tprop"), sim_source->source_param.t_prop);
-                }
-                
-                cout << "---> Saved!" << endl;
-
-
-                cout << "Saving Output Data-----";
+                cout << "Saving Output Data-----" << endl;
                 
                 if(sim_param.algorithm == "fdtd-schwarz")
                 {
@@ -2097,25 +2074,26 @@ class Simulation
                     }
                 }
 
+
                 //Store the main simulation data
                 write_to_hdf5(file, string("/output/m_E"), sim_fields.m_E);
                 write_to_hdf5(file, string("/output/m_H"), sim_fields.m_H);
                 write_to_hdf5(file, string("/output/E"), output.E);
                 write_to_hdf5(file, string("/output/H"), output.H);
-                write_to_hdf5(file, string("/output/freq range"), sim_fields.Freq_range);
+                write_to_hdf5(file, string("/output/freq_range"), sim_fields.Freq_range);
                 write_to_hdf5(file, string("/output/reflectance"), output.Reflectance);
                 write_to_hdf5(file, string("/output/transmittance"), output.Transmittance);
-                write_to_hdf5(file, string("/output/conservation of energy"), output.Con_of_Energy);
-                write_to_hdf5(file, string("/output/freq axis"), output.Freq_Axis);
-                write_to_hdf5(file, string("/output/source fft"), output.Source_FFT);
+                write_to_hdf5(file, string("/output/conservation_of_energy"), output.Con_of_Energy);
+                write_to_hdf5(file, string("/output/freq_axis"), output.Freq_Axis);
+                write_to_hdf5(file, string("/output/source_fft"), output.Source_FFT);
                 //To be IMPLEMENTED
-                //write_to_hdf5(file, string("/output/wall time"), output.wall_time);
-                //write_to_hdf5(file, string("/output/algo time"), output.algo_time);
+                write_to_hdf5(file, string("/output/overall_time"), output.overall_time);
+                write_to_hdf5(file, string("/output/algo_time"), output.algo_time);
 
                 if(comprehensive == true)
                 {
                     write_to_hdf5(file, string("/output/source"), output.Source);
-                    write_to_hdf5(file, string("/output/kernel freq"), sim_fields.Kernel_Freq);
+                    write_to_hdf5(file, string("/output/kernel_freq"), sim_fields.Kernel_Freq);
                     write_to_hdf5(file,string("/output/FFTW_R"),output.FFTW_R);
                     write_to_hdf5(file,string("/output/FFTW_T"),output.FFTW_T);
                     write_to_hdf5(file,string("/output/FFTW_C"),output.FFTW_C);
@@ -2123,10 +2101,31 @@ class Simulation
                     write_to_hdf5(file,string("/output/FFTW_Freq"),output.FFTW_Freq);
                 }
                 
+                //cout << "---> Saved!" << endl;
+
+                /*
+                * Storing Source parameters: parent folder "source"
+                */
+
+                cout << "Saving Source parameters -----";
+                
+                write_to_hdf5(file, string("/source/type"), sim_param.source_type);
+                write_to_hdf5(file, string("/source/Esrc"), sim_source_fields.Esrc);
+                write_to_hdf5(file, string("/source/Hsrc"), sim_source_fields.Hsrc);
+                write_to_hdf5(file, string("/source/t_E"), sim_source_fields.t_E);
+                write_to_hdf5(file, string("/source/t_H"), sim_source_fields.t_H);
+
+                if(comprehensive == true)
+                {
+                    write_to_hdf5(file, string("/source/t"), sim_source_fields.t);
+                    write_to_hdf5(file, string("/source/tau"), sim_source->source_param.tau);
+                    write_to_hdf5(file, string("/source/t0"), sim_source->source_param.t0);
+                    write_to_hdf5(file, string("/source/tprop"), sim_source->source_param.t_prop);
+                }
+                
                 cout << "---> Saved!" << endl;
 
-
-                cout << "End....";
+                cout << "End...." << endl;
                 cout << "========================================================================" << endl;
             }
             else

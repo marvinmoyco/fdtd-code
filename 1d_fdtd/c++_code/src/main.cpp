@@ -32,10 +32,11 @@ save_data output;
 */
 int main(int argc, char* argv[])
 {
-  
+  //auto overall_start = chrono::high_resolution_clock::now();
+  //cout << " Argv[1] :  " << argv[1] << endl;
   //Create a simulation object...
   Simulation sim(argv[1]);
-
+  
   //Perform pre-processing...
   computational_domain check = sim.create_comp_domain(0,0,100,stoul(argv[8]),stod(argv[10]),stoul(argv[9]),argv[7]);
 
@@ -74,15 +75,26 @@ int main(int argc, char* argv[])
     cout << " ]" << endl;
   }
 
-
+/*
   //Start the simulation...
-  //output = sim.simulate(argv[2],argv[3]);
+  auto start_time = chrono::high_resolution_clock::now();
+  output = sim.simulate(argv[2],argv[3]);
+  auto end_time = chrono::high_resolution_clock::now();
 
-  //cout << "Electric field shape: (" << output.E.shape()[0] << "," << output.E.shape()[1] << ")" << endl;
-  //cout << "Magnetic field shape: (" << output.H.shape()[0] << "," << output.H.shape()[1] << ")" << endl;
+  chrono::duration<double, std::milli> sim_duration = end_time - start_time;
+  //Get the algo time in milliseconds
+  sim.output.algo_time = sim_duration.count();
+
+  cout << "Electric field shape: (" << output.E.shape()[0] << "," << output.E.shape()[1] << ")" << endl;
+  cout << "Magnetic field shape: (" << output.H.shape()[0] << "," << output.H.shape()[1] << ")" << endl;
+
+  auto overall_end = chrono::high_resolution_clock::now();
+  chrono::duration<double, std::milli> overall_duration = overall_end - overall_start;
+
+  sim.output.overall_time = overall_duration.count();
   //Save the simulation data....
-  //sim.save_to_file(argv[4],argv[5],argv[6],argv[11],argv[12],argv[13]);
-
+  sim.save_to_file(argv[4],argv[5],argv[6],argv[11],argv[12],argv[13]);
+*/
 
 
 

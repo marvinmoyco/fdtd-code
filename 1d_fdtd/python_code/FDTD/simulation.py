@@ -1,0 +1,1015 @@
+#Library imports
+import csv
+import numpy as np
+from scipy import constants
+import matplotlib.pyplot as plt
+import h5py
+import os
+import datetime
+
+
+
+
+
+
+# Class definitions for 1D FDTD
+
+def print_breaker(type=""):
+        if type == "major":
+            print("=============================================================")
+        elif type == "minor":
+            print("-------------------------------------------------------------")
+
+
+class Source:
+
+    c_0 = constants.speed_of_light
+
+    def __init__(self,sim_param=None,comp_dom=None):
+        self.source_param = {}
+        self.source_output = {}
+        self.source_comp_dom = {}
+
+        # Check if the input arguments are properly entered
+        try:
+            assert sim_param != None
+            assert comp_dom != None
+        except AssertionError:
+            print("Input arguments for creating a Source object not detected!")
+            return None
+
+        self.source_param = sim_param
+        self.source_comp_dom = comp_dom
+
+    def InitializeSource(self,
+                         t0_coeff = 3,
+                         prop_coeff = 1.0,
+                         tau_coeff = 1.0,
+                         nmax = 1):
+
+        # Computing tau depending on the source type...
+        if self.source_param['source_type'] == "gaussian":
+            self.source_param['tau'] = 0.5/self.source_param['fmax']
+
+        elif self.source_param['source_type'] == "sinusoidal":
+            self.source_param['tau'] = 3/self.source_param['fmax']
+
+        elif self.source_param['source_type'] == "rectangular":
+            self.source_param['tau'] = 1/self.source_param['fmax']
+
+        elif self.source_param['source_type'] == "modulated sine":
+            self.source_param['tau'] = 0.5/self.source_param['fmax']
+
+        else:
+            print("ERROR: Source type selected is not valid.")
+            return None
+
+        self.source_param['t0'] = t0_coeff*self.source_param['tau']
+        self.source_param['t_prop'] = (nmax*self.source_param['Nz']*self.source_param['dz'])/Source.c_0
+        self.source_param['sim_time'] = (tau_coeff*self.source_param['tau']) + (prop_coeff*self.source_param['t_prop'])
+
+        print("Finished computing related constants for creating the source excitation!")
+
+    def GaussianSource(self,
+                       t0_coeff = 6.0,
+                       prop_coeff = 6.0,
+                       tau_coeff = 12.0,
+                       nmax = 1,
+                       nsrc = 1):
+
+
+        self.InitializeSource(t0_coeff,prop_coeff,tau_coeff,nmax)
+
+        print_breaker("major")
+        print(f"Creating the source excitation.. | Type: {self.source_param['source_type']}")
+        print(f"t0: {self.source_param['t0']} | tau: {self.source_param['tau']} | T: {self.source_param['sim_time']}")
+
+        # Calculating Nt
+        self.source_param['Nt'] = np.ceil(self.source_param['sim_time']/self.source_param['dt'])
+        print(f"dt: {self.source_param['dt']} seconds | Nt: {self.source_param['Nt']} iterations")
+
+
+        self.source_output['t'] = np.linspace(0,self.source_param['Nt']*self.source_param['dt'],int(self.source_param['Nt']))
+
+        # Computing the time vector specific to Electric field
+        self.source_output['t_E'] = (self.source_output['t'] - self.source_param['t0'])/self.source_param['tau']
+
+        # Computing the Electric field component of the source
+        self.source_output['Esrc'] = np.exp(-(self.source_output['t_E']**2))
+
+        # Computing the time vector specific to magnetic field
+        # adj_H is an adjustment to the time vector bec. H is computed during half time steps
+        adj_H = (nsrc*self.source_param['dz']/(2*Source.c_0)) + (self.source_param['dt']/2)
+        self.source_output['t_H'] = ((self.source_output['t'] - self.source_param['t0'])+adj_H)/self.source_param['tau']
+        
+        # Computing the Magnetic field component of the source excitation
+        self.source_output['Hsrc'] = -np.sqrt(self.source_comp_dom['n'][int(self.source_param['inj_point'])])*np.exp(-(self.source_output['t_H']**2)) 
+
+    def SinusoidalSource(self,
+                         t0_coeff = 3.0,
+                         prop_coeff = 3.0,
+                         tau_coeff = 3.0,
+                         nmax = 1,
+                         nsrc = 1):
+
+
+        self.InitializeSource(t0_coeff,prop_coeff,tau_coeff,nmax)
+
+        print_breaker("major")
+        print(f"Creating the source excitation.. | Type: {self.source_param['source_type']}")
+        print(f"t0: {self.source_param['t0']} | tau: {self.source_param['tau']} | T: {self.source_param['sim_time']}")
+
+        # Calculating Nt
+        self.source_param['Nt'] = np.ceil(self.source_param['sim_time']/self.source_param['dt'])
+        print(f"dt: {self.source_param['dt']} seconds | Nt: {self.source_param['Nt']} iterations")
+
+        self.source_output['t'] = np.linspace(0,self.source_param['Nt']*self.source_param['dt'],int(self.source_param['Nt']))
+
+        # Creating a sliced arrays of the time vector
+        t_condition = self.source_output['t'][self.source_output['t'] < self.source_param['t0']]
+
+        
+
+        # Computing the time vector specific to Electric field
+        self.source_output['t_E'] = (self.source_output['t'] - self.source_param['t0'])/self.source_param['tau']
+        t_E_initial = self.source_output['t_E'][:len(t_condition)]
+
+        # Computing the Electric field component of the source
+        self.source_output['Esrc'][:len(t_E_initial)] = np.exp(-(t_E_initial**2))*(np.sin(2*np.pi*self.source_param['fmax']*t_E_initial))
+        self.source_output['Esrc'][len(t_E_initial)+1:] = (np.sin(2*np.pi*self.source_param['fmax']*self.source_output['t'][len(t_E_initial):]))
+
+        # Computing the time vector specific to magnetic field
+        # adj_H is an adjustment to the time vector bec. H is computed during half time steps
+        adj_H = (nsrc*self.source_param['dz']/(2*Source.c_0)) + (self.source_param['dt']/2)
+        self.source_output['t_H'] = ((self.source_output['t'] - self.source_param['t0'])+adj_H)/self.source_param['tau']
+        t_H_initial = self.source_output['t_H'][:len(t_condition)]
+
+        # Computing the Magnetic field component of the source excitation
+        self.source_output['Hsrc'][:len(t_E_initial)] = -np.sqrt(self.source_comp_dom['n'][int(self.source_param['inj_point'])])*np.exp(-(t_H_initial**2))*(np.sin(2*np.pi*self.source_param['fmax']*t_H_initial))
+        self.source_output['Hsrc'] = -np.sqrt(self.source_comp_dom['n'][int(self.source_param['inj_point'])])*(np.sin(2*np.pi*self.source_param['fmax']*self.source_output['t'][len(t_H_initial):]))
+
+
+    def RectWaveSource(self,
+                       delay = 0.0,
+                       width = 0.0,
+                       nmax = 1,
+                       nsrc = 1):
+
+
+        self.InitializeSource(delay,width,12.0,nmax)
+
+        print_breaker("major")
+        print(f"Creating the source excitation.. | Type: {self.source_param['source_type']}")
+        print(f"t0: {self.source_param['t0']} | tau: {self.source_param['tau']} | T: {self.source_param['sim_time']}")
+
+        # Calculating Nt
+        self.source_param['Nt'] = np.ceil(self.source_param['sim_time']/self.source_param['dt'])
+        print(f"dt: {self.source_param['dt']} seconds | Nt: {self.source_param['Nt']} iterations")
+
+
+        self.source_output['t'] = np.linspace(0,self.source_param['Nt']*self.source_param['dt'],int(self.source_param['Nt']))
+
+        # Getting the start and end index for the rectangular pulse
+        start_index = np.floor(self.source_param['tau']/self.source_param['dt'])
+        end_index = np.ceil((self.source_param['tau'] + self.source_param['t0']/4)/self.source_param['dt'])
+
+        spacing = np.linspace(0.99,0,10)
+        # Computing the Electric field component of the source
+        self.source_output['Esrc'][start_index:end_index+1] = 1
+        self.source_output['Esrc'][start_index-len(spacing):start_index] = np.flip(spacing)
+     
+        # Computing the Magnetic field component of the source excitation
+        self.source_output['Hsrc'][start_index:end_index+1] = -1
+        self.source_output['Esrc'][end_index:end_index+len(spacing)+1] = -1*spacing
+     
+    def ModulatedSineSource(self,
+                       t0_coeff = 3.0,
+                       prop_coeff = 3.0,
+                       tau_coeff = 3.0,
+                       nmax = 1,
+                       nsrc = 1):
+
+
+        self.InitializeSource(t0_coeff,prop_coeff,tau_coeff,nmax)
+
+        print_breaker("major")
+        print(f"Creating the source excitation.. | Type: {self.source_param['source_type']}")
+        print(f"t0: {self.source_param['t0']} | tau: {self.source_param['tau']} | T: {self.source_param['sim_time']}")
+
+        # Calculating Nt
+        self.source_param['Nt'] = np.ceil(self.source_param['sim_time']/self.source_param['dt'])
+        print(f"dt: {self.source_param['dt']} seconds | Nt: {self.source_param['Nt']} iterations")
+
+
+        self.source_output['t'] = np.linspace(0,self.source_param['Nt']*self.source_param['dt'],int(self.source_param['Nt']))
+
+        # Computing the time vector specific to Electric field
+        self.source_output['t_E'] = (self.source_output['t'] - self.source_param['t0'])/self.source_param['tau']
+
+        # Computing the Electric field component of the source
+        self.source_output['Esrc'] = np.sin(2*np.pi*self.source_param['fmax']*self.source_output['t'])*np.exp(-(self.source_output['t_E']**2))
+
+        # Computing the time vector specific to magnetic field
+        # adj_H is an adjustment to the time vector bec. H is computed during half time steps
+        adj_H = (nsrc*self.source_param['dz']/(2*Source.c_0)) + (self.source_param['dt']/2)
+        self.source_output['t_H'] = ((self.source_output['t'] - self.source_param['t0'])+adj_H)/self.source_param['tau']
+        
+        # Computing the Magnetic field component of the source excitation
+        self.source_output['Hsrc'] = -np.sqrt(self.source_comp_dom['n'][int(self.source_param['inj_point'])])*np.sin(2*np.pi*self.source_param['fmax']*self.source_output['t'])*np.exp(-(self.source_output['t_H']**2))
+
+
+class Subdomain:
+
+    c_0 = constants.speed_of_light
+
+    def __init__(self,sim_param=None,sources=None,comp_domain=None,id=None):
+
+        try:
+            assert sim_param != None
+            assert sources != None
+            assert comp_domain != None
+            assert isinstance(id,int)
+        except AssertionError:
+            print_breaker("minor")
+            print("ERROR: Invalid input arguments detected")
+            return None
+
+        
+
+        self.subdom_param = sim_param
+        self.source = sources
+        self.comp_dom = comp_domain
+        self.subdom_param['id'] = id
+        self.subdom_fields = {}
+
+        # Initializing the field vectors to 0
+        self.subdom_fields['E'] = np.zeros(self.comp_dom['mu'].shape)
+        self.subdom_fields['H'] = np.zeros(self.comp_dom['mu'].shape)
+        self.subdom_fields['m_E'] = np.zeros(self.comp_dom['mu'].shape)
+        self.subdom_fields['m_H'] = np.zeros(self.comp_dom['mu'].shape) 
+
+        print_breaker('minor')
+        print(f"Subdomain {self.subdom_param['id']}:")
+        print(f"E shape: {self.subdom_fields['E'].shape} | H shape: {self.subdom_fields['H']}")
+        print(f"m_E shape: {self.subdom_fields['m_E'].shape} | m_H shape: {self.subdom_fields['m_H'].shape}")
+
+        
+        if self.subdom_param['id'] == 0:
+
+            # Check if the 1st subdomain has left spacer region
+            if self.subdom_param['subdomain_size'] < self.subdom_param['inj_point']:
+                self.subdom_param['inj_point'] = np.floor(self.subdom_param['subdomain_size']/4)
+
+            # Store the sources into the 1st subdomain
+            self.source = sources
+
+            # Adjust the injection point (due to the padding)
+            self.subdom_param['inj_point'] += self.subdom_param['overlap']
+
+        start = int(self.subdom_param['overlap'])
+        end = int(self.comp_dom['mu'].shape[0] - self.subdom_param['overlap'])
+        # Compute the update coefficients
+        if self.subdom_param['id'] == 0:
+            # For the 1st subdomain (padding on the left)
+            self.subdom_fields['m_E'][start:] = (Subdomain.c_0*self.subdom_param['dt'])/(self.comp_dom['epsilon'][start:]*self.subdom_param['dz'])
+            self.subdom_fields['m_H'][start:] = (Subdomain.c_0*self.subdom_param['dt'])/(self.comp_dom['mu'][start:]*self.subdom_param['dz'])
+
+        elif self.subdom_param['id'] == self.subdom_param['n_subdom'] - 1:
+            # For the last subdomain (padding on the right)
+            self.subdom_fields['m_E'][:end] = (Subdomain.c_0*self.subdom_param['dt'])/(self.comp_dom['epsilon'][:end]*self.subdom_param['dz'])
+            self.subdom_fields['m_H'][:end] = (Subdomain.c_0*self.subdom_param['dt'])/(self.comp_dom['mu'][:end]*self.subdom_param['dz'])
+
+        else:
+            # For subdomains without padding
+            self.subdom_fields['m_E'] = (Subdomain.c_0*self.subdom_param['dt'])/(self.comp_dom['epsilon']*self.subdom_param['dz'])
+            self.subdom_fields['m_H'] = (Subdomain.c_0*self.subdom_param['dt'])/(self.comp_dom['mu']*self.subdom_param['dz'])
+
+    def simulate_subdom(self):
+        
+        # Before starting the simulation, copy the boundary data 1st. The boundary condition will not be dirichlet for the internal boundary data.
+        # "Ghost cells" will be used as a way to calculate the last cells in each subdomains, that way, the FDTD algorithm can completely finish
+        # This is done after every iteration in the FDTD Time loop, meaning this will be the "Transfer of boundary data stage" of the Schwarz Alternating Method.
+
+
+        return None
+
+    def transfer_boundary_data(self):
+        pass
+
+
+
+class Simulation:
+
+    #Initializing class variables
+    N_lambda = 10 #Amount of samples to resolve the smallest wavelength
+    N_d = 1 #Amount of samples to resolve the smallest dimension in the computational domain
+    c_0 = constants.speed_of_light
+    mu_0 = constants.mu_0
+    epsilon_0 = constants.epsilon_0
+    
+    def __init__(self,input_filepath=""):
+        """
+        At object creation, the input file (csv) where the simulation parameters are set should be included.
+        """
+
+        # Initializing instance variables...
+        self.sim_param = {}
+        self.comp_domain = {}
+        self.input_data = {}
+        self.sim_fields = {}
+        self.sim_source = {}
+        self.output_data = {}
+        self.subdomains = []
+
+
+        if input_filepath == "manual":
+            # Guide to indices of simulation_parameter vector
+            #    -Index 0: fmax
+            #    -Index 1: source type
+            #    -Index 2: n_model
+            #    -Index 3: t_sim
+            print_breaker("major")
+            print("Creating a simulation object...")
+            initial_input = True
+            while(initial_input):
+                try:
+                    fmax = float(input("Frequency of interest/Bandwidth (Hz): "))
+                    source_type = input("Source Type (gaussian, sinusoidal, rectangular, modulated sine): ")
+                    assert source_type == "gaussian" or source_type == "sinusoidal" or source_type == "rectangular" or source_type == "modulated sine"
+
+                    n_model = int(input("Number of layers in the device model: "))
+
+                    
+                    self.sim_param["fmax"] = fmax
+                    self.sim_param["source_type"] = source_type
+                    self.sim_param["n_model"] = n_model
+                    initial_input = False
+                except (ValueError,AssertionError):
+                    print("Invalid inputs. Try again...")
+            n_count = 0 #Used to count the correct inputted layers
+            self.input_data["layer_size"] = np.array([])
+            self.input_data["magnetic_permeability"] = np.array([])
+            self.input_data["electric_permittivity"] = np.array([])
+
+            while(n_count < self.sim_param["n_model"]):
+                print_breaker("minor")
+                print(f"Layer {n_count+1}: ")
+                try:
+                    layer_size = float(input("Layer size (in meters): "))
+                    magnetic_permeability = float(input("Relative magnetic permeability: "))
+                    electric_permittivity = float(input("Relative electric permittivity: "))
+
+                    self.input_data["layer_size"] = np.append(self.input_data["layer_size"],layer_size)
+                    self.input_data["magnetic_permeability"] = np.append(self.input_data["magnetic_permeability"],magnetic_permeability)
+                    self.input_data["electric_permittivity"] = np.append(self.input_data["electric_permittivity"],electric_permittivity)
+                    n_count += 1
+
+                except ValueError:
+                    print("Invalid input. Try again....")
+
+        else:
+            # Guide to indices of simulation_parameter vector
+            #    -Index 0: fmax
+            #    -Index 1: source type
+            #    -Index 2: n_model
+            #    -Index 3: t_sim
+
+            self.input_data['layer_size'] = np.array([])
+            self.input_data["magnetic_permeability"] = np.array([])
+            self.input_data["electric_permittivity"] = np.array([])
+            
+            layer_size = []
+            magnetic_perm = []
+            electric_perm = []
+            sim_parameters = []
+            print_breaker("major")
+            print(f"Loading the csv file {input_filepath} ....")
+            #When the filepath is a proper one, read the file using the csv module
+            with open(input_filepath,mode='r') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    layer_size.append(float(row['layer size']))
+                    magnetic_perm.append(float(row['magnetic permeability']))
+                    electric_perm.append(float(row['electric permittivity']))
+                    sim_parameters.append(float(row['simulation parameters']))
+
+            n_model = int(sim_parameters[2])
+            #Based on the received data, store the necessary values...
+            self.sim_param['fmax'] = float(sim_parameters[0])
+            self.sim_param['n_model'] = n_model
+            if sim_parameters[1] == 0:
+                self.sim_param['source_type'] = "gaussian"
+            elif sim_parameters[1] == 1:
+                self.sim_param['source_type'] = "sinusoidal"
+            elif sim_parameters[1] == 2:
+                self.sim_param['source_type'] = "rectangular"
+            elif sim_parameters[1] == 3:
+                self.sim_param['source_type'] = "modulated sine"
+
+
+            for i in range(n_model):
+                self.input_data["layer_size"] = np.append(self.input_data["layer_size"],layer_size[i])
+                self.input_data['magnetic_permeability'] = np.append(self.input_data['magnetic_permeability'],magnetic_perm[i])
+                self.input_data['electric_permittivity'] = np.append(self.input_data['electric_permittivity'],electric_perm[i])
+
+
+        #Print the loaded data
+        print_breaker("major")
+        print("Simulation Parameters:")
+        print(self.sim_param)
+        print("Device Model:")
+        print("Layer # \t Layer size \t Rel. magnetic perm. \t Rel. electric perm.")
+
+        for i in range(self.sim_param['n_model']):
+            print(f"{i+1} \t {self.input_data['layer_size'][i]} \t {self.input_data['magnetic_permeability'][i]} \t {self.input_data['electric_permittivity'][i]}")
+
+
+    def init_comp_domain(self,
+                        spacer = 0,
+                        inj_point = 0,
+                        n_subdom = 1,
+                        overlap = 0,
+                        multithread = False,
+                        algo="fdtd"):
+        # This function is the "pre-processing" stage of the simulation. All of the needed pre-requisite computations are done before the actual
+        # simulation is done. The simulate() can be used after this function successfully finished.
+        # Input arguments:
+        # 1. spacer_cells - in meters. amount of spacing between end of comp domain and the device model (will be adjusted in the computations)
+        # 2. injection_point - Position (in cell index) of where the source is injected in the comp domain. This will always be within the spacer region.
+        # 3. num_subdomains - Number of subdomains created in FDTD-Schwarz Algorithm.
+        # 4. multithread - flag to determine whether the algorithm used is serial or parallel.
+        # 5. overlap - amount of overlap used in Schwarz method. Range (0,1) 0% to 100% of spacer region. If the overlap size is greater than 1, it is number cells.
+        # 6. algorithm - toggles between basic fdtd and fdtd-schwarz algorithm.
+
+        # Double check that the sim_param and input_data dicts are not empty....
+        print_breaker("major")
+        print("Entering initialization of computational domain...")
+       
+
+        try:
+
+            assert bool(self.sim_param)
+            assert bool(self.input_data)
+        except AssertionError:
+            print("sim_param and input_data dictionaries are empty. Exiting program...")
+            print_breaker("major")
+            return None
+
+        #Saving the number of subdomains
+        self.sim_param['n_subdom'] = n_subdom
+
+        # Computing for dz...
+        n_max = np.amax(np.sqrt(self.input_data['magnetic_permeability']*self.input_data['electric_permittivity']))
+
+        # Computing the cell size based on the smallest wavelength (fmax)
+        lambda_min = Simulation.c_0/(n_max*self.sim_param['fmax'])
+        delta_lambda = lambda_min/Simulation.N_lambda
+
+        # Computing the cell size based on the smallest layer size (minimum size in meters)
+        d_min = np.amin(self.input_data['layer_size'])
+        delta_size = d_min/Simulation.N_d
+
+        # Getting the minimum cell size of the two computed variables
+        self.sim_param['dz'] = min(delta_lambda,delta_size)
+
+        # Computing Nz and number of cells per layer size
+        model_ncells = np.ceil(self.input_data['layer_size']/self.sim_param['dz'])
+        self.sim_param['Nz'] = model_ncells.sum()
+
+        print_breaker("minor")
+        print("Number of cells before adjustment (if fdtd-schwarz will be used)")
+        print("Cell amount per layer: ")
+        for i in range(self.sim_param['n_model']):
+            if i == self.sim_param['n_model']-1:
+                print(f"Layer {i+1}")
+            else:
+                print(f"Layer {i+1}",end=' \t ')
+        for i in range(self.sim_param['n_model']):
+            if i == self.sim_param['n_model']-1:
+                print(f"{model_ncells[i]}")
+            else:
+                print(f"{model_ncells[i]}",end=' \t ')
+        print(f"Number of cells of the device model (Nz): {self.sim_param['Nz']} cells")
+        print(f"Cell size (dz): {self.sim_param['dz']} m")        
+
+        # Checking the spacer cells if it is valid
+        if spacer != 0: #If the spacer arg is not 0, use it to create the amount of spacing in between the device model
+            self.sim_param['Nz'] += 2*(spacer/self.sim_param['dz'])
+            self.sim_param['left_spacer'] = np.ceil(spacer/2)
+            self.sim_param['right_spacer'] = np.ceil(spacer/2)
+     
+        else: #Make spacer regions in the left and right side of the device model using Nz
+
+            if self.sim_param['Nz'] % 2 != 0: 
+                # Make sure to not round both spacer region (only the left side) to make Nz consistent with vector lengths
+                self.sim_param['left_spacer'] = np.ceil(self.sim_param['Nz']/2)
+                self.sim_param['right_spacer'] = np.floor(self.sim_param['Nz']/2)
+                self.sim_param['Nz'] += self.sim_param['Nz']
+            else:
+                # No need to round the values here since Nz is divisible by 2
+                self.sim_param['left_spacer'] = self.sim_param['Nz']/2
+                self.sim_param['right_spacer'] = self.sim_param['Nz']/2
+                self.sim_param['Nz'] += self.sim_param['Nz']
+
+        # Adjust Nz and spacers if algo is fdtd-schwarz
+        self.sim_param['algo'] = algo
+        if self.sim_param['algo'] == "fdtd-schwarz":
+            while self.sim_param['Nz'] % self.sim_param['n_subdom'] != 0: 
+                # While Nz is not divisible by n_subdom, adjust the value by incrementing the left spacer region
+                self.sim_param['Nz'] += 1
+                self.sim_param['left_spacer'] += 1
+
+            print_breaker('minor')
+            print("Adjusted cell amounts")
+            print(f"Number of cells of the device model (Nz): {self.sim_param['Nz']} cells")
+            
+        print(f"Left spacer region: {self.sim_param['left_spacer']} cells | Right spacer region: {self.sim_param['right_spacer']} cells")
+
+        # Convert the injection point if necessary
+        if inj_point < 0:
+            print("ERROR: Invalid injection point detected! Exiting program...")
+            return None
+        elif inj_point > self.sim_param['left_spacer']:
+            print('ERROR: Injection point is inside the device model! Exiting program...')
+            return None
+        else:
+            if inj_point == 0:
+                self.sim_param['inj_point'] = np.floor(self.sim_param['left_spacer']/2)
+            else:
+                self.sim_param['inj_point'] = inj_point
+
+        print(f"Injection point (position index in the computational domain): {self.sim_param['inj_point']} index")
+        print(f"Nz: {self.sim_param['Nz']}")
+
+        # Creating comp domain vectors...
+        self.comp_domain['z'] = np.arange(0,self.sim_param['Nz']*self.sim_param['dz'],self.sim_param['dz'])
+        rows_z = self.comp_domain['z'].shape
+        assert rows_z == self.sim_param['Nz']
+        self.comp_domain['mu'] = np.ones(self.comp_domain['z'].shape)
+        self.comp_domain['epsilon'] = np.ones(self.comp_domain['z'].shape)
+
+        start_index = int(self.sim_param['left_spacer'])
+        end_index = int(self.sim_param['left_spacer'])
+      
+        for i in range(len(model_ncells)):
+            print(i)
+            end_index += model_ncells[i]
+            print(f"END INDEX: {end_index}")
+            self.comp_domain['mu'][int(start_index):int(end_index)] = self.input_data['magnetic_permeability'][i]
+            self.comp_domain['epsilon'][int(start_index):int(end_index)] = self.input_data['electric_permittivity'][i]
+
+            start_index = end_index
+
+        self.comp_domain['n'] = np.sqrt(self.comp_domain['mu']*self.comp_domain['epsilon'])
+
+        print_breaker("minor")
+        print(f"Z vector shape: {self.comp_domain['z'].shape} | Mu vector shape: {self.comp_domain['mu'].shape}")
+        print(f"Epsilon vector shape: {self.comp_domain['epsilon'].shape} | N vector shape: {self.comp_domain['n'].shape}")
+
+        print("Layout of Computational Domain:")
+        print("|----spacer",end="")
+        for i in range(self.sim_param['n_model']):
+            print(f"----model_layer_{i+1}", end="")
+        print("----spacer----|")
+
+        print(f"|---{self.sim_param['left_spacer']} cells",end="")
+        for i in model_ncells:
+            print(f"---{i} cells",end="")
+        print(f"---{self.sim_param['right_spacer']} cells---|")
+
+        # Computing the CFL condition
+        self.sim_param['dt'] = (1*self.sim_param['dz'])/(2*Simulation.c_0)
+
+        self.sim_param['sim_time'] = (self.comp_domain['n'][0]*self.sim_param['Nz']*self.sim_param['dz'])/Simulation.c_0
+
+        print_breaker("minor")
+        print(f"Time step (dt): {self.sim_param['dt']} seconds | Sim time: {self.sim_param['sim_time']} seconds")
+
+
+        # Computing the source excitation...
+
+        self.compute_source()
+
+        # At this point, the code needs to check if it is in serial or parallel mode. 
+        # Meaning, all of the pre-processing for both serial and parallel versions are done in this method.
+        # The only data transferred to the subdomain class are the simulation parameters and the
+        # computational domain vectors
+
+        self.sim_param['algo'] = algo
+        self.sim_param['multithread'] = multithread
+
+        print_breaker('minor')
+        print(f"Algorithm: {self.sim_param['algo']} | Multithreading enabled: {self.sim_param['multithread']}")
+
+        if self.sim_param['algo'] == "fdtd":
+
+            #Initialize the fields
+            self.sim_fields['E'] = np.zeros(self.comp_domain['z'].shape)
+            self.sim_fields['H'] = np.zeros(self.comp_domain['z'].shape)
+            # self.sim_fields['m_E'] = np.zeros(self.comp_domain['z'].shape)
+            # self.sim_fields['m_H'] = np.zeros(self.comp_domain['z'].shape)
+
+            # Compute the update coefficients
+            self.sim_fields['m_E'] = (Simulation.c_0*self.sim_param['dt'])/(self.comp_domain['epsilon']*self.sim_param['dz'])
+            self.sim_fields['m_H'] = (Simulation.c_0*self.sim_param['dt'])/(self.comp_domain['mu']*self.sim_param['dz'])
+
+            print_breaker('minor')
+            print("Field shapes:")
+            print(f"Z shape: {self.comp_domain['z'].shape}")
+            print(f"E shape: {self.sim_fields['E'].shape} | m_E shape: {self.sim_fields['m_E'].shape}")
+            print(f"H shape: {self.sim_fields['H'].shape} | m_H shape: {self.sim_fields['m_H'].shape}")
+        
+        elif self.sim_param['algo'] == "fdtd-schwarz":
+            
+            # Check if the number of subdomains are valid
+            print_breaker('minor')
+            print(f"Number of subdomains: {self.sim_param['n_subdom']}")
+
+            try:
+                assert self.sim_param['n_subdom'] % 2 == 0
+                assert self.sim_param['n_subdom'] <= 64 and self.sim_param['n_subdom'] >=1
+            except AssertionError:
+                print_breaker('minor')
+                print("ERROR: Valid number of subdomains not detected.")
+                return None
+
+            # Layout of a subdomain:
+            # ||--overlapping region--|--non-overlapping region--|--overlapping region--||
+
+            # Computing the size of overlapping region
+            if overlap > 0 and overlap < 1: # Assume this is percentage of left spacer
+                self.sim_param['overlap'] = self.sim_param['left_spacer']*overlap
+
+            elif overlap > 1: # If it is the number of cells
+                self.sim_param['overlap'] = overlap
+
+                #Adjust the overlap size to make sure that Nz + overlap is divisible by the number of subdomains 
+                while (self.sim_param['Nz'] + self.sim_param['overlap']) % self.sim_param['n_subdom'] != 0:
+                    self.sim_param['overlap'] += 1
+
+            else:
+                print_breaker('minor')
+                print("ERROR: Valid algorithm not detected")
+                return None
+
+            # Computing the non overlapping region size
+            self.sim_param['non_overlap'] = (self.sim_param['Nz'] - ((self.sim_param['n_subdom']-1)*self.sim_param['overlap']))/self.sim_param['n_subdom']
+
+            # The method used here is similar to how a manual STFT is done
+            # frame_size = subdomain size
+            # hop_size = how much the 'frame' moves in the computational domain.
+
+            frame_size = self.sim_param['non_overlap'] + 2*self.sim_param['overlap']
+            self.sim_param['subdomain_size'] = frame_size
+            start = 0
+            stop = frame_size
+            hop_size = self.sim_param['non_overlap'] + self.sim_param['overlap']
+
+            print_breaker('minor')
+            print(f"Non-overlap size: {self.sim_param['non_overlap']} cells | Overlap size: {self.sim_param['overlap']} cells")
+            print(f"Frame size: {frame_size} cells | Hop size: {hop_size} cells")
+
+            padded_mu = np.pad(self.comp_domain['mu'],self.sim_param['overlap'],'constant')
+            padded_epsilon = np.pad(self.comp_domain['epsilon'],self.sim_param['overlap'],'constant')
+
+            print(f"Padded mu vector: {padded_mu}")
+            print(f"Padded epsilon vector: {padded_epsilon}")
+
+
+            # Getting the subsets for each subdomain...
+
+            for i in range(self.sim_param['n_subdom']):
+                print_breaker('minor')
+                print(f"Start: {start} | Stop: {stop}")
+
+                if i == 0:
+                    mu_2D = padded_mu[start:stop]
+                    epsilon_2D = padded_epsilon[start:stop]
+                else:
+                    mu_2D = np.vstack((mu_2D,padded_mu[start:stop]))
+                    epsilon_2D = np.vstack((epsilon_2D,padded_epsilon[start:stop]))
+
+                start += hop_size
+                stop += hop_size
+
+            print(f"Stacked MU: {mu_2D}")
+            print(f"Stacked EPSILON: {epsilon_2D}")
+
+            # At this point, we can just assume that the source will always be injected into the 1st subdomain (center position)
+
+            # Call the preprocess subdomain to create the subdomain objects.
+            self.init_subdomains(mu_2D,epsilon_2D)
+
+        # Computing df - Frequency steps in Frequency response
+        self.sim_param['df'] = 1/(self.sim_param['dt']*self.sim_param['Nt'])
+
+        # Initialize the frequency vectors for computing the freq response
+        self.sim_param['n_freq'] = self.sim_param['Nt']
+        self.sim_param['fmax_fft'] = 0.5*(1/self.sim_param['dt'])
+        self.output_data['Freq_range'] = np.linspace(0,self.sim_param['fmax_fft'],int(self.sim_param['n_freq']))
+        
+        print_breaker('minor')
+        print(f"Number of freq. samples: {self.sim_param['n_freq']} | Freq vector shape: {self.output_data['Freq_range'].shape}")
+        print(f"df: {self.sim_param['df']}")
+        # Creating the kernel frequency for FFT computation
+        self.sim_fields['Kernel_Freq'] = np.exp(-1j*2.0*np.pi*self.sim_param['dt']*self.output_data['Freq_range'])
+        print(f"Kernel freq shape: {self.sim_fields['Kernel_Freq'].shape}")
+
+        # Initialize the FFT vectors
+        self.sim_fields['R'] = np.zeros(self.sim_fields['Kernel_Freq'].shape)
+        self.sim_fields['T'] = np.zeros(self.sim_fields['Kernel_Freq'].shape)
+        self.sim_fields['C'] = np.zeros(self.sim_fields['Kernel_Freq'].shape)
+        self.sim_fields['S'] = np.zeros(self.sim_fields['Kernel_Freq'].shape)
+
+        print("FFT Vector shapes:")
+        print(f"Reflectance: {self.sim_fields['R'].shape} | Transmittance: {self.sim_fields['T'].shape}")
+        print(f"Conservation of Energy: {self.sim_fields['C'].shape} | Source FFT: {self.sim_fields['S'].shape}")
+
+        self.sim_param['preprocess_finished'] = True
+
+
+    def compute_source(self):
+        
+        # Creating a new Source object
+        self.sim_source['source'] = Source(self.sim_param,self.comp_domain)
+
+        print_breaker("major")
+        print(f"Computing source excitation. | Source type: {self.sim_param['source_type']}")
+
+        if self.sim_param['source_type'] == "gaussian":
+            self.sim_source['source'].GaussianSource(3,12,2,np.amax(self.comp_domain['n']),self.comp_domain['n'][int(self.sim_param['inj_point'])])
+
+        elif self.sim_param['source_type'] == "sinusoidal":
+            self.sim_source['source'].SinusoidalSource(3,12,2,np.amax(self.comp_domain['n']),self.comp_domain['n'][int(self.sim_param['inj_point'])])
+            
+
+        elif self.sim_param['source_type'] == "rectangular":
+            self.sim_source['source'].RectWaveSource(6,1,np.amax(self.comp_domain['n']),self.comp_domain['n'][int(self.sim_param['inj_point'])])
+            
+
+        elif self.sim_param['source_type'] == "modulated sine":
+            self.sim_source['source'].ModulatedSineSource(3,12,2,np.amax(self.comp_domain['n']),self.comp_domain['n'][int(self.sim_param['inj_point'])])
+            
+
+        # Transfer computed parameters to the Simulation object
+        self.sim_param['Nt'] = self.sim_source['source'].source_param['Nt']
+        self.sim_param['tau'] = self.sim_source['source'].source_param['tau']
+        self.sim_param['t0'] = self.sim_source['source'].source_param['t0']
+
+        self.sim_source['t'] = self.sim_source['source'].source_output['t']
+        self.sim_source['t_E'] = self.sim_source['source'].source_output['t_E']
+        self.sim_source['t_H'] = self.sim_source['source'].source_output['t_H']
+        self.sim_source['Esrc'] = self.sim_source['source'].source_output['Esrc']
+        self.sim_source['Hsrc'] = self.sim_source['source'].source_output['Hsrc']
+
+        # Save the computed source to the output data dict
+        self.output_data['t'] = self.sim_source['t']
+        self.output_data['t_E'] = self.sim_source['t_E']
+        self.output_data['t_H'] = self.sim_source['t_H']
+        self.output_data['Esrc'] = self.sim_source['Esrc']
+        self.output_data['Hsrc'] = self.sim_source['Hsrc']
+
+        print_breaker('minor')
+        print(f"Esrc shape: {self.sim_source['Esrc'].shape} | Hsrc shape: {self.sim_source['Hsrc'].shape}")
+
+
+    def init_subdomains(self,mu_2D,epsilon_2D):
+        
+
+        # Create subdomains based on the specified number of subdomains
+        for i in range(int(self.sim_param['n_subdom'])):
+            # Create a new dict for the subdomain
+            subdomain = {}
+            subdomain['mu'] = mu_2D[i,:]
+            subdomain['epsilon'] = epsilon_2D[i,:]
+            self.subdomains.append(Subdomain( self.sim_param,
+                                              self.sim_source,
+                                              subdomain,
+                                              i
+                                                ))
+
+            print_breaker('minor')
+            print(f"Subdomain {i}:")
+            print(f"Mu shape: {self.subdomains[i].comp_dom['mu'].shape} | Epsilon shape: {self.subdomains[i].comp_dom['epsilon'].shape} ")
+
+    def simulate(self,boundary_condition = "dirichlet", excitation_method = "hard"):
+        
+        # Save the input arguments
+        try:
+            assert boundary_condition == "dirichlet" or boundary_condition == "pabc"
+            assert excitation_method == "hard" or excitation_method == "soft" or excitation_method == "tfsf"
+        except AssertionError:
+            print_breaker('minor')
+            print(f"ERROR: Invalid input arguments detected")
+
+        # Check if the comp_domain is processed properly
+        try:
+            assert self.sim_param['preprocess_finished']
+        except AssertionError:
+            print_breaker('minor')
+            print(f"Preprocessing is not yet complete/finished incomplete. The simulation will not proceed.")
+            return None
+
+        self.sim_param['boundary_condition'] = boundary_condition
+        self.sim_param['excitation_method'] = excitation_method
+
+        # Check the algorithm selected
+        if self.sim_param['algo'] == "fdtd":
+            self.simulate_serial()
+        elif self.sim_param['algo'] == "fdtd-schwarz":
+            self.simulate_fdtd_schwarz(direction = "right")
+
+
+    def simulate_serial(self):
+        
+        print_breaker("major")
+        print("Starting the simulation. Current simulation parameters: ")
+        print(f"algorithm: {self.sim_param['algo']} | boundary condition: {self.sim_param['boundary_condition']}")
+        print(f"source excitation method: {self.sim_param['excitation_method']} | source type: {self.sim_param['source_type']}")
+        
+        # Initializing temporary variables
+        E_boundary_terms = [0.0,0.0]
+        H_boundary_terms = [0.0,0.0]
+        end_index = int(self.sim_param['Nz'])
+        R = np.zeros(self.sim_fields['Kernel_Freq'].shape)
+        T = np.zeros(self.sim_fields['Kernel_Freq'].shape)
+
+
+        # FDTD Time Loop
+        for curr_iteration in range(int(self.sim_param['Nt'])):
+
+            # Step 1: Store E boundary terms/Set the boundary conditions
+            if self.sim_param['boundary_condition'] == "pabc":
+
+                # Remove the value from the list
+                E_value = E_boundary_terms.pop(0)
+
+                #Assign that value to the 1st element of the E field vector
+                self.sim_fields['E'][0] = E_value
+
+                # Add the 2nd element (index 1) to the list
+                E_boundary_terms.append(self.sim_fields['E'][1])
+
+            elif self.sim_param['boundary_condition'] == "dirichlet":
+
+                # Set the 1st element to 0
+                self.sim_fields['E'][0] = 0
+
+            # Step 2: Update the H-field from the E-field (FDTD Space Loop)
+            self.sim_fields['H'][:-1] = self.sim_fields['H'][:end_index-1] + \
+                                        (self.sim_fields['m_H'][:-1])*(self.sim_fields['E'][1:]-self.sim_fields['E'][:-1])
+
+            # Step 3: Insert the H-field source (applicable only to TFSF excitation method)
+            if self.sim_param['excitation_method'] == "tfsf":
+                self.sim_fields['H'][int(self.sim_param['inj_point'])-1] -= (self.sim_fields['m_H'][int(self.sim_param['inj_point'])-1])*\
+                                                                            (self.sim_source['Esrc'][curr_iteration])
+
+            # Step 4: Store H boundary term/set the boundary conditions
+            if self.sim_param['boundary_condition'] == "pabc":
+                
+                # Remove the value from the list
+                H_value = H_boundary_terms.pop(0)
+
+                # Assign the value to the last element of the H field vector
+                self.sim_fields['H'][-1] = H_value
+
+                # Add the 2nd to the last element to the list
+                H_boundary_terms.append(self.sim_fields['H'][-2])
+            
+            elif self.sim_param['boundary_condition'] == "dirichlet":
+                self.sim_fields['H'][-1] = 0
+
+            # Step 5: Update E field from H field (FDTD Space Loop)
+            self.sim_fields['E'][1:] = self.sim_fields['E'][1:] + \
+                                        self.sim_fields['m_E'][1:]*(self.sim_fields['H'][1:] - self.sim_fields['H'][:-1])
+
+            # Step 6: Inject the E field component of the source 
+            if self.sim_param['excitation_method'] == "hard":
+                self.sim_fields['E'][int(self.sim_param['inj_point'])] = self.sim_source['Esrc'][curr_iteration]
+            elif self.sim_param['excitation_method'] == "soft":
+                self.sim_fields['E'][int(self.sim_param['inj_point'])] += self.sim_source['Esrc'][curr_iteration]
+            elif self.sim_param['excitation_method'] == "soft":
+                self.sim_fields['E'][int(self.sim_param['inj_point'])] -= (self.sim_fields['m_E'][int(self.sim_param['inj_point'])]*\
+                                                                            self.sim_source['Hsrc'][curr_iteration])
+
+
+            # Step 7: Compute the Fourier Transform of the current simulation iteration
+
+            # Computing Fourier transform of Reflectance and Transmittance (unnormalized)
+            R = R + ((self.sim_fields['Kernel_Freq']**curr_iteration)*self.sim_fields['E'][1])
+            T = T + ((self.sim_fields['Kernel_Freq']**curr_iteration)*self.sim_fields['E'][-2])
+            self.sim_fields['S'] = self.sim_fields['S'] + ((self.sim_fields['Kernel_Freq']**curr_iteration)*self.sim_source['Esrc'][curr_iteration])
+
+            # Normalizing the computed frequency respones
+            self.sim_fields['R'] = (R/self.sim_fields['S']).real ** 2
+            self.sim_fields['T'] = (T/self.sim_fields['S']).real ** 2
+            self.sim_fields['C'] = self.sim_fields['R'] + self.sim_fields['T']
+
+            # Step 8: Saving the current snapshot in time in the output matrices
+            if curr_iteration == 0:
+
+                # Saving the field values for the first time
+                self.output_data['E'] = self.sim_fields['E']
+                self.output_data['H'] = self.sim_fields['H']
+                self.output_data['m_E'] = self.sim_fields['m_E']
+                self.output_data['m_H'] = self.sim_fields['m_H']
+                self.output_data['R'] = self.sim_fields['R']
+                self.output_data['T'] = self.sim_fields['T']
+                self.output_data['S'] = self.sim_fields['S']
+                self.output_data['C'] = self.sim_fields['C']
+
+            else:
+                # If this is not the first time, stack the results vertically to create 2D matrices
+                # Each row is attributed to the current iteration in time and each column is each cell in the comp domain
+                # 2D matrices shape: (Nt,Nz)
+
+                self.output_data['E'] = np.vstack((self.output_data['E'],self.sim_fields['E']))
+                self.output_data['H'] = np.vstack((self.output_data['H'],self.sim_fields['H']))
+                self.output_data['R'] = np.vstack((self.output_data['R'],self.sim_fields['R']))
+                self.output_data['T'] = np.vstack((self.output_data['T'],self.sim_fields['T']))
+                self.output_data['S'] = np.vstack((self.output_data['S'],self.sim_fields['S']))
+                self.output_data['C'] = np.vstack((self.output_data['C'],self.sim_fields['C']))
+
+            print(f"\rCurrent iteration: {curr_iteration}/{self.sim_param['Nt']}",end="")
+        
+        print("\n Computing FFT using numpy.rfft()...")
+        # Compute the frequency response using numpy's fft methods
+        self.output_data['S_numpy'] = np.fft.rfft(self.sim_source['Esrc'])
+        self.output_data['R_numpy'] = np.fft.rfft(self.output_data['E'][:,1])/self.output_data['S_numpy']
+        self.output_data['T_numpy'] = np.fft.rfft(self.output_data['E'][:,-2])/self.output_data['S_numpy']
+        self.output_data['C_numpy'] = self.output_data['R_numpy'] + self.output_data['T_numpy']
+        self.output_data['Freq_numpy'] = np.fft.rfftfreq(int(self.sim_param['Nt']),self.sim_param['df'])
+
+        print("End of simulation.")
+
+    def simulate_fdtd_schwarz(self):
+        pass
+
+    def save_sim(self,name="",type="hdf5",output_dir="",username="",description=""):
+        
+        # Check if the simulation is done before calling this function
+        try:
+            assert self.output_data != None
+      
+
+        except AssertionError:
+            print_breaker('minor')
+            print("ERROR: Output data not detected.")
+            return None
+
+        # Getting the current datetime
+        now = datetime.datetime.now()
+        date_str = now.strftime("%Y-%m-%d")
+
+        # Verify if the directory exists
+        try:
+            assert os.path.isdir(output_dir)
+        except AssertionError:
+            print_breaker('minor')
+            print("ERROR: Directory is not valid.")
+            print("The current working directory will be used instead.")
+            print(f"Current working directory: {output_dir}")
+            output_dir = os.getcwd()
+
+        
+
+        if type == "hdf5":
+            print_breaker("major")
+            print(f"Saving the simulation data. | File type: {type}")
+            filename = output_dir + date_str + "_" + name + ".h5" 
+            with h5py.File(filename,mode='w') as file:
+
+                # Storing simulation metadata in the input group
+                input_grp = file.create_group("input")
+                print("Saving metadata -----", end="")
+                file['/'].attrs['date'] = date_str
+                file['/'].attrs['user'] = username
+                file['/'].attrs['description'] = description
+                print("---> Saved!")
+
+                # Storing the input data
+                print("Saving input data -----",end="")
+                for key,val in self.input_data.items():
+                    input_grp.create_dataset(key,data=val,compression="gzip")
+                print("---> Saved!")
+
+                print("Saving comp domain vectors -----",end="")
+                comp_domain_grp = file.create_group("comp_domain")
+                for key,val in self.comp_domain.items():
+                    comp_domain_grp.create_dataset(key,data=val,compression="gzip")
+                print("---> Saved!")
+
+                # Storing simulation parameters as attributes of the comp_domain group
+                print("Saving simulation parameters -----",end="")
+                for key,val in self.sim_param.items():
+                    comp_domain_grp.attrs[key] = val
+                print("---> Saved!")
+
+               
+                # Storing the output data in output group
+                output_grp = file.create_group("output")
+                subdom_grp = output_grp.create_group("subdomain")
+                print("Saving output data -----",end="")
+                for key,val in self.output_data.items():
+                    output_grp.create_dataset(key,data=val,compression="gzip")
+                print("---> Saved!")

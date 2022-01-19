@@ -202,7 +202,7 @@ typedef struct Save_Data{
     bool simulation_success = false;
 
     double algo_time =0;
-    double wall_time = 0;
+    double overall_time = 0;
 
 } save_data;
 

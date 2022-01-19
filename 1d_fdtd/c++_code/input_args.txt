@@ -1,11 +1,11 @@
 dirichlet
-soft
-normal
+hard
+simple-20_001
 hdf5
-fdtd-schwarz
-2
+fdtd
+1
 0
 5
 1
 marvin
-Test simulation in free space.
+Simulation results of 1D FDTD Basic Algorithm for 2nd device model (20 layer simple device model).
