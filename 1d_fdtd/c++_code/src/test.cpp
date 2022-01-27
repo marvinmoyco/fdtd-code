@@ -164,7 +164,8 @@ int main()
     cout << view(A,all()) << endl;
     // cout << view(A, 0, all()) - view(B, 0, all()) << endl;
     // cout << B << endl; 
-
+    cout << view(A,range(0,A.shape(0)));
+    cout << A.shape(0) << "  " << A.size() << endl;
     //bool isConverged; 
     //isConverged = check_convergence(); 
     //cout << check_convergence() << endl; 

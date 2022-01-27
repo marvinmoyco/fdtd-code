@@ -11,7 +11,8 @@ class Subdomain
         subdomain_data subdomain_param;
         source_output_d subdomain_source;
         save_data_subdomain subdomain_output;
-
+        double left_ghost_cell = 0.0;
+        double right_ghost_cell = 0.0;
         
         
         //Initializing error vectors for convergence...
@@ -126,17 +127,17 @@ class Subdomain
                 if(subdomain_param.subdomain_id == 0) //If the subdomain is the 1st one...
                 {
                     start = subdomain_param.overlap;
-                    stop = s_fields.E.size();
+                    stop = s_fields.E.shape(0);
                 }
                 else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) // If it is the last..
                 {
                     start = 0;
-                    stop = s_fields.E.size() - subdomain_param.overlap;
+                    stop = s_fields.E.shape(0) - subdomain_param.overlap;
                 }
                 else{ //If it is in between the 1st and last subdomain...
 
                     start = 0;
-                    stop = s_fields.E.size();
+                    stop = s_fields.E.shape(0);
 
                 }
                 //cout << "Indices (start,stop): (" << start << "," << stop << ")" << endl;
@@ -161,7 +162,7 @@ class Subdomain
                 //are not the 1st subdomain...
 
                 //s_fields.E(start) = 0;
-                s_fields.E(start) = s_fields.E(start) + (s_fields.m_E(start)*(s_fields.E(start)-0));
+                s_fields.E(start) = s_fields.E(start) + (s_fields.m_E(start)*(s_fields.H(start) - left_ghost_cell ));
             }
             //cout << "Updating H from E..." << endl;
             //cout << "LHS shape: " << view(s_fields.H,range(start,stop-1)).shape()[0] << " | RHS Shape: " << (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1))).shape()[0] << endl;
@@ -199,7 +200,7 @@ class Subdomain
                 //Use Dirichlet Method on all RIGHT internal boundary of subdomains
                 //that is not the last subdomain...
                 //s_fields.H(stop-1) = 0;
-                s_fields.H(stop-1) = s_fields.H(stop-1) + (s_fields.m_H(stop-1)*(0-s_fields.E(stop-1)));
+                s_fields.H(stop-1) = s_fields.H(stop-1) + (s_fields.m_H(stop-1)*( right_ghost_cell - s_fields.E(stop-1)));
             }
 
             //Update E from H...

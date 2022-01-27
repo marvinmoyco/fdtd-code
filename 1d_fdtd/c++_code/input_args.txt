@@ -1,6 +1,6 @@
 dirichlet
 hard
-simple-20_001
+graphene-glass1_001
 hdf5
 fdtd
 1
@@ -8,4 +8,4 @@ fdtd
 5
 1
 marvin
-Simulation results of 1D FDTD Basic Algorithm for 2nd device model (20 layer simple device model). 
+Simulation results of 1D FDTD Basic Algorithm for Bragg Grating (1 layer model). 

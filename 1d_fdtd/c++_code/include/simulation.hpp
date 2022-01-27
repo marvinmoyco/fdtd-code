@@ -1548,8 +1548,33 @@ class Simulation
                             //While loop and dependent on the return value of the convergence function...
                             for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
                             {
+                                //Transfer ghost cells here
+                                /*
+                                    In transferring ghost cells,
+                                    Left Ghost Cell = Magnetic Field Value
+                                    Right Ghost Cell = Electric Field Value
+                                */
+                                if(subdom_index == 0)
+                                {
+                                    //If it is the 1st subdomain, only transfer from the right ghost cell
+                                    subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size + 1);
+                                }
+                                else if(subdom_index == sim_param.num_subdomains - 1)
+                                {
+                                    //If it is the last subdomain, only transfer from the left ghost cell
+                                    unsigned long end = subdomains[subdom_index -1].s_fields.H.shape(0);
+                                    subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size - 1);
+                                }
+                                else{
+                                    //Else, get the left and right ghost cells (if it is in the middle)
+                                    unsigned long end = subdomains[subdom_index -1].s_fields.H.shape(0);
+                                    subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size - 1);
+                                    subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size + 1);
+                                }
                                 
-                                //cout << "Running simulate() on each subdomain" << endl;
+                            
+                                //At this point, the ghost cells should be filled...
+
                                 //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
                                 subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
                                 //view(subdomains[subdom_index].s_fields.E,all()) = linspace<double>(1,26,26) + subdom_index;
