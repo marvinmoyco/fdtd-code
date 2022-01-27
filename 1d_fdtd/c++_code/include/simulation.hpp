@@ -614,7 +614,7 @@ class Simulation
         {
             cout << "============================================================" << endl;
             cout << "Changing the simulation parameters: " << endl;
-            cout << "Num of iterations: " << n_wavelength << endl;
+            cout << "Current N_wavelength:  " << n_wavelength << " | Current N_dim: " << n_dimension <<  endl;
 
 
             //Store the previous value of dz and dt in the vector data structure...
@@ -1540,6 +1540,12 @@ class Simulation
                      bool isConverged = false;
                     while(isConverged == false)
                     {
+
+                        //Update the simulation parameter if the loop repeats after the first run....
+                        if(numLoops > 0 )
+                        {
+                            update_sim_param(init_N_lambda + numLoops, init_N_d + numLoops);
+                        }
                         numLoops++;
                         //FDTD Time Loop
                         for(int curr_iter=0;curr_iter < sim_param.Nt/5;curr_iter++)
