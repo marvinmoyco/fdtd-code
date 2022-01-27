@@ -194,27 +194,27 @@ def np_to_str(input):
 def plot_hdf5(data=None,save_plots=True,output_dir=""):
 
     #Read pre-processing data
-    Nt = np.ceil(np.array(data['Total number of time iteration (Nt)'])/3)
-    source_type = np_to_str(data["Source Type"])
-    boundary_cond = np_to_str(data['Boundary Condition'])
-    excitation_method = np_to_str(data['Source Excitation Method'])
-    z = np.array(data['Computational domain z (vector)'])
+    Nt = np.ceil(np.array(data['/sim param/Nt'])/5)
+    source_type = np_to_str(data["/source/type"])
+    boundary_cond = np_to_str(data['/sim param/boundary cond'])
+    excitation_method = np_to_str(data['/sim param/excitation method'])
+    z = np.array(data['/comp domain/z'])
     source_title = f"Source Excitation ({source_type})"
     sim_title = "1D FDTD Simulation [SRC: " + source_type + " |BC: " + boundary_cond + " |EX: " + excitation_method + "]" 
     date_str = datetime.today().strftime('%Y-%m-%d')
 
     #Read source data
-    Esrc = np.array(data['Esrc'])
-    Hsrc = np.array(data['Hsrc'])
-    t_src = np.array(data['t'])
+    Esrc = np.array(data['/source/Esrc'])
+    Hsrc = np.array(data['/source/Hsrc'])
+    t_src = np.array(data['/source/t'])
 
     #Read simulation data
-    E = np.array(data['E'])
-    H = np.array(data['H'])
-    Reflectance = np.array(data['Reflectance'])
-    f = np.array(data['FFT Frequency Range'])
-    Transmittance = np.array(data['Transmittance'])
-    Con_of_Energy = np.array(data['Conservation of Energy'])
+    E = np.array(data['/output/E'])
+    H = np.array(data['/output/H'])
+    Reflectance = np.array(data['/output/reflectance'])
+    f = np.array(data['/output/freq_axis'])
+    Transmittance = np.array(data['/output/transmittance'])
+    Con_of_Energy = np.array(data['/output/conservation_of_energy'])
 
     #Plot source
     plt.figure(1)
@@ -279,6 +279,7 @@ def plot_hdf5(data=None,save_plots=True,output_dir=""):
     plt.show()
 
 
+
 def update_plot(i,E=0,H=0,R=0,T=0,C=0,l_E=None,l_H=None,l_R=None,l_T=None,l_C=None,ax=None,sim_title="",Nt=0):
     sim_title = sim_title + f" ({i}/{Nt})"
     fft_max = []
@@ -307,12 +308,12 @@ def main():
     
     date_str = datetime.today().strftime('%Y-%m-%d')
     #Get the input arguments; Format: (1) input directory (2) Custom file name (3) Output file type (4)Source Name (for image) (5) Output directory (for plots)
-
+    print(sys.argv)
     name = sys.argv[2]
     input_dir = sys.argv[1]
     type = sys.argv[3]
-    source_name = sys.argv[4]
-    output_dir = sys.argv[5]
+    source_name = "gaussian"
+    output_dir = sys.argv[4]
 
     if type == 'csv':
         row = 5744
@@ -337,7 +338,7 @@ def main():
         plot_fields_npy(fields = data[:,:,1:], num_x = data[0,1,0], num_y = data[0,2,0], x_fft = data[0,0,0],output_dir=output_dir)
 
     elif type == 'hdf5':
-        hdf5_filename = input_dir + date_str + "_" + name + ".hdf5"
+        hdf5_filename = input_dir + name
         data = h5py.File(hdf5_filename,'r')
         plot_hdf5(data,save_plots=True,output_dir=output_dir)
 

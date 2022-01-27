@@ -74,7 +74,7 @@ py_output_dir=$output_dir/plots/
 echo ================================================================
 echo Running plotting script....
 py_input=$(date '+%Y-%m-%d')_$custom_name.hdf5
-python3 $python_file $output_dir $py_input #$output_file_type $source_name $py_output_dir |& tee -a $output_dir/$log_file
+python3 $python_file $output_dir $py_input #$output_file_type $py_output_dir |& tee -a $output_dir/$log_file
 echo Check the simulation logs in $output_dir/$log_file to check the plotting details
 #echo ================================================================
 #read -p "Enter output filename for video file: " video_name

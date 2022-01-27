@@ -577,21 +577,25 @@ class Simulation
             sim_fields.Transmittance.resize(sim_fields.Kernel_Freq.shape());
             sim_fields.Con_of_Energy.resize(sim_fields.Kernel_Freq.shape());
             sim_fields.Source_FFT.resize(sim_fields.Kernel_Freq.shape());
-
+            //cout << "111111" << endl;
             //Initialize the values to 0
             view(sim_fields.Reflectance,all()) = 0;
             view(sim_fields.Transmittance,all()) = 0;
             view(sim_fields.Con_of_Energy,all()) = 0;
             view(sim_fields.Source_FFT,all()) = 0;
-
-
+            //cout << "22222222" << endl;
+            
             //Initialize save matrices for FFT;
             unsigned long col_f = sim_param.n_freq;
+            cout << "Row: " << row << " Col: " << col_f << endl;
             output.Reflectance.resize({row,col_f});
+            //cout << "33333333" << endl;
             output.Transmittance.resize({row,col_f});
+            //cout << "33333333" << endl;
             output.Con_of_Energy.resize({row,col_f});
+            //cout << "33333333" << endl;
             output.Source_FFT.resize({row,col_f});
-
+            //cout << "33333333" << endl;
             //Print the information computed
             cout << "========================================================================" << endl;
             cout << "df: " << sim_param.df << " | Frequency range: " << sim_fields.Freq_range.size() 
@@ -1036,11 +1040,15 @@ class Simulation
             cout << "Computing source. | Selected source: " << sim_param.source_type << endl;
             if(sim_param.source_type == "gaussian")
             {
-                sim_source->GaussianSource(3,12,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                /*
+                    for simple-10.csv - GaussianSource(3,12,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                    for simple-20.csv - GaussianSource(2,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                */
+                sim_source->GaussianSource(3,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "sinusoidal")
             {
-                sim_source->SinusoidalSource(3,12,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->SinusoidalSource(3,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "square")
             {
@@ -1161,7 +1169,7 @@ class Simulation
             
 
             //Remove in production
-            comp_domain.injection_point = ceil(sim_param.Nz/2);
+            comp_domain.injection_point = sim_param.injection_point;
             cout << "Start of simulation." << endl;
             //cout << "m_E: " << sim_fields.m_E << endl;
             //cout << "m_H: " << sim_fields.m_H << endl;
@@ -1200,9 +1208,9 @@ class Simulation
 
    
                 //Update H from E (FDTD Space Loop for H field)
-                view(sim_fields.H,range(0,end_index-1)) = view(sim_fields.H,range(0,end_index-1)) + 
-                                                          (view(sim_fields.m_H,range(0,end_index-1)))*(view(sim_fields.E,range(1,end_index)) - 
-                                                          view(sim_fields.E,range(0,end_index-1)));
+                view(sim_fields.H,range(0,-1)) = view(sim_fields.H,range(0,-1)) + 
+                                                          (view(sim_fields.m_H,range(0,-1)))*(view(sim_fields.E,range(1,_)) - 
+                                                          view(sim_fields.E,range(0,-1)));
 
                
 
@@ -1221,7 +1229,7 @@ class Simulation
                 if(excitation == "tfsf")
                 {
                     //cout << "H-tfsf ";
-                    sim_fields.H(comp_domain.injection_point-1) -= (sim_fields.m_H(comp_domain.injection_point-1)*
+                    sim_fields.H(comp_domain.injection_point - 1) -= (sim_fields.m_H(comp_domain.injection_point - 1)*
                                                                     sim_source_fields.Esrc(curr_iteration));
                 }
 
@@ -1266,9 +1274,9 @@ class Simulation
 
 
                 //Update E from H (FDTD Space Loop for E field)
-                view(sim_fields.E,range(1,end_index)) =  view(sim_fields.E,range(1,end_index)) + 
-                                                         (view(sim_fields.m_E,range(1,end_index))*(view(sim_fields.H,range(1,end_index))-
-                                                         view(sim_fields.H,range(0,end_index-1))));
+                view(sim_fields.E,range(1,_)) =  view(sim_fields.E,range(1,_)) + 
+                                                         (view(sim_fields.m_E,range(1,_))*(view(sim_fields.H,range(1,_))-
+                                                         view(sim_fields.H,range(0,-1))));
  
                 //Inject the E source component
                 if(excitation == "hard")
@@ -1376,7 +1384,7 @@ class Simulation
                 * Iterates through every subdomain so concurrent simulation will not be possible.
                 */
 
-                string method = "old";
+                string method = "new";
                 if(method == "old")
                 {
                     //This is the FDTD Time Loop
@@ -2101,7 +2109,7 @@ class Simulation
                     write_to_hdf5(file,string("/output/FFTW_Freq"),output.FFTW_Freq);
                 }
                 
-                //cout << "---> Saved!" << endl;
+                cout << "---> Saved!" << endl;
 
                 /*
                 * Storing Source parameters: parent folder "source"

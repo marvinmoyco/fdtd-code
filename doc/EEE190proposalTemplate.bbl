@@ -1,0 +1,622 @@
+\begin{thebibliography}{10}
+
+\bibitem{USC2020}
+UP~Diliman University~Student Council.
+\newblock Position paper on ending the semester and mass promotion.
+\newblock
+  \url{https://www.facebook.com/USCUPDiliman/photos/pcb.2966931010033920/2966930166700671},
+  Apr. 2020.
+
+\bibitem{Rumpf2020.1}
+Raymond Rumpf.
+\newblock Formulation of one-dimensional fdtd.
+\newblock
+  \url{https://empossible.net/wp-content/uploads/2020/01/Lecture-Formulation-of-1D-FDTD.pdf},
+  1 2020.
+
+\bibitem{Tezaur2017}
+Irina Tezaur, Alejandro Mota, and Coleman Alleman.
+\newblock The schwarz alternating method for concurrent multiscale coupling in
+  solid mechanics.
+\newblock
+  \url{https://old-www.sandia.gov/~ikalash/_assets/documents/tezaur_coupled_2017_schwarz.pdf},
+  2017.
+
+\bibitem{Busseuil2010}
+Remi Busseuil, Gabriel Almeida, Luciano Ost, Sameer Varyani, Gilles Sassatelli,
+  and Michel Robert.
+\newblock Adaptation strategies in multiprocessors system on chip.
+\newblock In {\em IFIP Advances in Information and Communication Technology},
+  pages 233--257, Sep. 2010.
+
+\bibitem{PSA2020}
+Dennis Mapa.
+\newblock Functional literacy rate of filipinos by exposure to different forms
+  of mass media ranges from 92.6 percent to 97.1 percent in 2019.
+\newblock Technical report, Philippine Statistics Authority, 2020.
+
+\bibitem{Mateo2020}
+Janvic Mateo.
+\newblock Tech woes among top concerns for distance learning.
+\newblock
+  \url{https://www.philstar.com/headlines/2020/08/02/2032336/tech-woes-among-top-concerns-distance-learning},
+  Aug. 2020.
+
+\bibitem{CNN2021}
+CNN Philippines.
+\newblock Sws: Over 5 out of 10 enrolled filipino students use devices for
+  distance learning.
+\newblock
+  \url{https://www.cnnphilippines.com/news/2021/3/2/filipino-students-devices-distance-learning.html},
+  Mar. 2021.
+
+\bibitem{Abrogar2020}
+Sofia Abrogar.
+\newblock Over 5,000 up students may be unable to continue under remote
+  learning.
+\newblock
+  \url{https://www.tinigngplaridel.net/news/2020/over-5000-up-students-may-be-unable-to-continue-under-remote-learning/},
+  2020.
+
+\bibitem{Queensland2017}
+Queensland Government.
+\newblock Benefits of cloud computing.
+\newblock
+  \url{https://www.business.qld.gov.au/running-business/it/cloud-computing/benefits},
+  2017.
+
+\bibitem{AWS}
+Amazon~Web Services.
+\newblock What is cloud computing?
+\newblock \url{https://aws.amazon.com/what-is-cloud-computing/}.
+
+\bibitem{Armbrust2009}
+Michael Armbrust, Armando Fox, Rean Griffith, Anthony Joseph, Randy Katz, Gunho
+  Lee, David Patterson, Ariel Rabkin, Ion Stoica, Matei Zaharia, and Andrew
+  Konwinski.
+\newblock Above the clouds: A berkeley view of cloudcomputing.
+\newblock Technical report, University of California Berkeley, 2009.
+
+\bibitem{Wolff2016}
+Ingo Wolff.
+\newblock Recent improvements of finite difference time domain simulation
+  techniques.
+\newblock In {\em 2016 IEEE MTT-S International Microwave Symposium (IMS)}.
+  IEEE, May 2016.
+
+\bibitem{RumpfCEM}
+Raymond Rumpf.
+\newblock Introduction to cem.
+\newblock
+  \url{https://empossible.net/wp-content/uploads/2019/08/Lecture-0b-Introduction-to-CEM.pdf},
+  2019.
+
+\bibitem{Toroglu2014}
+Gizem Toroglu and Levent Sevgi.
+\newblock Finite-difference time-domain (fdtd) matlab codes for first- and
+  second-order em differential equations [testing ourselves].
+\newblock {\em IEEE Antennas and Propagation Magazine}, 56, Apr. 2014.
+
+\bibitem{Haldar2006}
+M.~K. Haldar.
+\newblock Introducing the finite element method in electromagnetics to
+  undergraduates using matlab.
+\newblock {\em The International Journal of Electrical Engineering \&
+  Education}, 43, Jul. 2006.
+
+\bibitem{Arvas2012}
+Ercument Arvas and Levent Sevgi.
+\newblock A tutorial on the method of moments [testing ourselves].
+\newblock {\em IEEE Antennas and Propagation Magazine}, 54, Jun. 2012.
+
+\bibitem{Ramadan2017}
+Omar Ramadan.
+\newblock Efficient parallel fdtd algorithm for modeling infinite graphene
+  sheet simulations.
+\newblock In {\em 2017 8th International Conference on Information and
+  Communication Systems (ICICS)}. IEEE, Apr. 2017.
+
+\bibitem{Karniadakis2003}
+George Karniadakis and Robert~Kirby II.
+\newblock {\em Parallel Scientific Computing in C++ and MPI}.
+\newblock Cambridge University Press, 2003.
+
+\bibitem{Namiki1999}
+T.~Namiki and K.~Ito.
+\newblock A new fdtd algorithm free from the cfl condition restraint for a
+  2d-te wave.
+\newblock In {\em IEEE Antennas and Propagation Society International
+  Symposium. 1999 Digest. Held in conjunction with: USNC/URSI National Radio
+  Science Meeting (Cat. No.99CH37010)}. IEEE, 1999.
+
+\bibitem{Rumpf2014}
+Raymond Rumpf.
+\newblock Lecture 4 (fdtd) -- electromagnetics and fdtd.
+\newblock
+  \url{https://www.youtube.com/watch?v=TbzFef5gUms&list=PLLYQF5WvJdJWoU9uEeWJ6-MRzDSziNnGt&index=5},
+  2014.
+
+\bibitem{Yee1998}
+Kane Yee.
+\newblock Numerical solution of the initial boundary value problems involving
+  maxwell's equations in isotropic media.
+\newblock {\em IEEE Transactions on Microwave Theory and Techniques},
+  44:61--69, 1998.
+
+\bibitem{Houle2019}
+Jennifer~E. Houle and Dennis~M. Sullivan.
+\newblock {\em Electromagnetic Simulation Using the FDTD Method with Python}.
+\newblock Wiley, Dec. 2019.
+
+\bibitem{Rumpf082014}
+Raymond Rumpf.
+\newblock Lecture 8 (fdtd) -- review and walkthrough of 1d fdtd.
+\newblock
+  \url{https://www.youtube.com/watch?v=jlPXKXKSXfs&list=PLLYQF5WvJdJWoU9uEeWJ6-MRzDSziNnGt&index=9},
+  2014.
+
+\bibitem{Poirel2018}
+Louis Poirel.
+\newblock Algebraic domain decomposition methods for hybrid (iterative/direct)
+  solvers.
+\newblock Master's thesis, Universit\'e de Bordeaux, Nov. 2018.
+
+\bibitem{Smith1996}
+Barry Smith, Peter Bjorstad, and William Gropp.
+\newblock {\em Domain Decomposition: Parallel Multilevel Methods for Elliptic
+  Partial Differential Equations}.
+\newblock Cambridge University Press, 1st edition, 1996.
+
+\bibitem{Edelman2009}
+A~Edelman.
+\newblock 6.338j/18.337j applied parallel computing.
+\newblock \url{http://courses.csail.mit.edu/18.337/2009/}, 2009.
+
+\bibitem{Dolean2021}
+Victorita Dolean, Pierre Jolivet, and Fr\'ed\'eric Nataf.
+\newblock {\em An Introduction to Domain Decomposition Methods:algorithms,
+  theory and parallel implementation}.
+\newblock HAL, 6th edition, 2021.
+
+\bibitem{Maroudas2015}
+E~Maroudas, Nikos Vilanakis, C~Antonopoulos, E~Mathioudakis, Yiannis Saridakis,
+  and M~Vavalis.
+\newblock Schwarz splitting for the steady state problem of saltwater intrusion
+  in coastal aquifers.
+\newblock {\em International Journal of Mathematical Models and Methods in
+  Applied Sciences}, 9:733--739, Jun. 2015.
+
+\bibitem{Courant1928}
+R.~Courant, K.~Friedrichs, and H.~Lewy.
+\newblock Uber die partiellen differenzengleichungen der mathematischen physik.
+\newblock {\em Mathematische Annalen}, 100, 12 1928.
+
+\bibitem{Taflove2005}
+Allen Taflove and S.~Hagness.
+\newblock {\em Computational electrodynamics: the finite-difference time-domain
+  method. 3rd ed}, volume 67-106.
+\newblock Artech House Publishers, June 2005.
+
+\bibitem{Yee1966}
+Kane Yee.
+\newblock Numerical solution of initial boundary value problems involving
+  maxwell's equations in isotropic media.
+\newblock {\em IEEE Transactions on Antennas and Propagation}, 14(3):302--307,
+  1966.
+
+\bibitem{Taflove1980}
+Allen Taflove.
+\newblock Application of the finite-difference time-domain method to sinusoidal
+  steady-state electromagnetic-penetration problems.
+\newblock {\em IEEE Transactions on Electromagnetic Compatibility}, EMC-22, 8
+  1980.
+
+\bibitem{Huang2020}
+Der-Han Huang, Andreas~C. Cangellaris, and Xu~Chen.
+\newblock Stochastic-galerkin finite-difference time-domain for waves in random
+  layered media.
+\newblock In {\em 2020 IEEE MTT-S International Conference on Numerical
+  Electromagnetic and Multiphysics Modeling and Optimization (NEMO)}, pages
+  1--4, 2020.
+
+\bibitem{Thomson2020}
+Antonio~P. Thomson, Atef~Z. Elsherbeni, and Mohammed Hadi.
+\newblock A practical fourth order finite-difference time-domain algorithm for
+  the solution of maxwell's equations.
+\newblock In {\em 2020 International Applied Computational Electromagnetics
+  Society Symposium (ACES)}, pages 1--2, 2020.
+
+\bibitem{Algarni2020}
+Abdullah~M. Algarni, Atef~Z. Elsherbeni, and Mohammed Hadi.
+\newblock Implementation of passive and active circuit elements in cylindrical
+  finite-difference time-domain formulation.
+\newblock In {\em 2020 International Applied Computational Electromagnetics
+  Society Symposium (ACES)}, pages 1--2, 2020.
+
+\bibitem{Logan2012}
+Daryl~L. Logan.
+\newblock {\em A First Course in the Finite Element Method}.
+\newblock Cengage Learning, 5 edition, 2012.
+
+\bibitem{Costabel}
+Martin Costabel.
+\newblock Principles of boundary element methods.
+\newblock {\em Computer Physics Reports}, pages 243--274, 1987.
+
+\bibitem{Katsikadelis2002}
+J.T. Katsikadelis.
+\newblock {\em Boundary Elements: Theory and Applications}.
+\newblock Elsevier, 1st edition, 2002.
+
+\bibitem{Ahmad2016}
+Mohaira Ahmad and Lixia Yang.
+\newblock Modeling of 1d graphene based on ltjec-fdtd method.
+\newblock In {\em 2016 11th International Symposium on Antennas, Propagation
+  and EM Theory (ISAPE)}. IEEE, Oct. 2016.
+
+\bibitem{Liu2011}
+Jiang~Fan Liu, Xiao~Li Xi, Guo~Bin Wan, and Li~Li Wang.
+\newblock Simulation of electromagnetic wave propagation through plasma sheath
+  using the moving-window finite-difference time-domain method.
+\newblock {\em IEEE Transactions on Plasma Science}, 39:852--855, Mar. 2011.
+
+\bibitem{Kim2016}
+Hyungwoo Kim, Jangwon Lee, Jongsuh Lee, Jaeyub Hyun, and Semyung Wang.
+\newblock Topology optimization of a magnetic resonator using finite-difference
+  time-domain method for wireless energy transfer.
+\newblock In {\em IEEE Transactions on Magnetics}, volume~52. Institute of
+  Electrical and Electronics Engineers Inc., Mar. 2016.
+
+\bibitem{Aono2010}
+Shuichi Aono, Masaki Unno, and Hideki Asai.
+\newblock A novel fdtd algorithm based on alternating-direction explicit method
+  with pml absorbing boundary condition.
+\newblock In {\em 2010 15th Asia and South Pacific Design Automation Conference
+  (ASP-DAC)}. IEEE, Jan. 2010.
+
+\bibitem{Garcia2006}
+S.G. Garcia, R.G. Rubio, A.R. Bretones, and R.G. Martin.
+\newblock On the dispersion relation of adi-fdtd.
+\newblock {\em IEEE Microwave and Wireless Components Letters}, 16, 6 2006.
+
+\bibitem{Elsherbeni2015}
+Atef Elsherbeni and Veysel Demir.
+\newblock {\em The Finite-Difference Time-Domain Method for Electromagnetics
+  with MATLAB Simulations}.
+\newblock SciTech Publishing, 2nd edition, 2015.
+
+\bibitem{Song2018}
+Jingjun Song, Lijuan Shi, Shitian Zhang, Qinliang Li, and Lixia Yang.
+\newblock Research on non-uniform nested grid fdtd method based on ionospheric
+  zakharov model.
+\newblock In {\em 2018 12th International Symposium on Antennas, Propagation
+  and EM Theory (ISAPE)}, pages 1--4, 2018.
+
+\bibitem{Feng2021}
+Naixing Feng, Yuxian Zhang, Jinfeng Zhu, Qingsheng Zeng, and Guo~Ping Wang.
+\newblock High-accurate non-uniform grids for system-combined adi-fdtd method
+  in near-field scattering with proper cfl factor.
+\newblock {\em IEEE Access}, 9:18550--18559, 2021.
+
+\bibitem{Catarinucci2005}
+L.~Catarinucci, P.~Palazzari, and L.~Tarricone.
+\newblock A parallel variable-mesh fdtd algorithm for the solution of large
+  electromagnetic problems.
+\newblock In {\em 19th IEEE International Parallel and Distributed Processing
+  Symposium}, pages 8 pp.--, 2005.
+
+\bibitem{Costa2007}
+Joao Costa, Kevin Roy, Fumie Costen, and Anthony Brown.
+\newblock Toward large scale frequency dependent fdtd for uwb systems.
+\newblock In {\em 2007 IEEE Antennas and Propagation Society International
+  Symposium}. IEEE, Jun. 2007.
+
+\bibitem{Abboud2008}
+Kamal Abboud, Toufic Abboud, Francois Bereux, and Gilles Peres.
+\newblock Thin conducting sheet (tcs) in 1d fdtd : Theory and implementation.
+\newblock In {\em 2008 International Symposium on Electromagnetic Compatibility
+  - EMC Europe}. IEEE, Sep. 2008.
+
+\bibitem{Hanawa2007}
+Toshihiro Hanawa and Soichiro Ikuno.
+\newblock Large-scale simulation for optical propagation in 3-d photonic
+  crystal using the fdtd method with parallel processing.
+\newblock {\em IEEE Transactions on Magnetics}, 43, Apr. 2007.
+
+\bibitem{Luo2020}
+Jie Luo, Zhihong Ye, and Cheng Liao.
+\newblock A mpi-based parallel fdtd-tl method for the emi analysis of
+  transmission lines in cavity excited by ambient wave.
+\newblock {\em IEEE Transactions on Electromagnetic Compatibility},
+  62:212--217, Feb. 2020.
+
+\bibitem{Yu2009}
+Wenhua Yu, Raj Mittra, Xiaoling Yang, and Yongjun Liu.
+\newblock Performance analysis of parallel fdtd algorithm on different hardware
+  platforms.
+\newblock In {\em 2009 IEEE Antennas and Propagation Society International
+  Symposium}. IEEE, Jun. 2009.
+
+\bibitem{Ciamulski2008}
+Tomasz Ciamulski and Maciej Sypniewski.
+\newblock Different implementations of parallel processing for fdtd simulator.
+\newblock In {\em MIKON 2008 - 17th International Conference on Microwaves,
+  Radar and Wireless Communications}, pages 1--3, 2008.
+
+\bibitem{Ciamulski2007}
+Tomasz Ciamulski, Mats Hjelm, and Maciej Sypniewski.
+\newblock Parallel fdtd calculation efficiency on computers with shared memory
+  architecture.
+\newblock In {\em 2007 Workshop on Computational Electromagnetics in
+  Time-Domain}. IEEE, Oct. 2007.
+
+\bibitem{Zheng2016}
+Kuisong Zheng, Huan Luo, Zongmin Mu, Jianying Li, and Gao Wei.
+\newblock Parallel tss-fdtd method for analyzing underwater low-frequency
+  electromagnetic propagation.
+\newblock {\em IEEE Antennas and Wireless Propagation Letters}, 15, Nov. 2016.
+
+\bibitem{Tan2018}
+Jundong Tan, Zihao Li, Qi~Guo, and Yunliang Long.
+\newblock An efficient parallel implicit solver for lod-fdtd algorithm in cloud
+  computing environment.
+\newblock {\em IEEE Antennas and Wireless Propagation Letters}, 17, Jul. 2018.
+
+\bibitem{Yan2010}
+Xiaoyang Yan, Weiwen Zhang, Huifang Deng, and Shehui Bu.
+\newblock The parallelization of three-dimensional electro-magnetic particle
+  model using both mpi and openmp.
+\newblock In {\em 2010 International Conference on Computational and
+  Information Sciences}. IEEE, Dec. 2010.
+
+\bibitem{Lin2013}
+Haiming Lin, Xiaohu Liu, Kangyu Jia, and Wei Fu.
+\newblock A parallel domain decomposition fdtd algorithm based on cloud
+  computing.
+\newblock In {\em 2013 International Conference on Information Science and
+  Cloud Computing Companion}. IEEE, Dec. 2013.
+
+\bibitem{Yuan2011}
+Bin Yuan, Yao Zhang, and Xiu Wang.
+\newblock A suitable computing architecture and its algorithm for parallel
+  fdtd.
+\newblock In {\em Asia-Pacific Microwave Conference 2011}, pages 66--69, 2011.
+
+\bibitem{Zhang2008}
+Xu~Zhang, Xiaoming Liu, Shaohua Liu, Junsheng Yu, Ran Ding, Bingran Liu, and
+  Rui Xiao.
+\newblock A more efficient mechanism of fdtd method based on message passing
+  interface.
+\newblock In {\em 2008 International Conference on Microwave and Millimeter
+  Wave Technology}. IEEE, Apr. 2008.
+
+\bibitem{Li2009}
+Zengrui Li, Limei Luo, and Junhong Wang.
+\newblock A study of parallel fdtd method on high-performance computer
+  clusters.
+\newblock In {\em 2009 International Joint Conference on Computational Sciences
+  and Optimization}. IEEE, Apr. 2009.
+
+\bibitem{Hanawa2005}
+T.~Hanawa, M.~Kurosawa, and S.~Ikuno.
+\newblock Investigation on 3-d implicit fdtd method for parallel processing.
+\newblock {\em IEEE Transactions on Magnetics}, 41, May 2005.
+
+\bibitem{Yu2005}
+Wenhua Yu, Yongjun Liu, Tao Su, Neng-Tien Hunag, and R.~Mittra.
+\newblock A robust parallel conformal finite-difference time-domain processing
+  package using the mpi library.
+\newblock {\em IEEE Antennas and Propagation Magazine}, 47, Jun. 2005.
+
+\bibitem{Dong2005}
+J~Dong, S~L Chai, and J~J Mao.
+\newblock An automatic load-balanced parallel multilevel fast multipole method
+  for large scale electromagnetic scattering problem.
+\newblock In {\em 2005 Asia-Pacific Microwave Conference Proceedings},
+  volume~3, pages 4 pp.--, 2005.
+
+\bibitem{Gnilenko2017}
+Alexey~B. Gnilenko and Valeriy~I. Magro.
+\newblock Method of partial overlapping regions for solving electromagnetic
+  problems.
+\newblock In {\em 2017 XXIInd International Seminar/Workshop on Direct and
+  Inverse Problems of Electromagnetic and Acoustic Wave Theory (DIPED)}, pages
+  36--41, 2017.
+
+\bibitem{KhattriDDM}
+Sanjay~K. Khattri, Gunnar~E. Fladmark, and Helge~K. Dahle.
+\newblock {\em Control Volume Finite Difference On Adaptive Meshes}.
+\newblock Springer Berlin Heidelberg, 2007.
+
+\bibitem{Li2020}
+Ke~Li, Kejun Tang, Tianfan Wu, and Qifeng Liao.
+\newblock D3m: A deep domain decomposition method for partial differential
+  equations.
+\newblock {\em IEEE Access}, 8, 2020.
+
+\bibitem{Spiteri2003}
+P.~Spiteri, R.~Guivarch, D.~El~Baz, and Chau Ming.
+\newblock Parallelization of subdomain methods with overlapping for linear and
+  nonlinear convection-diffusion problems.
+\newblock In {\em Eleventh Euromicro Conference on Parallel, Distributed and
+  Network-Based Processing, 2003. Proceedings.}, pages 341--348, 2003.
+
+\bibitem{Gnatyuk2015}
+M.~A. Gnatyuk and V.~M. Morozov.
+\newblock On the schwarz alternating method for solving electromagnetic
+  problems.
+\newblock In {\em 2015 XXth IEEE International Seminar/Workshop on Direct and
+  Inverse Problems of Electromagnetic and Acoustic Wave Theory (DIPED)}, pages
+  132--135, 2015.
+
+\bibitem{Mell2011}
+P~M Mell and T~Grance.
+\newblock The nist definition of cloud computing.
+\newblock Technical report, National Institute of Standards and Technology,
+  2011.
+
+\bibitem{IBM2019}
+IBM.
+\newblock Iaas (infrastructure-as-a-service).
+\newblock \url{https://www.ibm.com/cloud/learn/iaas#toc-iaas-platf-uSme6HXr},
+  Jul. 2019.
+
+\bibitem{EC22021}
+Amazon.
+\newblock Amazon ec2.
+\newblock
+  \url{https://aws.amazon.com/ec2/?ec2-whats-new.sort-by=item.additionalFields.postDateTime&ec2-whats-new.sort-order=desc},
+  2021.
+
+\bibitem{ComputeEngine}
+Google.
+\newblock Compute engine.
+\newblock \url{https://cloud.google.com/compute}.
+
+\bibitem{AzureVM}
+Microsoft.
+\newblock Windows virtual machines in azure.
+\newblock
+  \url{https://docs.microsoft.com/en-us/azure/virtual-machines/windows/overview},
+  Nov. 2019.
+
+\bibitem{Srirama2010}
+Satish Srirama, Oleg Batrashev, and Eero Vainikko.
+\newblock Scicloud: Scientific computing on the cloud.
+\newblock In {\em 2010 10th IEEE/ACM International Conference on Cluster, Cloud
+  and Grid Computing}, pages 579--580, 2010.
+
+\bibitem{Gope2011}
+Dipanjan Gope, Vikram Jandhyala, Xiren Wang, Don Macmillen, Raul Camposano,
+  Swagato Chakraborty, James Pingenot, and Devan Williams.
+\newblock Towards system-level electromagnetic field simulation on computing
+  clouds.
+\newblock In {\em 2011 IEEE 20th Conference on Electrical Performance of
+  Electronic Packaging and Systems}. IEEE, Oct. 2011.
+
+\bibitem{McDonald2013}
+Tim McDonald, Robert Fisher, Greg Rigden, and Rod Perala.
+\newblock Parallel fdtd electromagnetic effects simulation using on-demand
+  cloud hpc resources.
+\newblock In {\em 2013 IEEE International Symposium on Electromagnetic
+  Compatibility}. IEEE, Aug. 2013.
+
+\bibitem{Gedney1994}
+S.D. Gedney.
+\newblock A comparison of the performance of finite difference time-domain,
+  finite element time-domain, and discrete surface integral equation methods on
+  high performance parallel computers.
+\newblock In {\em Proceedings of IEEE Antennas and Propagation Society
+  International Symposium and URSI National Radio Science Meeting}. IEEE, 1994.
+
+\bibitem{Rumpf092014}
+Raymond Rumpf.
+\newblock Lecture 9 (fdtd) -- examples of 1d fdtd.
+\newblock
+  \url{https://www.youtube.com/watch?v=hbjIt_ZGQa4&list=PLLYQF5WvJdJWoU9uEeWJ6-MRzDSziNnGt&index=10},
+  2014.
+
+\bibitem{Allil2017}
+Regina~C. Allil, F\'abio~V. de~Nazar\'e, and Marcelo Martins~M. Werneck.
+\newblock {\em Fiber Bragg Gratings: Theory, Fabrication, and Applications},
+  chapter Introduction.
+\newblock SPIE, Sep. 2017.
+
+\bibitem{Tamimi2020}
+Naser Tamimi.
+\newblock How fast is c++ compared to python?
+\newblock
+  \url{https://towardsdatascience.com/how-fast-is-c-compared-to-python-978f18f474c7},
+  Dec. 2020.
+
+\bibitem{Rumpf062014}
+Raymond Rumpf.
+\newblock Lecture 6 (fdtd) -- implementation of 1d fdtd.
+\newblock
+  \url{https://www.youtube.com/watch?v=hNN7EtZsJuU&list=PLLYQF5WvJdJWoU9uEeWJ6-MRzDSziNnGt&index=7},
+  2014.
+
+\bibitem{Inan2011}
+Umran Inan and Robert Marshall.
+\newblock {\em Numerical Electromagnetics The FDTD Method}.
+\newblock Cambridge University Press, 2011.
+
+\bibitem{Rumpf072014}
+Raymond Rumpf.
+\newblock Lecture 7 (fdtd) -- learning from 1d fdtd.
+\newblock
+  \url{https://www.youtube.com/watch?v=H5Qq3JGwk1I&list=PLLYQF5WvJdJWoU9uEeWJ6-MRzDSziNnGt&index=8},
+  2014.
+
+\bibitem{Weik2001}
+Martin~H. Weik.
+\newblock {\em Gaussian pulse}, pages 676--676.
+\newblock Springer US, Boston, MA, 2001.
+
+\bibitem{Bao2017}
+Huaguang Bao and Rushan Chen.
+\newblock An efficient domain decomposition parallel scheme for leapfrog
+  adi-fdtd method.
+\newblock {\em IEEE Transactions on Antennas and Propagation}, 65, Mar. 2017.
+
+\bibitem{Rumpf102014}
+Raymond Rumpf.
+\newblock Lecture 10 (fdtd) -- enhancing 1d fdtd.
+\newblock
+  \url{https://www.youtube.com/watch?v=ZrgGIkBvbvM&list=PLLYQF5WvJdJWoU9uEeWJ6-MRzDSziNnGt&index=11},
+  2014.
+
+\bibitem{Zhaoyang2012}
+Zhaoyang Cai, Bin Chen, Yun Yi, Run Xiong, and Yunfei Mao.
+\newblock A novel tf/sf boundary for cylindrical fdtd method with ground.
+\newblock In {\em 2012 International Conference on Microwave and Millimeter
+  Wave Technology (ICMMT)}, volume~2, pages 1--4, 2012.
+
+\bibitem{Mota2017}
+Alejandro Mota, Irina Tezaur, and Coleman Alleman.
+\newblock The schwarz alternating method in solid mechanics.
+\newblock {\em Computer Methods in Applied Mechanics and Engineering}, 319,
+  Jun. 2017.
+
+\bibitem{Luque2018}
+A.~Malag\'on-Romero and A.~Luque.
+\newblock A domain-decomposition method to implement electrostatic free
+  boundary conditions in the radial direction for electric discharges.
+\newblock {\em Computer Physics Communications}, 225, Apr. 2018.
+
+\bibitem{Kim2017}
+Seongjai Kim.
+\newblock {\em Numerical Methods for Partial Differential Equations}.
+\newblock Mississippi State University, Sep. 2017.
+
+\bibitem{Borchardt2020}
+Hendrik Borchardt.
+\newblock Iterative domain decomposition methods foreigenvalue problems.
+\newblock Master's thesis, RWTH Aachen University, Apr. 2020.
+
+\bibitem{atienza2020ml}
+Rowel Atienza.
+\newblock Foundations of machine learning.
+\newblock \url{https://github.com/roatienza/ml}, 2020.
+
+\bibitem{FfmpegDocs}
+The~FFmpeg developers.
+\newblock Stream selection.
+\newblock \url{https://ffmpeg.org/ffmpeg.html#Stream-selection}, 2021.
+
+\bibitem{PythonDocs}
+Python~Software Foundation.
+\newblock sys \- system-specific parameters and functions.
+\newblock \url{https://docs.python.org/3/library/sys.html}.
+
+\bibitem{CppDocs}
+The C++~Resources Network.
+\newblock std::numeric\_limits.
+\newblock \url{https://www.cplusplus.com/reference/limits/numeric_limits/}.
+
+\bibitem{Hoffmann1993}
+K.H. Hoffmann and Jun Zou.
+\newblock Parallel efficiency of domain decomposition methods.
+\newblock {\em Parallel Computing}, 19, Dec. 1993.
+
+\end{thebibliography}
