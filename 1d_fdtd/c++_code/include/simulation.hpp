@@ -802,12 +802,14 @@ class Simulation
             Meaning, all of the pre-processing for both serial and parallel versions are done in this method.
             The only data transferred to the subdomain class are the simulation parameters and the
             computational domain vectors
-            
             */
+
             unsigned long int row = sim_param.Nt;
             unsigned long int col = sim_param.Nz;
             
             cout << "Multithread: " << sim_param.multithread << " | Algorithm: " << sim_param.algorithm << endl;
+
+
             //FDTD Basic Version (Serial)
             if(sim_param.algorithm == "fdtd")
             {
@@ -1024,7 +1026,6 @@ class Simulation
             return 1;
 
         }
-
 
 
         int compute_source()
@@ -1361,7 +1362,7 @@ class Simulation
             return output;
         }
 
-        //FDTD Schwarz 
+        //FDTD-Schwarz 
         void simulate_fdtd_schwarz(string direction = "right",string boundary_condition = "", string excitation = "")
         {
             cout << "==========================================================" << endl;
@@ -1528,17 +1529,20 @@ class Simulation
                 {
                     //Similar to the old algorithm but the FDTD time loop is inside the convergence loop...
                     //Loop the FDTD-Schwarz until the data has converged...
+
                     unsigned int numLoops = 0; //Used to count the number of while loop repeats
-                     bool isConverged = false;
+                    bool isConverged = false;
+
                     while(isConverged == false)
                     {
                         numLoops++;
+
                         //FDTD Time Loop
-                        for(int curr_iter=0;curr_iter < sim_param.Nt/5;curr_iter++)
+                        for(int curr_iter=0; curr_iter < sim_param.Nt/5; curr_iter++)
                         {
                             //Iterate through the subdomain objects...
                             //While loop and dependent on the return value of the convergence function...
-                            for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
+                            for(int subdom_index=0; subdom_index < sim_param.num_subdomains; subdom_index++)
                             {
                                 
                                 //cout << "Running simulate() on each subdomain" << endl;
@@ -1548,6 +1552,7 @@ class Simulation
                                 //view(subdomains[subdom_index].s_fields.H,all()) = linspace<double>(1,26,26)+ subdom_index;
                                 
                             }
+
                             //Transfer boundary data ONLY when the subdomains have finished updating the fields
                             for(int subdom_index=0;subdom_index < sim_param.num_subdomains; subdom_index++)
                             {
@@ -1608,8 +1613,10 @@ class Simulation
                         }
                         //Check for convergence here....
                         //cout << "Checking for convergence..." << endl;
+
                         isConverged = check_convergence(); 
                         cout << "Convergence after the FDTD-Schwarz Loop: " << isConverged << endl;
+
                         //Continue the loop if not converged...
                         cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
                     }
@@ -1621,11 +1628,12 @@ class Simulation
 
 
                 }
+
                 /*
-                                    * Wait for all subdomain to finish before going here.
-                                    * In this way, we can use the left or right direction in openMP since
-                                    * this guarantees that all subdomains MUST BE FINISHED BEFORE executing the method below
-                                    */
+                Wait for all subdomain to finish before going here.
+                In this way, we can use the left or right direction in openMP since
+                this guarantees that all subdomains MUST BE FINISHED BEFORE executing the method below
+                */
             }
             else if(sim_param.multithread == true)
             {
@@ -1734,7 +1742,7 @@ class Simulation
         bool check_convergence()
         {
             // Initialize matrices of overlapping region values 
-           // cout << "Initializing overlaping region buffers..." << endl;
+            // cout << "Initializing overlaping region buffers..." << endl;
             xtensor<double,2> A_E = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size}); 
             xtensor<double,2> B_E = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size});
             xtensor<double,2> A_H = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size}); 
@@ -1758,6 +1766,7 @@ class Simulation
             Gets the values of the CURRENT subdomain's RIGHT overlapping region and the  
             NEXT subdomain's LEFT overlapping region
              */ 
+
             //cout << "Getting the values in the overlapping regions" << endl;
             for(int count =  0; count < sim_param.num_subdomains-1; count++)
             {
@@ -1768,6 +1777,7 @@ class Simulation
                 row(B_H, count) = subdomains[count + 1].getOverlapValues('H', "left");
             }
             //cout << "Subtracting the overlapping values and getting the L2 norm" << endl;
+
             // Subtracts the two vectors (A - B) and gets the norm; checks each element if <= epsilon
             for(int n =  0; n < sim_param.num_subdomains-1; n++)
             {
