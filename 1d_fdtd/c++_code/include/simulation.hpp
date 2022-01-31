@@ -1802,9 +1802,15 @@ class Simulation
             }
 
             // Save the error tensor into the 2D save matrix
-            output.E_error_list = vstack(xtuple(output.E_error_list,atleast_2d(output.E_error)));
-            output.H_error_list = vstack(xtuple(output.H_error_list,atleast_2d(output.H_error)));
-
+            if(output.E_error_list.size() == 0 || output.H_error_list.size() == 0)
+            {
+                output.E_error_list = atleast_2d(output.E_error);
+                output.H_error_list = atleast_2d(output.H_error);
+            }
+            else{
+                output.E_error_list = vstack(xtuple(output.E_error_list,atleast_2d(output.E_error)));
+                output.H_error_list = vstack(xtuple(output.H_error_list,atleast_2d(output.H_error)));
+            }
             // Check the convergence here by using the determined error threshold
 
             return isConverged;

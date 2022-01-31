@@ -198,14 +198,29 @@ int main()
 
 
     xtensor<double,2> Z = view(X,all(),range(subdomain_size-overlap_size,_)) - view(Y,all(),range(_,overlap_size));
-    vector<double> error;
-
-    error.push_back(linalg::norm(Z,2));
+    xtensor<double,1> error = zeros<double>({5});
+    xtensor<double,2> error_list;
+    for(int i=0;i<5;i++)
+    {
+        error(i) = linalg::norm(Z,2);
+        if(i == 0)
+        {
+            error_list = atleast_2d(error);
+        }
+        else{
+            error_list = vstack(xtuple(error_list,atleast_2d(error)));
+        }
+        
+    }
 
     
+
+    xtensor<double,2> F;
      
-    cout << Z << endl;
+    cout << F.size() << endl;
     
     cout << "Computed norm: " << linalg::norm(Z,2) << endl;
+
+    cout << error_list << endl;
     return 0;
 }
