@@ -241,18 +241,31 @@ class Subdomain:
         self.comp_dom = comp_domain
         self.subdom_param['id'] = id
         self.subdom_fields = {}
+        self.E_boundary_terms = [0.0,0.0]
+        self.H_boundary_terms = [0.0,0.0]
+        self.output = {}
+        
 
         # Initializing the field vectors to 0
         self.subdom_fields['E'] = np.zeros(self.comp_dom['mu'].shape)
         self.subdom_fields['H'] = np.zeros(self.comp_dom['mu'].shape)
         self.subdom_fields['m_E'] = np.zeros(self.comp_dom['mu'].shape)
         self.subdom_fields['m_H'] = np.zeros(self.comp_dom['mu'].shape) 
+  
 
         print_breaker('minor')
         print(f"Subdomain {self.subdom_param['id']}:")
         print(f"E shape: {self.subdom_fields['E'].shape} | H shape: {self.subdom_fields['H']}")
         print(f"m_E shape: {self.subdom_fields['m_E'].shape} | m_H shape: {self.subdom_fields['m_H'].shape}")
 
+        #Initialize ghost cells
+        if self.subdom_param['id'] == 0:
+            self.subdom_fields['r_ghost'] = 0.0
+        elif self.subdom_param['id'] == self.subdom_param['n_subdom'] -1:
+            self.subdom_fields['l_ghost'] = 0.0
+        else:
+            self.subdom_fields['l_ghost'] = 0.0
+            self.subdom_fields['r_ghost'] = 0.0
         
         if self.subdom_param['id'] == 0:
 
@@ -284,17 +297,138 @@ class Subdomain:
             self.subdom_fields['m_E'] = (Subdomain.c_0*self.subdom_param['dt'])/(self.comp_dom['epsilon']*self.subdom_param['dz'])
             self.subdom_fields['m_H'] = (Subdomain.c_0*self.subdom_param['dt'])/(self.comp_dom['mu']*self.subdom_param['dz'])
 
-    def simulate_subdom(self):
+    def simulate_subdom(self,curr_iter = 0, boundary_condition="dirichlet",excitation_method="hard"):
         
         # Before starting the simulation, copy the boundary data 1st. The boundary condition will not be dirichlet for the internal boundary data.
         # "Ghost cells" will be used as a way to calculate the last cells in each subdomains, that way, the FDTD algorithm can completely finish
         # This is done after every iteration in the FDTD Time loop, meaning this will be the "Transfer of boundary data stage" of the Schwarz Alternating Method.
 
+        # Check to make sure that the subdom_fields are not empty
+        try:
+            assert self.subdom_param != None
+            assert self.subdom_fields != None
+            assert self.source != None
+            assert isinstance(curr_iter,int)
+
+        except AssertionError:
+            print_breaker("minor")
+            print("ERROR: Invalid input arguments detected")
+            return None
+
+        
+        # Store the parameters in the subdom_param dict
+        self.subdom_param['boundary_condition'] = boundary_condition
+        self.subdom_param['excitation_method'] = excitation_method
+
+        # Initialize array indices
+        start = 0
+        stop = 0
+        if self.subdom_param['id'] == 0:
+            start = int(self.subdom_param['overlap'])
+            end = int(self.comp_dom['mu'].shape[0])
+
+        elif self.subdom_param['id'] == self.subdom_param['n_subdom'] -1 :
+            start = 0
+            end = int(self.comp_dom['mu'].shape[0] - self.subdom_param['overlap'])
+
+        else:
+            start = 0
+            end = int(self.comp_dom['mu'].shape[0])
+
+
+        # Step 1: Store boundary data for the 1st subdomain (for the external boundary data)
+        if self.subdom_param['id'] == 0: #For the left EXT boundary of 1st subdomain
+            if self.subdom_param['boundary_condition'] == "pabc":
+                E_value = self.E_boundary_terms.pop(0)
+                self.subdom_fields['E'][0] = E_value
+                self.E_boundary_terms.append(self.subdom_fields['E'][1]) 
+
+            elif self.subdom_param['boundary_condition'] == "dirichlet":
+                self.subdom_fields['E'][0] = 0.0
+
+        else: # For the left INT boundary of all subdomains except the 1st
+            # Use the ghost cells here by updating the leftmost index (0) using the update equation
+
+            self.subdom_fields['E'][0] = self.subdom_fields['E'][0] + (self.subdom_fields['m_E'][0]*(self.subdom_fields['H'][0] - self.subdom_fields['l_ghost']))
+
+
+        # Step 2: Update the H vector from E
+        self.subdom_fields['H'][:-1] = self.subdom_fields['H'][:-1] + (self.subdom_fields['m_H'][:-1]*(self.subdom_fields['E'][1:] - self.subdom_fields['E'][:-1]))
+
+
+        # Step 3: Update source excitation (applicable only when the subdom is the 1st one)
+        if self.subdom_param['id'] == 0:
+            if self.subdom_param['excitation_method'] == "tfsf":
+                self.subdom_fields['H'][self.subdom_param['inj_point'] -1 ] -=  self.subdom_fields['m_H'][self.subdom_param['inj_point'] - 1]*self.source['Hsrc'][curr_iter]
+
+        # Step 4: Store H boundary terms
+        if self.subdom_param['id'] == 0: #For the left EXT boundary of last subdomain
+            if self.subdom_param['boundary_condition'] == "pabc":
+                H_value = self.H_boundary_terms.pop(0)
+                self.subdom_fields['H'][-1] = H_value
+                self.H_boundary_terms.append(self.subdom_fields['H'][-2]) 
+
+            elif self.subdom_param['boundary_condition'] == "dirichlet":
+                self.subdom_fields['H'][-1] = 0.0
+
+        else: # For the left INT boundary of all subdomains except the last
+            # Use the ghost cells here by updating the rightmost index (n) using the update equation
+
+            self.subdom_fields['H'][-1] = self.subdom_fields['H'][-1] + (self.subdom_fields['m_H'][-1]*( self.subdom_fields['r_ghost'] - self.subdom_fields['E'][-1]))
+
+
+        # Step 5: Update E from H
+        self.subdom_fields['E'][1:] = self.subdom_fields['E'][1:] + (self.subdom_fields['m_E'][1:]*(self.subdom_fields['H'][1:] - self.subdom_fields['H'][:-1]))
+
+        # Step 6: Update E source excitaiton
+        if self.subdom_param['id'] == 0:
+            if self.subdom_param['excitation_method'] == "hard":
+                self.subdom_fields['E'][self.subdom_param['inj_point']] = self.source['Esrc'][curr_iter]
+
+            elif self.subdom_param['excitation_method'] == "soft":
+                self.subdom_fields['E'][self.subdom_param['inj_point']] += self.source['Esrc'][curr_iter]
+
+            elif self.subdom_param['excitation_method'] == "tfsf":
+                self.subdom_fields['E'][self.subdom_param['inj_point']] -= (self.subdom_fields['m_E'][self.subdom_param['inj_point']]*self.source['Esrc'][curr_iter])
+
+
+        # Step 7: Store the data of the EXT boundaries for FFT computations in 1st and last subdomains
+
+
+        # Step 8: Saving the current snapshot in time in the output matrices
+            if curr_iter == 0:
+
+                # Saving the field values for the first time
+                self.output['E'] = self.subdom_fields['E']
+                self.output['H'] = self.subdom_fields['H']
+                self.output['m_E'] = self.subdom_fields['m_E']
+                self.output['m_H'] = self.subdom_fields['m_H']
+                #self.output['R'] = self.subdom_fields['R']
+                #self.output['T'] = self.subdom_fields['T']
+                #self.output['S'] = self.subdom_fields['S']
+                #self.output['C'] = self.subdom_fields['C']
+
+            else:
+                # If this is not the first time, stack the results vertically to create 2D matrices
+                # Each row is attributed to the current iteration in time and each column is each cell in the comp domain
+                # 2D matrices shape: (Nt,Nz)
+
+                self.output['E'] = np.vstack((self.output['E'],self.subdom_fields['E']))
+                self.output['H'] = np.vstack((self.output['H'],self.subdom_fields['H']))
+                #self.output['R'] = np.vstack((self.output['R'],self.subdom_fields['R']))
+                #self.output['T'] = np.vstack((self.output['T'],self.subdom_fields['T']))
+                #self.output['S'] = np.vstack((self.output['S'],self.subdom_fields['S']))
+                #self.output['C'] = np.vstack((self.output['C'],self.subdom_fields['C']))
+
+
+
 
         return None
 
-    def transfer_boundary_data(self):
-        pass
+    def transfer_boundary_data(self,side="right",adj_subdom = None, ):
+        boundary_data_E = [0.0,0.0]
+        boundary_data_H = [0.0,0.0]
+
 
 
 
@@ -942,8 +1076,54 @@ class Simulation:
 
         print("End of simulation.")
 
-    def simulate_fdtd_schwarz(self):
+    def simulate_fdtd_schwarz(self,):
+        
+
+        if self.sim_param['multithread'] == False:
+            # Loop using for loop (for the FDTD time loop)
+
+            numLoops = 0 #variable to track the number of loops
+            isConverged = False
+
+            # Convergence loop
+            while(isConverged == False):
+
+                # FDTD Algorithm
+                # FDTD Time Loop
+                for curr_iteration in range(int(self.sim_param['Nt'])):
+                    
+                    #Ghost cell transfer
+
+
+                    #FDTD Algo main
+                    pass
+
+
+                # Construct main 2D array
+
+
+                # Transfer boundary data
+
+
+                # Check for convergence
+
+
+                #Update sim parameters (if necessary)
+
+
+
+        elif self.sim_param['multithread'] == True: # if we will be using OpenMP or multiprocessing module
+            pass
+
+        return None
+
+
+    def reconstruct_output_matrix(self):
         pass
+
+    def check_convergence(self):
+        pass
+
 
     def save_sim(self,name="",type="hdf5",output_dir="",username="",description=""):
         

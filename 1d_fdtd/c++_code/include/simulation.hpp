@@ -577,21 +577,25 @@ class Simulation
             sim_fields.Transmittance.resize(sim_fields.Kernel_Freq.shape());
             sim_fields.Con_of_Energy.resize(sim_fields.Kernel_Freq.shape());
             sim_fields.Source_FFT.resize(sim_fields.Kernel_Freq.shape());
-
+            //cout << "111111" << endl;
             //Initialize the values to 0
             view(sim_fields.Reflectance,all()) = 0;
             view(sim_fields.Transmittance,all()) = 0;
             view(sim_fields.Con_of_Energy,all()) = 0;
             view(sim_fields.Source_FFT,all()) = 0;
-
-
+            //cout << "22222222" << endl;
+            
             //Initialize save matrices for FFT;
             unsigned long col_f = sim_param.n_freq;
+            cout << "Row: " << row << " Col: " << col_f << endl;
             output.Reflectance.resize({row,col_f});
+            //cout << "33333333" << endl;
             output.Transmittance.resize({row,col_f});
+            //cout << "33333333" << endl;
             output.Con_of_Energy.resize({row,col_f});
+            //cout << "33333333" << endl;
             output.Source_FFT.resize({row,col_f});
-
+            //cout << "33333333" << endl;
             //Print the information computed
             cout << "========================================================================" << endl;
             cout << "df: " << sim_param.df << " | Frequency range: " << sim_fields.Freq_range.size() 
@@ -610,7 +614,7 @@ class Simulation
         {
             cout << "============================================================" << endl;
             cout << "Changing the simulation parameters: " << endl;
-            cout << "Num of iterations: " << n_wavelength << endl;
+            cout << "Current N_wavelength:  " << n_wavelength << " | Current N_dim: " << n_dimension <<  endl;
 
 
             //Store the previous value of dz and dt in the vector data structure...
@@ -1037,11 +1041,15 @@ class Simulation
             cout << "Computing source. | Selected source: " << sim_param.source_type << endl;
             if(sim_param.source_type == "gaussian")
             {
-                sim_source->GaussianSource(3,12,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                /*
+                    for simple-10.csv - GaussianSource(3,12,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                    for simple-20.csv - GaussianSource(2,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                */
+                sim_source->GaussianSource(3,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "sinusoidal")
             {
-                sim_source->SinusoidalSource(3,12,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->SinusoidalSource(3,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "square")
             {
@@ -1162,7 +1170,7 @@ class Simulation
             
 
             //Remove in production
-            comp_domain.injection_point = ceil(sim_param.Nz/2);
+            comp_domain.injection_point = sim_param.injection_point;
             cout << "Start of simulation." << endl;
             //cout << "m_E: " << sim_fields.m_E << endl;
             //cout << "m_H: " << sim_fields.m_H << endl;
@@ -1201,9 +1209,9 @@ class Simulation
 
    
                 //Update H from E (FDTD Space Loop for H field)
-                view(sim_fields.H,range(0,end_index-1)) = view(sim_fields.H,range(0,end_index-1)) + 
-                                                          (view(sim_fields.m_H,range(0,end_index-1)))*(view(sim_fields.E,range(1,end_index)) - 
-                                                          view(sim_fields.E,range(0,end_index-1)));
+                view(sim_fields.H,range(0,-1)) = view(sim_fields.H,range(0,-1)) + 
+                                                          (view(sim_fields.m_H,range(0,-1)))*(view(sim_fields.E,range(1,_)) - 
+                                                          view(sim_fields.E,range(0,-1)));
 
                
 
@@ -1222,7 +1230,7 @@ class Simulation
                 if(excitation == "tfsf")
                 {
                     //cout << "H-tfsf ";
-                    sim_fields.H(comp_domain.injection_point-1) -= (sim_fields.m_H(comp_domain.injection_point-1)*
+                    sim_fields.H(comp_domain.injection_point - 1) -= (sim_fields.m_H(comp_domain.injection_point - 1)*
                                                                     sim_source_fields.Esrc(curr_iteration));
                 }
 
@@ -1267,9 +1275,9 @@ class Simulation
 
 
                 //Update E from H (FDTD Space Loop for E field)
-                view(sim_fields.E,range(1,end_index)) =  view(sim_fields.E,range(1,end_index)) + 
-                                                         (view(sim_fields.m_E,range(1,end_index))*(view(sim_fields.H,range(1,end_index))-
-                                                         view(sim_fields.H,range(0,end_index-1))));
+                view(sim_fields.E,range(1,_)) =  view(sim_fields.E,range(1,_)) + 
+                                                         (view(sim_fields.m_E,range(1,_))*(view(sim_fields.H,range(1,_))-
+                                                         view(sim_fields.H,range(0,-1))));
  
                 //Inject the E source component
                 if(excitation == "hard")
@@ -1377,7 +1385,7 @@ class Simulation
                 * Iterates through every subdomain so concurrent simulation will not be possible.
                 */
 
-                string method = "old";
+                string method = "new";
                 if(method == "old")
                 {
                     //This is the FDTD Time Loop
@@ -1535,6 +1543,12 @@ class Simulation
 
                     while(isConverged == false)
                     {
+
+                        //Update the simulation parameter if the loop repeats after the first run....
+                        if(numLoops > 0 )
+                        {
+                            update_sim_param(init_N_lambda + numLoops, init_N_d + numLoops);
+                        }
                         numLoops++;
 
                         //FDTD Time Loop
@@ -1544,8 +1558,33 @@ class Simulation
                             //While loop and dependent on the return value of the convergence function...
                             for(int subdom_index=0; subdom_index < sim_param.num_subdomains; subdom_index++)
                             {
+                                //Transfer ghost cells here
+                                /*
+                                    In transferring ghost cells,
+                                    Left Ghost Cell = Magnetic Field Value
+                                    Right Ghost Cell = Electric Field Value
+                                */
+                                if(subdom_index == 0)
+                                {
+                                    //If it is the 1st subdomain, only transfer from the right ghost cell
+                                    subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size + 1);
+                                }
+                                else if(subdom_index == sim_param.num_subdomains - 1)
+                                {
+                                    //If it is the last subdomain, only transfer from the left ghost cell
+                                    unsigned long end = subdomains[subdom_index -1].s_fields.H.shape(0);
+                                    subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size - 1);
+                                }
+                                else{
+                                    //Else, get the left and right ghost cells (if it is in the middle)
+                                    unsigned long end = subdomains[subdom_index -1].s_fields.H.shape(0);
+                                    subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size - 1);
+                                    subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size + 1);
+                                }
                                 
-                                //cout << "Running simulate() on each subdomain" << endl;
+                            
+                                //At this point, the ghost cells should be filled...
+
                                 //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
                                 subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
                                 //view(subdomains[subdom_index].s_fields.E,all()) = linspace<double>(1,26,26) + subdom_index;
@@ -2111,7 +2150,7 @@ class Simulation
                     write_to_hdf5(file,string("/output/FFTW_Freq"),output.FFTW_Freq);
                 }
                 
-                //cout << "---> Saved!" << endl;
+                cout << "---> Saved!" << endl;
 
                 /*
                 * Storing Source parameters: parent folder "source"

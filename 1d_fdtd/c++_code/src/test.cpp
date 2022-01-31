@@ -155,15 +155,20 @@ bool check_convergence()
 int main()
 {
 
-    xtensor<double,2> A = ones<double>({3,3}); 
-    xtensor<double,2> B = ones<double>({3,3})*2; 
-
+    xtensor<double,1> A = linspace(0,10,11);
+    cout << view(A,all()) << endl;
+    cout << view(A,range(0,-2)) << endl;
+    cout << view(A,range(1,-1)) << endl;
+    cout << view(A,range(1,_)) << endl;
+    view(A,range(-1,_)) = 99.9;
+    cout << view(A,all()) << endl;
     // cout << view(A, 0, all()) - view(B, 0, all()) << endl;
     // cout << B << endl; 
-
+    cout << view(A,range(0,A.shape(0)));
+    cout << A.shape(0) << "  " << A.size() << endl;
     //bool isConverged; 
     //isConverged = check_convergence(); 
-    cout << check_convergence() << endl; 
+    //cout << check_convergence() << endl; 
 
 
 

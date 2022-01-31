@@ -32,7 +32,7 @@ save_data output;
 */
 int main(int argc, char* argv[])
 {
-  //auto overall_start = chrono::high_resolution_clock::now();
+  auto overall_start = chrono::high_resolution_clock::now();
   //cout << " Argv[1] :  " << argv[1] << endl;
   //Create a simulation object...
   Simulation sim(argv[1]);
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
   //Perform pre-processing...
   computational_domain check = sim.create_comp_domain(0,0,100,stoul(argv[8]),stod(argv[10]),stoul(argv[9]),argv[7]);
 
-  for(int i = 0; i<1000; i++)
+  /*for(int i = 0; i<1000; i++)
   {
     if(i % 500 == 0)
     {
@@ -73,9 +73,9 @@ int main(int argc, char* argv[])
     for (double i: sim.sim_param.dt_list)
       cout << i << ", ";
     cout << " ]" << endl;
-  }
+  }*/
 
-/*
+
   //Start the simulation...
   auto start_time = chrono::high_resolution_clock::now();
   output = sim.simulate(argv[2],argv[3]);
@@ -94,7 +94,8 @@ int main(int argc, char* argv[])
   sim.output.overall_time = overall_duration.count();
   //Save the simulation data....
   sim.save_to_file(argv[4],argv[5],argv[6],argv[11],argv[12],argv[13]);
-*/
+
+  cout << "END OF SIMULATION" << endl;
 
 
 

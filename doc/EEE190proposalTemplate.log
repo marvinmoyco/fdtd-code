@@ -1,0 +1,2616 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.10.21)  19 JAN 2022 17:39
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**EEE190proposalTemplate.tex
+(./EEE190proposalTemplate.tex
+LaTeX2e <2020-02-02> patch level 2
+L3 programming layer <2020-02-14> (./upeeei.cls
+Document Class: upeeei 2011/11/22 v0.1 UP EEEI Thesis Class
+(./uct11_new.clo (/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2020/01/02 v5.9 Page Geometry
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(/usr/share/texlive/texmf-dist/tex/generic/iftex/ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+
+(/usr/share/texlive/texmf-dist/tex/generic/iftex/iftex.sty
+Package: iftex 2019/11/07 v1.0c TeX engine tests
+))
+\Gm@cnth=\count167
+\Gm@cntv=\count168
+\c@Gm@tempcnt=\count169
+\Gm@bindingoffset=\dimen134
+\Gm@wd@mp=\dimen135
+\Gm@odd@mp=\dimen136
+\Gm@even@mp=\dimen137
+\Gm@layoutwidth=\dimen138
+\Gm@layoutheight=\dimen139
+\Gm@layouthoffset=\dimen140
+\Gm@layoutvoffset=\dimen141
+\Gm@dimlist=\toks15
+))
+\descriptionmargin=\dimen142
+\c@part=\count170
+\c@chapter=\count171
+\c@section=\count172
+\c@subsection=\count173
+\c@subsubsection=\count174
+\c@paragraph=\count175
+\c@subparagraph=\count176
+\c@figure=\count177
+\c@table=\count178
+)
+(/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty
+Package: inputenc 2018/08/11 v1.3c Input encoding file
+\inpenc@prehook=\toks16
+\inpenc@posthook=\toks17
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/latin9.def
+File: latin9.def 2018/08/11 v1.3c Input encoding file
+))
+(/usr/share/texlive/texmf-dist/tex/latex/srcltx/srcltx.sty
+Package: srcltx 2006/11/12 v1.6 Source specials for inverse search in DVI files
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
+)
+\src@lastline=\count179
+\src@new@everypar=\toks18
+\src@new@output=\toks19
+)
+(/usr/share/texlive/texmf-dist/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count180
+\float@exts=\toks20
+\float@box=\box45
+\@float@everytoks=\toks21
+\@floatcapt=\box46
+)
+(/usr/share/texlive/texmf-dist/tex/latex/units/units.sty
+Package: units 1998/08/04 v0.9b Typesetting units
+
+(/usr/share/texlive/texmf-dist/tex/latex/units/nicefrac.sty
+Package: nicefrac 1998/08/04 v0.9b Nice fractions
+\L@UnitsRaiseDisplaystyle=\skip47
+\L@UnitsRaiseTextstyle=\skip48
+\L@UnitsRaiseScriptstyle=\skip49
+))
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2019/11/30 v1.2a Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2019/11/30 v1.4a Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 105.
+Package srcltx Info: Expanded filename `pdftex.def' to `pdftex.def.tex' on inpu
+t line 106.
+
+:<+ pdftex.def.tex
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
+)
+:<-
+)
+\Gin@req@height=\dimen143
+\Gin@req@width=\dimen144
+) (/usr/share/texlive/texmf-dist/tex/latex/base/textcomp.sty
+Package: textcomp 2020/02/02 v2.0n Standard LaTeX package
+)
+(/usr/share/texlive/texmf-dist/tex/latex/pgfgantt/pgfgantt.sty
+Package: pgfgantt 2018/01/10 v5.0 Draw Gantt diagrams with TikZ
+
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.tex
+\pgfutil@everybye=\toks22
+\pgfutil@tempdima=\dimen145
+\pgfutil@tempdimb=\dimen146
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfutil-common-lists.t
+ex)) (/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfutil-latex.def
+\pgfutil@abb=\box47
+(/usr/share/texlive/texmf-dist/tex/latex/ms/everyshi.sty
+Package: everyshi 2001/05/15 v3.00 EveryShipout Package (MS)
+))
+Package srcltx Info: Expanded filename `pgfrcs.code.tex' to `pgfrcs.code.tex' o
+n input line 13.
+
+:<+ pgfrcs.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfrcs.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/pgf.revision.tex)
+Package: pgfrcs 2020/01/08 v3.1.5b (3.1.5b)
+)
+:<-
+)
+Package: pgf 2020/01/08 v3.1.5b (3.1.5b)
+ (/usr/share/texlive/texmf-dist/tex/latex/pgf/basiclayer/pgfcore.sty
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/systemlayer/pgfsys.sty
+Package srcltx Info: Expanded filename `pgfsys.code.tex' to `pgfsys.code.tex' o
+n input line 16.
+
+:<+ pgfsys.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsys.code.tex
+Package: pgfsys 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
+\pgfkeys@pathtoks=\toks23
+\pgfkeys@temptoks=\toks24
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfkeysfiltered.code.t
+ex
+\pgfkeys@tmptoks=\toks25
+))
+\pgf@x=\dimen147
+\pgf@y=\dimen148
+\pgf@xa=\dimen149
+\pgf@ya=\dimen150
+\pgf@xb=\dimen151
+\pgf@yb=\dimen152
+\pgf@xc=\dimen153
+\pgf@yc=\dimen154
+\pgf@xd=\dimen155
+\pgf@yd=\dimen156
+\w@pgf@writea=\write3
+\r@pgf@reada=\read2
+\c@pgf@counta=\count181
+\c@pgf@countb=\count182
+\c@pgf@countc=\count183
+\c@pgf@countd=\count184
+\t@pgf@toka=\toks26
+\t@pgf@tokb=\toks27
+\t@pgf@tokc=\toks28
+\pgf@sys@id@count=\count185
+ (/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgf.cfg
+File: pgf.cfg 2020/01/08 v3.1.5b (3.1.5b)
+)
+Driver file for pgf: pgfsys-pdftex.def
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-pdftex.def
+File: pgfsys-pdftex.def 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-common-pdf.de
+f
+File: pgfsys-common-pdf.def 2020/01/08 v3.1.5b (3.1.5b)
+)))
+:<-
+Package srcltx Info: Expanded filename `pgfsyssoftpath.code.tex' to `pgfsyssoft
+path.code.tex' on input line 17.
+:<+ pgfsyssoftpath.code.tex
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.
+tex
+File: pgfsyssoftpath.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgfsyssoftpath@smallbuffer@items=\count186
+\pgfsyssoftpath@bigbuffer@items=\count187
+)
+:<-
+Package srcltx Info: Expanded filename `pgfsysprotocol.code.tex' to `pgfsysprot
+ocol.code.tex' on input line 18.
+:<+ pgfsysprotocol.code.tex
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsysprotocol.code.
+tex
+File: pgfsysprotocol.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+)
+:<-
+) (/usr/share/texlive/texmf-dist/tex/latex/xcolor/xcolor.sty
+Package: xcolor 2016/05/11 v2.12 LaTeX color extensions (UK)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 225.
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1348.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1352.
+Package xcolor Info: Model `RGB' extended on input line 1364.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1366.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1367.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
+)
+Package srcltx Info: Expanded filename `pgfcore.code.tex' to `pgfcore.code.tex'
+ on input line 17.
+
+:<+ pgfcore.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcore.code.tex
+Package: pgfcore 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathcalc.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathutil.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathparser.code.tex
+\pgfmath@dimen=\dimen157
+\pgfmath@count=\count188
+\pgfmath@box=\box48
+\pgfmath@toks=\toks29
+\pgfmath@stack@operand=\toks30
+\pgfmath@stack@operation=\toks31
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.basic.code
+.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.trigonomet
+ric.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.random.cod
+e.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.comparison
+.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.base.code.
+tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.round.code
+.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.misc.code.
+tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.integerari
+thmetics.code.tex)))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfloat.code.tex
+\c@pgfmathroundto@lastzeros=\count189
+))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfint.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepoints.code.te
+x
+File: pgfcorepoints.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgf@picminx=\dimen158
+\pgf@picmaxx=\dimen159
+\pgf@picminy=\dimen160
+\pgf@picmaxy=\dimen161
+\pgf@pathminx=\dimen162
+\pgf@pathmaxx=\dimen163
+\pgf@pathminy=\dimen164
+\pgf@pathmaxy=\dimen165
+\pgf@xx=\dimen166
+\pgf@xy=\dimen167
+\pgf@yx=\dimen168
+\pgf@yy=\dimen169
+\pgf@zx=\dimen170
+\pgf@zy=\dimen171
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathconstruct.
+code.tex
+File: pgfcorepathconstruct.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgf@path@lastx=\dimen172
+\pgf@path@lasty=\dimen173
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathusage.code
+.tex
+File: pgfcorepathusage.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgf@shorten@end@additional=\dimen174
+\pgf@shorten@start@additional=\dimen175
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorescopes.code.te
+x
+File: pgfcorescopes.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgfpic=\box49
+\pgf@hbox=\box50
+\pgf@layerbox@main=\box51
+\pgf@picture@serial@count=\count190
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoregraphicstate.c
+ode.tex
+File: pgfcoregraphicstate.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgflinewidth=\dimen176
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransformation
+s.code.tex
+File: pgfcoretransformations.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgf@pt@x=\dimen177
+\pgf@pt@y=\dimen178
+\pgf@pt@temp=\dimen179
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorequick.code.tex
+File: pgfcorequick.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreobjects.code.t
+ex
+File: pgfcoreobjects.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathprocessing
+.code.tex
+File: pgfcorepathprocessing.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorearrows.code.te
+x
+File: pgfcorearrows.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgfarrowsep=\dimen180
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.code.tex
+File: pgfcoreshade.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgf@max=\dimen181
+\pgf@sys@shading@range@num=\count191
+\pgf@shadingcount=\count192
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreimage.code.tex
+File: pgfcoreimage.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreexternal.code.
+tex
+File: pgfcoreexternal.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgfexternal@startupbox=\box52
+))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorelayers.code.te
+x
+File: pgfcorelayers.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransparency.c
+ode.tex
+File: pgfcoretransparency.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepatterns.code.
+tex
+File: pgfcorepatterns.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorerdf.code.tex
+File: pgfcorerdf.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+))
+:<-
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmoduleshapes.code.tex
+File: pgfmoduleshapes.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgfnodeparttextbox=\box53
+) (/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmoduleplot.code.tex
+File: pgfmoduleplot.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-0-65
+.sty
+Package: pgfcomp-version-0-65 2020/01/08 v3.1.5b (3.1.5b)
+\pgf@nodesepstart=\dimen182
+\pgf@nodesepend=\dimen183
+)
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-1-18
+.sty
+Package: pgfcomp-version-1-18 2020/01/08 v3.1.5b (3.1.5b)
+)) (/usr/share/texlive/texmf-dist/tex/latex/pgf/utilities/pgffor.sty
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/utilities/pgfkeys.sty
+Package srcltx Info: Expanded filename `pgfkeys.code.tex' to `pgfkeys.code.tex'
+ on input line 10.
+
+:<+ pgfkeys.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex)
+:<-
+) (/usr/share/texlive/texmf-dist/tex/latex/pgf/math/pgfmath.sty
+Package srcltx Info: Expanded filename `pgfmath.code.tex' to `pgfmath.code.tex'
+ on input line 11.
+
+:<+ pgfmath.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex)
+:<-
+)
+Package srcltx Info: Expanded filename `pgffor.code.tex' to `pgffor.code.tex' o
+n input line 14.
+
+:<+ pgffor.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgffor.code.tex
+Package: pgffor 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex)
+\pgffor@iter=\dimen184
+\pgffor@skip=\dimen185
+\pgffor@stack=\toks32
+\pgffor@toks=\toks33
+)
+:<-
+)
+Package srcltx Info: Expanded filename `tikz.code.tex' to `tikz.code.tex' on in
+put line 13.
+
+:<+ tikz.code.tex
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+Package: tikz 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/pgflibraryplothandlers
+.code.tex
+File: pgflibraryplothandlers.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgf@plot@mark@count=\count193
+\pgfplotmarksize=\dimen186
+)
+\tikz@lastx=\dimen187
+\tikz@lasty=\dimen188
+\tikz@lastxsaved=\dimen189
+\tikz@lastysaved=\dimen190
+\tikz@lastmovetox=\dimen191
+\tikz@lastmovetoy=\dimen192
+\tikzleveldistance=\dimen193
+\tikzsiblingdistance=\dimen194
+\tikz@figbox=\box54
+\tikz@figbox@bg=\box55
+\tikz@tempbox=\box56
+\tikz@tempbox@bg=\box57
+\tikztreelevel=\count194
+\tikznumberofchildren=\count195
+\tikznumberofcurrentchild=\count196
+\tikz@fig@count=\count197
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmodulematrix.code.tex
+File: pgfmodulematrix.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgfmatrixcurrentrow=\count198
+\pgfmatrixcurrentcolumn=\count199
+\pgf@matrix@numberofcolumns=\count266
+)
+\tikz@expandcount=\count267
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarytopaths.code.tex
+File: tikzlibrarytopaths.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+))
+:<-
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibraryarrows.code.tex
+File: tikzlibraryarrows.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.code.
+tex
+File: pgflibraryarrows.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\arrowsize=\dimen195
+))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarybackgrounds.code.tex
+File: tikzlibrarybackgrounds.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgf@layerbox@background=\box58
+\pgf@layerboxsaved@background=\box59
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarycalc.code.tex
+File: tikzlibrarycalc.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarypatterns.code.tex
+File: tikzlibrarypatterns.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/pgflibrarypatterns.cod
+e.tex
+File: pgflibrarypatterns.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarypositioning.code.tex
+File: tikzlibrarypositioning.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibraryshapes.geometric.code.tex
+File: tikzlibraryshapes.geometric.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshape
+s.geometric.code.tex
+File: pgflibraryshapes.geometric.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+))
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/utilities/pgfcalendar.sty
+Package srcltx Info: Expanded filename `pgfcalendar.code.tex' to `pgfcalendar.c
+ode.tex' on input line 13.
+
+:<+ pgfcalendar.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfcalendar.code.tex
+File: pgfcalendar.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfint.code.tex)
+\pgfcalendarcurrentjulian=\count268
+\pgf@cal@easter@Y=\count269
+\pgf@cal@easter@G=\count270
+\pgf@cal@easter@C=\count271
+\pgf@cal@easter@X=\count272
+\pgf@cal@easter@Z=\count273
+\pgf@cal@easter@D=\count274
+\pgf@cal@easter@E=\count275
+\pgf@cal@easter@N=\count276
+\pgf@cal@easter@M=\count277
+\pgf@cal@easter@julianday=\count278
+)
+:<-
+)
+\gtt@currentline=\count279
+\gtt@lasttitleline=\count280
+\gtt@currgrid=\count281
+\gtt@chartwidth=\count282
+\gtt@lasttitleslot=\count283
+\gtt@elementid=\count284
+\gtt@today@slot=\count285
+\gtt@startjulian=\count286
+\gtt@endjulian=\count287
+\gtt@chartid=\count288
+\gtt@vrule@slot=\count289
+\gtt@calendar@slots=\count290
+\gtt@calendar@weeknumber=\count291
+\gtt@calendar@startofweek=\count292
+\gtt@left@slot=\count293
+\gtt@right@slot=\count294
+) (/usr/share/texlive/texmf-dist/tex/latex/circuitikz/circuitikz.sty
+Package: circuitikz 2020/02/04{} The CircuiTikz circuit drawing package version
+ 1.0
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.meta.
+code.tex
+File: pgflibraryarrows.meta.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgfarrowinset=\dimen196
+\pgfarrowlength=\dimen197
+\pgfarrowwidth=\dimen198
+\pgfarrowlinewidth=\dimen199
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarybending.code.tex
+File: tikzlibrarybending.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmodulebending.code.te
+x
+File: pgfmodulebending.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmodulenonlineartransf
+ormations.code.tex
+File: pgfmodulenonlineartransformations.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgftransformnonlinearflatness=\dimen256
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/pgflibrarycurvilinear.
+code.tex
+File: pgflibrarycurvilinear.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+\pgf@curvilinear@time@a=\dimen257
+\pgf@curvilinear@length@a=\dimen258
+\pgf@curvilinear@length@b=\dimen259
+\pgf@curvilinear@length@c=\dimen260
+\pgf@curvilinear@length@d=\dimen261
+)
+\pgf@arrows@the@rigidity=\dimen262
+))
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcirc.defines.tex
+\pgf@circ@count@a=\count295
+\pgf@circ@count@b=\count296
+\pgf@circ@count@c=\count297
+\pgf@circ@res@up=\dimen263
+\pgf@circ@res@down=\dimen264
+\pgf@circ@res@zero=\dimen265
+\pgf@circ@res@left=\dimen266
+\pgf@circ@res@right=\dimen267
+\pgf@circ@res@other=\dimen268
+\pgf@circ@res@step=\dimen269
+\pgf@circ@res@temp=\dimen270
+\pgfstartlinewidth=\dimen271
+\pgf@circ@Rlen=\dimen272
+\pgf@circ@scaled@Rlen=\dimen273
+)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcircutils.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcircshapes.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcircmonopoles.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcircbipoles.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcirctripoles.tex
+\pgf@circ@res@count=\count298
+)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcircquadpoles.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcircmultipoles.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcirclabel.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcircvoltage.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcirccurrent.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcircflow.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/circuitikz/pgfcircpath.tex)
+
+Package circuitikz Warning: You did not specify one of the voltage directions:
+(circuitikz)                  oldvoltagedirection, nooldvoltagedirection, 
+(circuitikz)                  RPvoltages or EFvoltages 
+(circuitikz)                Default directions may have changed, 
+(circuitikz)                please check the manual.
+
+) (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2020/01/20 v2.17e AMS math features
+\@mathmargin=\skip50
+
+For additional information on amsmath, use the `?' option.
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amstext.sty
+Package: amstext 2000/06/29 v2.01 AMS text
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks34
+\ex@=\dimen274
+))
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen275
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsopn.sty
+Package: amsopn 2016/03/08 v2.02 operator names
+)
+\inf@bad=\count299
+LaTeX Info: Redefining \frac on input line 227.
+\uproot@=\count300
+\leftroot@=\count301
+LaTeX Info: Redefining \overline on input line 389.
+\classnum@=\count302
+\DOTSCASE@=\count303
+LaTeX Info: Redefining \ldots on input line 486.
+LaTeX Info: Redefining \dots on input line 489.
+LaTeX Info: Redefining \cdots on input line 610.
+\Mathstrutbox@=\box60
+\strutbox@=\box61
+\big@size=\dimen276
+LaTeX Font Info:    Redeclaring font encoding OML on input line 733.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 734.
+\macc@depth=\count304
+\c@MaxMatrixCols=\count305
+\dotsspace@=\muskip16
+\c@parentequation=\count306
+\dspbrk@lvl=\count307
+\tag@help=\toks35
+\row@=\count308
+\column@=\count309
+\maxfields@=\count310
+\andhelp@=\toks36
+\eqnshift@=\dimen277
+\alignsep@=\dimen278
+\tagshift@=\dimen279
+\tagwidth@=\dimen280
+\totwidth@=\dimen281
+\lineht@=\dimen282
+\@envbody=\toks37
+\multlinegap=\skip51
+\multlinetaggap=\skip52
+\mathdisplay@stack=\toks38
+LaTeX Info: Redefining \[ on input line 2859.
+LaTeX Info: Redefining \] on input line 2860.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/stackengine/stackengine.sty
+Package: stackengine 2017/02/13 v4.01\ Stacking text and objects in convenient 
+ways
+
+(/usr/share/texlive/texmf-dist/tex/latex/etoolbox/etoolbox.sty
+Package: etoolbox 2019/09/21 v2.5h e-TeX tools for LaTeX (JAW)
+\etb@tempcnta=\count311
+)
+(/usr/share/texlive/texmf-dist/tex/generic/listofitems/listofitems.sty
+(/usr/share/texlive/texmf-dist/tex/generic/listofitems/listofitems.tex
+\loi_cnt_foreach_nest=\count312
+\loi_nestcnt=\count313
+)
+Package: listofitems 2019/08/21 v1.63 Grab items in lists using user-specified 
+sep char (CT)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/tools/calc.sty
+Package: calc 2017/05/25 v4.3 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count314
+\calc@Bcount=\count315
+\calc@Adimen=\dimen283
+\calc@Bdimen=\dimen284
+\calc@Askip=\skip53
+\calc@Bskip=\skip54
+LaTeX Info: Redefining \setlength on input line 80.
+LaTeX Info: Redefining \addtolength on input line 81.
+\calc@Ccount=\count316
+\calc@Cskip=\skip55
+)
+\c@@stackindex=\count317
+\@boxshift=\skip56
+\stack@tmplength=\skip57
+\temp@stkl=\skip58
+\@stackedboxwidth=\skip59
+\@addedbox=\box62
+\@anchorbox=\box63
+\stackedbox=\box64
+\@centerbox=\box65
+\c@ROWcellindex@=\count318
+)
+(/usr/share/texlive/texmf-dist/tex/latex/breqn/breqn.sty
+(/usr/share/texlive/texmf-dist/tex/latex/l3kernel/expl3.sty
+Package: expl3 2020-02-14 L3 programming layer (loader) 
+
+(/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdfmode.def
+File: l3backend-pdfmode.def 2020-02-03 L3 backend support: PDF mode
+\l__kernel_color_stack_int=\count319
+\l__pdf_internal_box=\box66
+))
+Package: breqn 2020/02/16 v0.98h Breaking equations
+
+(/usr/share/texlive/texmf-dist/tex/latex/breqn/flexisym.sty
+Package: flexisym 2020/02/16 v0.98h Make math characters macros
+LaTeX Info: Redefining \textprime on input line 298.
+LaTeX Info: Redefining \not on input line 356.
+
+(/usr/share/texlive/texmf-dist/tex/latex/breqn/cmbase.sym
+File: cmbase.sym 2007/12/19 v0.92
+LaTeX Info: Redefining \hbar on input line 323.
+LaTeX Info: Redefining \surd on input line 325.
+LaTeX Info: Redefining \angle on input line 333.
+LaTeX Info: Redefining \neq on input line 334.
+LaTeX Info: Redefining \mapsto on input line 335.
+LaTeX Info: Redefining \cong on input line 336.
+LaTeX Info: Redefining \notin on input line 339.
+LaTeX Info: Redefining \rightleftharpoons on input line 340.
+LaTeX Info: Redefining \doteq on input line 341.
+LaTeX Info: Redefining \hookrightarrow on input line 342.
+LaTeX Info: Redefining \hookleftarrow on input line 343.
+LaTeX Info: Redefining \bowtie on input line 344.
+LaTeX Info: Redefining \models on input line 345.
+LaTeX Info: Redefining \Longrightarrow on input line 346.
+LaTeX Info: Redefining \longrightarrow on input line 347.
+LaTeX Info: Redefining \Longleftarrow on input line 348.
+LaTeX Info: Redefining \longleftarrow on input line 349.
+LaTeX Info: Redefining \longmapsto on input line 350.
+LaTeX Info: Redefining \longleftrightarrow on input line 351.
+LaTeX Info: Redefining \Longleftrightarrow on input line 352.
+LaTeX Info: Redefining \cdots on input line 356.
+LaTeX Info: Redefining \vdots on input line 359.
+LaTeX Info: Redefining \ddots on input line 364.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/breqn/mathstyle.sty
+Package: mathstyle 2020/02/16 v0.98h Tracking mathstyle implicitly
+LaTeX Info: Redefining \displaystyle on input line 93.
+LaTeX Info: Redefining \textstyle on input line 95.
+LaTeX Info: Redefining \scriptstyle on input line 97.
+LaTeX Info: Redefining \scriptscriptstyle on input line 99.
+LaTeX Info: Redefining \genfrac on input line 145.
+))
+\inf@bad=\count320
+\maxint=\count321
+\listwidth=\dimen285
+\eqnumsep=\dimen286
+\eqmargin=\dimen287
+\eqlinespacing=\skip60
+\eqlineskip=\skip61
+\eqlineskiplimit=\dimen288
+\eqbinoffset=\muskip17
+\eqdelimoffset=\muskip18
+\eqindentstep=\dimen289
+\eqstyle=\toks39
+\eqbreakdepth=\count322
+\eqinterlinepenalty=\count323
+\intereqpenalty=\count324
+\intereqskip=\skip62
+\prerelpenalty=\count325
+\prebinoppenalty=\count326
+\Dmedmuskip=\muskip19
+\Dthickmuskip=\muskip20
+\eqleftskip=\skip63
+\eqrightskip=\skip64
+\eq@vspan=\skip65
+\eq@binoffset=\muskip21
+\EQ@box=\box67
+\EQ@copy=\box68
+\EQ@numbox=\box69
+\eq@wdNum=\dimen290
+\GRP@numbox=\box70
+\grp@wdNum=\dimen291
+\eq@lines=\count327
+\eq@curline=\count328
+\eq@badness=\count329
+\EQ@vims=\count330
+\eq@dp=\dimen292
+\eq@wdL=\dimen293
+\eq@wdT=\dimen294
+\eq@wdMin=\dimen295
+\grp@wdL=\dimen296
+\grp@wdR=\dimen297
+\grp@wdT=\dimen298
+\eq@wdRmax=\dimen299
+\eq@firstht=\dimen300
+\eq@wdCond=\dimen301
+\eq@indentstep=\dimen302
+\eq@linewidth=\dimen303
+\grp@linewidth=\dimen304
+\eq@hshift=\dimen305
+\eq@given@sidespace=\dimen306
+\mathindent=\dimen307
+\eq@final@linecount=\count331
+\eq@wdR=\dimen308
+\EQ@continue=\toks40
+\lr@level=\count332
+\GRP@queue=\toks41
+\GRP@box=\box71
+\GRP@wholebox=\box72
+\darraycolsep=\skip66
+\cur@row=\count333
+\cur@col=\count334
+\conditionsep=\skip67
+)
+(/usr/share/texlive/texmf-dist/tex/latex/pgfplots/pgfplots.sty
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplots.revision.tex)
+Package: pgfplots 2018/03/28 v1.16 Data Visualization (1.16)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplots.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplotscore.code.tex
+\t@pgfplots@toka=\toks42
+\t@pgfplots@tokb=\toks43
+\t@pgfplots@tokc=\toks44
+\pgfplots@tmpa=\dimen309
+\c@pgfplots@coordindex=\count335
+\c@pgfplots@scanlineindex=\count336
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/sys/pgfplotssysgeneric.code
+.tex))
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/libs/pgfplotslibrary.code.t
+ex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/oldpgfcompatib/pgfplotsoldp
+gfsupp_loader.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/pgflibraryfpu.code.tex
+))
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/util/pgfplotsutil.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/liststructure/pgfplotslists
+tructure.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/liststructure/pgfplotslists
+tructureext.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/liststructure/pgfplotsarray
+.code.tex
+\c@pgfplotsarray@tmp=\count337
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/liststructure/pgfplotsmatri
+x.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/numtable/pgfplotstableshare
+d.code.tex
+\c@pgfplotstable@counta=\count338
+\t@pgfplotstable@a=\toks45
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/liststructure/pgfplotsdeque
+.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/util/pgfplotsbinary.code.te
+x
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/util/pgfplotsbinary.data.co
+de.tex))
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/util/pgfplotsutil.verb.code
+.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/libs/pgflibrarypgfplots.sur
+fshading.code.tex
+\c@pgfplotslibrarysurf@no=\count339
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/sys/pgflibrarypgfplots.surf
+shading.pgfsys-pdftex.def)))
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/util/pgfplotscolormap.code.
+tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/util/pgfplotscolor.code.tex
+))
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplotsstackedplots.code.t
+ex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplotsplothandlers.code.t
+ex
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplotsmeshplothandler.cod
+e.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplotsmeshplotimage.code.
+tex)))
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplots.scaling.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplotscoordprocessing.cod
+e.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplots.errorbars.code.tex
+) (/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplots.markers.code.tex
+) (/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplotsticks.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgfplots/pgfplots.paths.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarydecorations.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmoduledecorations.cod
+e.tex
+\pgfdecoratedcompleteddistance=\dimen310
+\pgfdecoratedremainingdistance=\dimen311
+\pgfdecoratedinputsegmentcompleteddistance=\dimen312
+\pgfdecoratedinputsegmentremainingdistance=\dimen313
+\pgf@decorate@distancetomove=\dimen314
+\pgf@decorate@repeatstate=\count340
+\pgfdecorationsegmentamplitude=\dimen315
+\pgfdecorationsegmentlength=\dimen316
+)
+\tikz@lib@dec@box=\box73
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarydecorations.pathmorphing.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/decorations/pgflibrary
+decorations.pathmorphing.code.tex))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarydecorations.pathreplacing.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/decorations/pgflibrary
+decorations.pathreplacing.code.tex))
+\pgfplots@numplots=\count341
+\pgfplots@xmin@reg=\dimen317
+\pgfplots@xmax@reg=\dimen318
+\pgfplots@ymin@reg=\dimen319
+\pgfplots@ymax@reg=\dimen320
+\pgfplots@zmin@reg=\dimen321
+\pgfplots@zmax@reg=\dimen322
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibraryplotmarks.code.tex
+File: tikzlibraryplotmarks.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/pgflibraryplotmarks.co
+de.tex
+File: pgflibraryplotmarks.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+))) (/usr/share/texlive/texmf-dist/tex/latex/url/url.sty
+\Urlmuskip=\muskip22
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/subfig/subfig.sty
+Package: subfig 2005/06/28 ver: 1.3 subfig package
+
+(/usr/share/texlive/texmf-dist/tex/latex/caption/caption.sty
+Package: caption 2020/01/03 v3.4h Customizing captions (AR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/caption/caption3.sty
+Package: caption3 2020/01/03 v1.8h caption3 kernel (AR)
+Package caption3 Info: TeX engine: e-TeX on input line 61.
+\captionmargin=\dimen323
+\captionmargin@=\dimen324
+\captionwidth=\dimen325
+\caption@tempdima=\dimen326
+\caption@indent=\dimen327
+\caption@parindent=\dimen328
+\caption@hangindent=\dimen329
+\abovecaptionskip=\skip68
+\belowcaptionskip=\skip69
+Package caption Info: Unknown document class (or package),
+(caption)             standard defaults will be used.
+Package caption Info: \@makecaption = \long macro:#1#2->\par \ifdim \prevdepth 
+>-\p@ \vskip 10\p@ \relax \fi \setbox \@tempboxa \hbox {\vbox to\topskip {}#1: 
+#2\unskip \strut }\ifdim \wd \@tempboxa >\hsize {\ssp #1: #2\unskip \strut \par
+ } \else \hbox to\hsize {\hfil \unhbox \@tempboxa \hfil }\fi  on input line 108
+2.
+)
+
+Package caption Warning: Unknown document class (or package),
+(caption)                standard defaults will be used.
+See the caption package documentation for explanation.
+
+\c@caption@flags=\count342
+\c@continuedfloat=\count343
+Package caption Info: float package is loaded.
+)
+\c@KVtest=\count344
+\sf@farskip=\skip70
+\sf@captopadj=\dimen330
+\sf@capskip=\skip71
+\sf@nearskip=\skip72
+\c@subfigure=\count345
+\c@subfigure@save=\count346
+\c@lofdepth=\count347
+\c@subtable=\count348
+\c@subtable@save=\count349
+\c@lotdepth=\count350
+\sf@top=\skip73
+\sf@bottom=\skip74
+) (/usr/share/texlive/texmf-dist/tex/latex/algorithms/algorithm.sty
+Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
+nment
+\@float@every@algorithm=\toks46
+\c@algorithm=\count351
+)
+(/usr/share/texlive/texmf-dist/tex/latex/algorithmicx/algpseudocode.sty
+Package: algpseudocode 
+
+(/usr/share/texlive/texmf-dist/tex/latex/algorithmicx/algorithmicx.sty
+Package: algorithmicx 2005/04/27 v1.2 Algorithmicx
+
+Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
+\c@ALG@line=\count352
+\c@ALG@rem=\count353
+\c@ALG@nested=\count354
+\ALG@tlm=\skip75
+\ALG@thistlm=\skip76
+\c@ALG@Lnr=\count355
+\c@ALG@blocknr=\count356
+\c@ALG@storecount=\count357
+\c@ALG@tmpcounter=\count358
+\ALG@tmplength=\skip77
+)
+Document Style - pseudocode environments for use with the `algorithmicx' style
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibraryfit.code.tex
+File: tikzlibraryfit.code.tex 2020/01/08 v3.1.5b (3.1.5b)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/babel/babel.sty
+Package: babel 2020/02/14 3.40 The Babel package
+
+(/usr/share/texlive/texmf-dist/tex/generic/babel/switch.def
+File: switch.def 2020/02/14 3.40 Babel switching mechanism
+)
+(/usr/share/texlive/texmf-dist/tex/generic/babel-english/english.ldf
+Language: english 2017/06/06 v3.3r English support from the babel system
+
+(/usr/share/texlive/texmf-dist/tex/generic/babel/babel.def
+File: babel.def 2020/02/14 3.40 Babel common definitions
+\babel@savecnt=\count359
+\U@D=\dimen331
+
+(/usr/share/texlive/texmf-dist/tex/generic/babel/txtbabel.def)
+\bbl@readstream=\read3
+\bbl@dirlevel=\count360
+)
+Package babel Info: \l@canadian = using hyphenrules for english
+(babel)             (\language0) on input line 102.
+Package babel Info: \l@australian = using hyphenrules for ukenglish
+(babel)             (\language60) on input line 105.
+Package babel Info: \l@newzealand = using hyphenrules for ukenglish
+(babel)             (\language60) on input line 108.
+))
+(./EEE190proposalTemplate.aux)
+\openout1 = `EEE190proposalTemplate.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 65.
+LaTeX Font Info:    ... okay on input line 65.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 65.
+LaTeX Font Info:    ... okay on input line 65.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 65.
+LaTeX Font Info:    ... okay on input line 65.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 65.
+LaTeX Font Info:    ... okay on input line 65.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 65.
+LaTeX Font Info:    ... okay on input line 65.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 65.
+LaTeX Font Info:    ... okay on input line 65.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 65.
+LaTeX Font Info:    ... okay on input line 65.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: letterpaper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: includefoot 
+* h-part:(L,W,R)=(73.7157pt, 466.8636pt, 73.7157pt)
+* v-part:(T,H,B)=(90.3375pt, 629.47218pt, 75.16031pt)
+* \paperwidth=614.295pt
+* \paperheight=794.96999pt
+* \textwidth=466.8636pt
+* \textheight=629.47218pt
+* \oddsidemargin=1.44571pt
+* \evensidemargin=1.44571pt
+* \topmargin=-18.06749pt
+* \headheight=0.0pt
+* \headsep=36.135pt
+* \topskip=10.0pt
+* \footskip=0.0pt
+* \marginparwidth=0.0pt
+* \marginparsep=0.0pt
+* \columnsep=0.0pt
+* \skip\footins=12.0pt plus 4.0pt minus 4.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+(/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count361
+\scratchdimen=\dimen332
+\scratchbox=\box74
+\nofMPsegments=\count362
+\nofMParguments=\count363
+\everyMPshowfont=\toks47
+\MPscratchCnt=\count364
+\MPscratchDim=\dimen333
+\MPnumerator=\count365
+\makeMPintoPDFobject=\count366
+\everyMPtoPDFconversion=\toks48
+) (/usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+ABD: EveryShipout initializing macros
+
+Package pgfplots Warning: running in backwards compatibility mode (unsuitable t
+ick labels; missing features). Consider writing \pgfplotsset{compat=1.16} into 
+your preamble.
+ on input line 65.
+
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: subfig package v1.3 is loaded.
+Package caption Info: End \AtBeginDocument code.
+[1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[1] (./EEE190proposalTemplate.toc
+Overfull \vbox (7.31305pt too high) has occurred while \output is active []
+
+
+[1
+
+])
+\tf@toc=\write4
+\openout4 = `EEE190proposalTemplate.toc'.
+
+
+Overfull \vbox (7.31305pt too high) has occurred while \output is active []
+
+
+[2] (./EEE190proposalTemplate.lof
+
+LaTeX Warning: Citation `USC2020' on page iii undefined on input line 3.
+
+
+LaTeX Warning: Citation `Rumpf2020.1' on page iii undefined on input line 7.
+
+
+LaTeX Warning: Citation `Rumpf2020.1' on page iii undefined on input line 8.
+
+
+LaTeX Warning: Citation `Tezaur2017' on page iii undefined on input line 13.
+
+
+LaTeX Warning: Citation `Busseuil2010' on page iii undefined on input line 15.
+
+)
+\tf@lof=\write5
+\openout5 = `EEE190proposalTemplate.lof'.
+
+
+Overfull \vbox (7.31305pt too high) has occurred while \output is active []
+
+
+[3
+
+] (./EEE190proposalTemplate.lot)
+\tf@lot=\write6
+\openout6 = `EEE190proposalTemplate.lot'.
+
+
+Overfull \vbox (7.31305pt too high) has occurred while \output is active []
+
+
+[4
+
+]
+Chapter 1.
+
+LaTeX Warning: Citation `PSA2020' on page 1 undefined on input line 135.
+
+
+LaTeX Warning: Citation `Mateo2020' on page 1 undefined on input line 135.
+
+
+LaTeX Warning: Citation `CNN2021' on page 1 undefined on input line 135.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 135--136
+
+ []
+
+
+LaTeX Warning: Citation `Abrogar2020' on page 1 undefined on input line 137.
+
+
+LaTeX Warning: Citation `USC2020' on page 1 undefined on input line 137.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 137--138
+
+ []
+
+<images/student_internet_survey.JPG, id=29, 581.17125pt x 338.76563pt>
+File: images/student_internet_survey.JPG Graphic file (type jpg)
+<use images/student_internet_survey.JPG>
+Package pdftex.def Info: images/student_internet_survey.JPG  used on input line
+ 141.
+(pdftex.def)             Requested size: 466.8636pt x 272.13972pt.
+
+LaTeX Warning: Citation `USC2020' on page 1 undefined on input line 142.
+
+
+LaTeX Warning: Citation `USC2020' on page 1 undefined on input line 142.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[1
+
+
+]
+
+LaTeX Warning: Citation `Queensland2017' on page 2 undefined on input line 148.
+
+
+
+LaTeX Warning: Citation `AWS' on page 2 undefined on input line 148.
+
+
+LaTeX Warning: Citation `Armbrust2009' on page 2 undefined on input line 148.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 148--149
+
+ []
+
+
+LaTeX Warning: Citation `Wolff2016' on page 2 undefined on input line 151.
+
+
+LaTeX Warning: Citation `RumpfCEM' on page 2 undefined on input line 151.
+
+
+LaTeX Warning: Citation `Toroglu2014' on page 2 undefined on input line 151.
+
+
+LaTeX Warning: Citation `Haldar2006' on page 2 undefined on input line 151.
+
+
+LaTeX Warning: Citation `Arvas2012' on page 2 undefined on input line 151.
+
+
+LaTeX Warning: Citation `Ramadan2017' on page 2 undefined on input line 151.
+
+
+LaTeX Warning: Citation `Wolff2016' on page 2 undefined on input line 151.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 151--152
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[2 <./images/student_internet_survey.JPG>]
+
+LaTeX Warning: Citation `Karniadakis2003' on page 3 undefined on input line 153
+.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 153--154
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 155--156
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[3]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[4]
+Chapter 2.
+
+LaTeX Warning: Citation `Rumpf2020.1' on page 5 undefined on input line 229.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[5
+
+
+]
+
+LaTeX Warning: Citation `Namiki1999' on page 6 undefined on input line 251.
+
+
+LaTeX Warning: Citation `Rumpf2014' on page 6 undefined on input line 251.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[6]
+
+LaTeX Warning: Citation `Rumpf2020.1' on page 7 undefined on input line 284.
+
+
+LaTeX Warning: Citation `Yee1998' on page 7 undefined on input line 286.
+
+
+LaTeX Warning: Citation `Rumpf2020.1' on page 7 undefined on input line 286.
+
+<images/Yee cell.png, id=58, 390.45876pt x 399.4925pt>
+File: images/Yee cell.png Graphic file (type png)
+<use images/Yee cell.png>
+Package pdftex.def Info: images/Yee cell.png  used on input line 290.
+(pdftex.def)             Requested size: 195.2289pt x 199.74576pt.
+
+LaTeX Warning: Citation `Rumpf2020.1' on page 7 undefined on input line 291.
+
+
+LaTeX Warning: Citation `Rumpf2020.1' on page 7 undefined on input line 291.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[7]
+
+LaTeX Warning: Citation `Rumpf2020.1' on page 8 undefined on input line 295.
+
+<images/Ey_Hx .jpg, id=64, 232.87pt x 124.465pt>
+File: images/Ey_Hx .jpg Graphic file (type jpg)
+<use images/Ey_Hx .jpg>
+Package pdftex.def Info: images/Ey_Hx .jpg  used on input line 300.
+(pdftex.def)             Requested size: 142.26378pt x 76.03938pt.
+<images/Ex_Hy.jpg, id=65, 232.87pt x 124.465pt>
+File: images/Ex_Hy.jpg Graphic file (type jpg)
+<use images/Ex_Hy.jpg>
+Package pdftex.def Info: images/Ex_Hy.jpg  used on input line 302.
+(pdftex.def)             Requested size: 142.26378pt x 76.03938pt.
+
+LaTeX Warning: Citation `Rumpf2020.1' on page 8 undefined on input line 303.
+
+
+LaTeX Warning: Citation `Rumpf2020.1' on page 8 undefined on input line 303.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[8 <./images/Yee cell.png> <./images/Ey_Hx .jpg> <./images/Ex_Hy.jpg>]
+
+LaTeX Warning: Citation `Rumpf2014' on page 9 undefined on input line 327.
+
+
+LaTeX Warning: Citation `Houle2019' on page 9 undefined on input line 327.
+
+
+LaTeX Warning: Citation `Rumpf082014' on page 9 undefined on input line 327.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[9]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[10]
+
+LaTeX Warning: Citation `Rumpf082014' on page 11 undefined on input line 414.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[11]
+
+LaTeX Warning: Citation `Rumpf082014' on page 12 undefined on input line 422.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[12]
+Chapter 3.
+
+LaTeX Warning: Citation `Poirel2018' on page 13 undefined on input line 433.
+
+
+LaTeX Warning: Citation `Smith1996' on page 13 undefined on input line 433.
+
+
+LaTeX Warning: Citation `Edelman2009' on page 13 undefined on input line 433.
+
+
+LaTeX Warning: Citation `Edelman2009' on page 13 undefined on input line 435.
+
+
+LaTeX Warning: Citation `Edelman2009' on page 13 undefined on input line 439.
+
+
+LaTeX Warning: Citation `Dolean2021' on page 13 undefined on input line 439.
+
+
+LaTeX Warning: Citation `Maroudas2015' on page 13 undefined on input line 439.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[13
+
+
+]
+
+LaTeX Warning: Citation `Tezaur2017' on page 14 undefined on input line 477.
+
+
+LaTeX Warning: Citation `Tezaur2017' on page 14 undefined on input line 477.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 481--482
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[14]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[15]
+Chapter 4.
+
+LaTeX Warning: Citation `Courant1928' on page 16 undefined on input line 522.
+
+
+LaTeX Warning: Citation `Taflove2005' on page 16 undefined on input line 522.
+
+
+LaTeX Warning: Citation `Yee1966' on page 16 undefined on input line 522.
+
+
+LaTeX Warning: Citation `Taflove1980' on page 16 undefined on input line 522.
+
+
+LaTeX Warning: Citation `Taflove2005' on page 16 undefined on input line 522.
+
+
+LaTeX Warning: Citation `Huang2020' on page 16 undefined on input line 522.
+
+
+LaTeX Warning: Citation `Thomson2020' on page 16 undefined on input line 522.
+
+
+LaTeX Warning: Citation `Algarni2020' on page 16 undefined on input line 522.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 527--528
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 529--530
+
+ []
+
+
+LaTeX Warning: Citation `Logan2012' on page 16 undefined on input line 531.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[16
+
+
+]
+
+LaTeX Warning: Citation `Logan2012' on page 17 undefined on input line 533.
+
+
+LaTeX Warning: Citation `Logan2012' on page 17 undefined on input line 533.
+
+
+LaTeX Warning: Citation `Yee1966' on page 17 undefined on input line 533.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 533--534
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 535--536
+
+ []
+
+
+LaTeX Warning: Citation `Arvas2012' on page 17 undefined on input line 537.
+
+
+LaTeX Warning: Citation `Costabel' on page 17 undefined on input line 537.
+
+
+LaTeX Warning: Citation `Katsikadelis2002' on page 17 undefined on input line 5
+39.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 539--540
+
+ []
+
+
+LaTeX Warning: Citation `Taflove2005' on page 17 undefined on input line 542.
+
+
+LaTeX Warning: Citation `Ahmad2016' on page 17 undefined on input line 555.
+
+
+LaTeX Warning: Citation `Liu2011' on page 17 undefined on input line 555.
+
+
+LaTeX Warning: Citation `Kim2016' on page 17 undefined on input line 555.
+
+
+LaTeX Warning: Citation `Ahmad2016' on page 17 undefined on input line 555.
+
+
+LaTeX Warning: Citation `Liu2011' on page 17 undefined on input line 555.
+
+
+LaTeX Warning: Citation `Kim2016' on page 17 undefined on input line 555.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[17]
+Underfull \hbox (badness 10000) in paragraph at lines 561--562
+
+ []
+
+
+LaTeX Warning: Citation `Yee1966' on page 18 undefined on input line 565.
+
+
+LaTeX Warning: Citation `Liu2011' on page 18 undefined on input line 570.
+
+
+LaTeX Warning: Citation `Aono2010' on page 18 undefined on input line 570.
+
+
+LaTeX Warning: Citation `Garcia2006' on page 18 undefined on input line 570.
+
+
+LaTeX Warning: Citation `Namiki1999' on page 18 undefined on input line 570.
+
+
+LaTeX Warning: Citation `Kim2016' on page 18 undefined on input line 570.
+
+
+LaTeX Warning: Citation `Ahmad2016' on page 18 undefined on input line 570.
+
+
+LaTeX Warning: Citation `Houle2019' on page 18 undefined on input line 570.
+
+
+LaTeX Warning: Citation `Rumpf082014' on page 18 undefined on input line 570.
+
+
+LaTeX Warning: Citation `Taflove2005' on page 18 undefined on input line 570.
+
+
+LaTeX Warning: Citation `Elsherbeni2015' on page 18 undefined on input line 570
+.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 570--571
+
+ []
+
+
+LaTeX Warning: Citation `Song2018' on page 18 undefined on input line 577.
+
+
+LaTeX Warning: Citation `Feng2021' on page 18 undefined on input line 577.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[18]
+
+LaTeX Warning: Citation `Catarinucci2005' on page 19 undefined on input line 58
+0.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 582--583
+
+ []
+
+
+LaTeX Warning: Citation `Ahmad2016' on page 19 undefined on input line 586.
+
+
+LaTeX Warning: Citation `Liu2011' on page 19 undefined on input line 586.
+
+
+LaTeX Warning: Citation `Kim2016' on page 19 undefined on input line 586.
+
+
+LaTeX Warning: Citation `Costa2007' on page 19 undefined on input line 586.
+
+
+LaTeX Warning: Citation `Abboud2008' on page 19 undefined on input line 593.
+
+
+LaTeX Warning: Citation `Liu2011' on page 19 undefined on input line 593.
+
+
+LaTeX Warning: Citation `Ahmad2016' on page 19 undefined on input line 593.
+
+
+LaTeX Warning: Citation `Ramadan2017' on page 19 undefined on input line 593.
+
+
+LaTeX Warning: Citation `Hanawa2007' on page 19 undefined on input line 593.
+
+
+LaTeX Warning: Citation `Luo2020' on page 19 undefined on input line 593.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[19]
+
+LaTeX Warning: Citation `Yu2009' on page 20 undefined on input line 600.
+
+
+LaTeX Warning: Citation `Ciamulski2008' on page 20 undefined on input line 600.
+
+
+
+LaTeX Warning: Citation `Ciamulski2007' on page 20 undefined on input line 600.
+
+
+<images/SM_DM.png, id=108, 441.8106pt x 194.4063pt>
+File: images/SM_DM.png Graphic file (type png)
+<use images/SM_DM.png>
+Package pdftex.def Info: images/SM_DM.png  used on input line 604.
+(pdftex.def)             Requested size: 441.80951pt x 194.4058pt.
+
+LaTeX Warning: Citation `Busseuil2010' on page 20 undefined on input line 605.
+
+
+LaTeX Warning: Citation `Busseuil2010' on page 20 undefined on input line 605.
+
+
+LaTeX Warning: Citation `Busseuil2010' on page 20 undefined on input line 609.
+
+
+LaTeX Warning: Citation `Ciamulski2007' on page 20 undefined on input line 609.
+
+
+
+LaTeX Warning: Citation `Luo2020' on page 20 undefined on input line 611.
+
+
+LaTeX Warning: Citation `Zheng2016' on page 20 undefined on input line 611.
+
+
+LaTeX Warning: Citation `Tan2018' on page 20 undefined on input line 611.
+
+
+LaTeX Warning: Citation `Yu2009' on page 20 undefined on input line 611.
+
+
+LaTeX Warning: Citation `Ciamulski2007' on page 20 undefined on input line 611.
+
+
+
+LaTeX Warning: Citation `Yan2010' on page 20 undefined on input line 611.
+
+
+LaTeX Warning: Citation `Karniadakis2003' on page 20 undefined on input line 61
+1.
+
+
+LaTeX Warning: Citation `Yan2010' on page 20 undefined on input line 611.
+
+
+LaTeX Warning: Citation `Yan2010' on page 20 undefined on input line 611.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[20 <./images/SM_DM.png (PNG copy)>]
+
+LaTeX Warning: Citation `Luo2020' on page 21 undefined on input line 613.
+
+
+LaTeX Warning: Citation `Ramadan2017' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Luo2020' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Zheng2016' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Yan2010' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Lin2013' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Yuan2011' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Ramadan2017' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Zhang2008' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Li2009' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Hanawa2007' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Hanawa2005' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Yu2005' on page 21 undefined on input line 618.
+
+
+LaTeX Warning: Citation `Ramadan2017' on page 21 undefined on input line 620.
+
+
+LaTeX Warning: Citation `Yan2010' on page 21 undefined on input line 620.
+
+
+LaTeX Warning: Citation `Zhang2008' on page 21 undefined on input line 620.
+
+
+LaTeX Warning: Citation `Yu2005' on page 21 undefined on input line 620.
+
+
+LaTeX Warning: Citation `Dong2005' on page 21 undefined on input line 620.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[21]
+
+LaTeX Warning: Citation `Ramadan2017' on page 22 undefined on input line 623.
+
+
+LaTeX Warning: Citation `Luo2020' on page 22 undefined on input line 623.
+
+
+LaTeX Warning: Citation `Zheng2016' on page 22 undefined on input line 623.
+
+
+LaTeX Warning: Citation `Lin2013' on page 22 undefined on input line 623.
+
+
+LaTeX Warning: Citation `Yuan2011' on page 22 undefined on input line 623.
+
+
+LaTeX Warning: Citation `Li2009' on page 22 undefined on input line 623.
+
+
+LaTeX Warning: Citation `Yu2005' on page 22 undefined on input line 623.
+
+
+LaTeX Warning: Citation `Hanawa2007' on page 22 undefined on input line 623.
+
+
+LaTeX Warning: Citation `Ciamulski2008' on page 22 undefined on input line 623.
+
+
+
+LaTeX Warning: Citation `Yuan2011' on page 22 undefined on input line 623.
+
+
+LaTeX Warning: Citation `Tezaur2017' on page 22 undefined on input line 632.
+
+
+LaTeX Warning: Citation `Gnilenko2017' on page 22 undefined on input line 634.
+
+
+LaTeX Warning: Citation `KhattriDDM' on page 22 undefined on input line 634.
+
+
+LaTeX Warning: Citation `Li2020' on page 22 undefined on input line 634.
+
+
+LaTeX Warning: Citation `Spiteri2003' on page 22 undefined on input line 634.
+
+
+LaTeX Warning: Citation `Gnatyuk2015' on page 22 undefined on input line 634.
+
+
+LaTeX Warning: Citation `Gnilenko2017' on page 22 undefined on input line 634.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[22]
+
+LaTeX Warning: Citation `Mell2011' on page 23 undefined on input line 644.
+
+
+LaTeX Warning: Citation `IBM2019' on page 23 undefined on input line 644.
+
+
+LaTeX Warning: Citation `EC22021' on page 23 undefined on input line 646.
+
+
+LaTeX Warning: Citation `ComputeEngine' on page 23 undefined on input line 646.
+
+
+
+LaTeX Warning: Citation `AzureVM' on page 23 undefined on input line 646.
+
+
+LaTeX Warning: Citation `Srirama2010' on page 23 undefined on input line 648.
+
+
+LaTeX Warning: Citation `Lin2013' on page 23 undefined on input line 652.
+
+
+LaTeX Warning: Citation `Gope2011' on page 23 undefined on input line 652.
+
+
+LaTeX Warning: Citation `McDonald2013' on page 23 undefined on input line 652.
+
+
+LaTeX Warning: Citation `Tan2018' on page 23 undefined on input line 652.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[23]
+
+LaTeX Warning: Citation `McDonald2013' on page 24 undefined on input line 654.
+
+
+LaTeX Warning: Citation `Tan2018' on page 24 undefined on input line 654.
+
+
+LaTeX Warning: Citation `Gope2011' on page 24 undefined on input line 654.
+
+
+LaTeX Warning: Citation `Lin2013' on page 24 undefined on input line 654.
+
+
+LaTeX Warning: Citation `McDonald2013' on page 24 undefined on input line 654.
+
+
+LaTeX Warning: Citation `Tan2018' on page 24 undefined on input line 654.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[24]
+Chapter 5.
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[25
+
+
+]
+
+LaTeX Warning: Citation `Rumpf2014' on page 26 undefined on input line 701.
+
+
+LaTeX Warning: Citation `Tezaur2017' on page 26 undefined on input line 725.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[26]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[27]
+Chapter 6.
+
+LaTeX Warning: Citation `Ramadan2017' on page 28 undefined on input line 901.
+
+
+LaTeX Warning: Citation `Ciamulski2008' on page 28 undefined on input line 901.
+
+
+
+LaTeX Warning: Citation `Luo2020' on page 28 undefined on input line 901.
+
+
+LaTeX Warning: Citation `Li2009' on page 28 undefined on input line 901.
+
+
+LaTeX Warning: Citation `Gedney1994' on page 28 undefined on input line 901.
+
+
+LaTeX Warning: Citation `McDonald2013' on page 28 undefined on input line 901.
+
+
+Overfull \hbox (16.92426pt too wide) in paragraph at lines 907--1064
+ [][] 
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[28
+
+
+]
+Overfull \vbox (28.6146pt too high) has occurred while \output is active []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[29]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[30]
+Underfull \hbox (badness 10000) in paragraph at lines 1099--1100
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1102--1105
+
+ []
+
+<images/different_medias.png, id=144, 828.09375pt x 111.41624pt>
+File: images/different_medias.png Graphic file (type png)
+<use images/different_medias.png>
+Package pdftex.def Info: images/different_medias.png  used on input line 1109.
+(pdftex.def)             Requested size: 466.8636pt x 62.81598pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 1114--1115
+
+ []
+
+<images/bragg_gratings.png, id=145, 1267.73625pt x 198.7425pt>
+File: images/bragg_gratings.png Graphic file (type png)
+<use images/bragg_gratings.png>
+Package pdftex.def Info: images/bragg_gratings.png  used on input line 1121.
+(pdftex.def)             Requested size: 466.8636pt x 73.18785pt.
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[31 <./images/different_medias.png (PNG copy)>]
+
+LaTeX Warning: Citation `Rumpf092014' on page 32 undefined on input line 1126.
+
+
+LaTeX Warning: Citation `Allil2017' on page 32 undefined on input line 1126.
+
+
+LaTeX Warning: Citation `Tamimi2020' on page 32 undefined on input line 1159.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[32 <./images/bragg_gratings.png (PNG copy)>]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[33]
+
+LaTeX Warning: Citation `Rumpf082014' on page 34 undefined on input line 1237.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1237--1238
+
+ []
+
+
+LaTeX Warning: Citation `Rumpf082014' on page 34 undefined on input line 1241.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[34]
+
+LaTeX Warning: Citation `Elsherbeni2015' on page 35 undefined on input line 124
+9.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1257--1258
+
+ []
+
+
+LaTeX Warning: Citation `Rumpf062014' on page 35 undefined on input line 1264.
+
+
+LaTeX Warning: Citation `Rumpf062014' on page 35 undefined on input line 1271.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[35]
+Underfull \hbox (badness 10000) in paragraph at lines 1280--1281
+
+ []
+
+
+LaTeX Warning: Citation `Elsherbeni2015' on page 36 undefined on input line 129
+4.
+
+
+LaTeX Warning: Citation `Inan2011' on page 36 undefined on input line 1294.
+
+
+LaTeX Warning: Citation `Rumpf062014' on page 36 undefined on input line 1294.
+
+
+LaTeX Warning: Citation `Houle2019' on page 36 undefined on input line 1294.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1294--1295
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[36]
+Underfull \hbox (badness 10000) in paragraph at lines 1296--1298
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1299--1301
+
+ []
+
+
+LaTeX Warning: Citation `Rumpf072014' on page 37 undefined on input line 1302.
+
+<images/layout_computational_domain.png, id=165, 882.6576pt x 404.2302pt>
+File: images/layout_computational_domain.png Graphic file (type png)
+<use images/layout_computational_domain.png>
+Package pdftex.def Info: images/layout_computational_domain.png  used on input 
+line 1306.
+(pdftex.def)             Requested size: 466.8636pt x 213.81538pt.
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[37 <./images/layout_computational_domain.png (PNG copy)>]
+Underfull \hbox (badness 10000) in paragraph at lines 1313--1314
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[38]
+Underfull \hbox (badness 10000) in paragraph at lines 1348--1349
+
+ []
+
+
+LaTeX Warning: Citation `Rumpf062014' on page 39 undefined on input line 1354.
+
+
+LaTeX Warning: Citation `Houle2019' on page 39 undefined on input line 1354.
+
+
+LaTeX Warning: Citation `Rumpf062014' on page 39 undefined on input line 1354.
+
+
+LaTeX Warning: Citation `Houle2019' on page 39 undefined on input line 1356.
+
+
+LaTeX Warning: Citation `Rumpf062014' on page 39 undefined on input line 1356.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[39]
+
+LaTeX Warning: Citation `Weik2001' on page 40 undefined on input line 1379.
+
+
+LaTeX Warning: Citation `Ramadan2017' on page 40 undefined on input line 1379.
+
+
+LaTeX Warning: Citation `Ahmad2016' on page 40 undefined on input line 1379.
+
+
+LaTeX Warning: Citation `Liu2011' on page 40 undefined on input line 1379.
+
+
+LaTeX Warning: Citation `Kim2016' on page 40 undefined on input line 1379.
+
+
+LaTeX Warning: Citation `Li2009' on page 40 undefined on input line 1379.
+
+
+LaTeX Warning: Citation `McDonald2013' on page 40 undefined on input line 1379.
+
+
+
+LaTeX Warning: Citation `Bao2017' on page 40 undefined on input line 1379.
+
+
+LaTeX Warning: Citation `Rumpf062014' on page 40 undefined on input line 1386.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[40]
+
+LaTeX Warning: Citation `Rumpf062014' on page 41 undefined on input line 1396.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1396--1397
+
+ []
+
+
+LaTeX Warning: Citation `Rumpf102014' on page 41 undefined on input line 1401.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[41]
+Underfull \hbox (badness 10000) in paragraph at lines 1420--1421
+
+ []
+
+
+LaTeX Warning: Citation `Rumpf072014' on page 42 undefined on input line 1432.
+
+
+LaTeX Warning: Citation `Zhaoyang2012' on page 42 undefined on input line 1432.
+
+
+
+LaTeX Warning: Citation `Houle2019' on page 42 undefined on input line 1434.
+
+
+LaTeX Warning: Citation `Rumpf072014' on page 42 undefined on input line 1434.
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[42]
+
+LaTeX Warning: Citation `Rumpf072014' on page 43 undefined on input line 1441.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1444--1445
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1449--1450
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[43]
+
+LaTeX Warning: Citation `Dolean2021' on page 44 undefined on input line 1454.
+
+
+LaTeX Warning: Citation `Poirel2018' on page 44 undefined on input line 1454.
+
+
+LaTeX Warning: Citation `KhattriDDM' on page 44 undefined on input line 1454.
+
+
+LaTeX Warning: Citation `Li2020' on page 44 undefined on input line 1454.
+
+
+LaTeX Warning: Citation `Mota2017' on page 44 undefined on input line 1454.
+
+
+LaTeX Warning: Citation `Luque2018' on page 44 undefined on input line 1454.
+
+
+LaTeX Warning: Citation `Kim2017' on page 44 undefined on input line 1454.
+
+
+LaTeX Warning: Citation `Borchardt2020' on page 44 undefined on input line 1454
+.
+
+
+LaTeX Warning: Citation `atienza2020ml' on page 44 undefined on input line 1454
+.
+
+<images/subdomain_overlapping_region.png, id=190, 476.2593pt x 379.1766pt>
+File: images/subdomain_overlapping_region.png Graphic file (type png)
+<use images/subdomain_overlapping_region.png>
+Package pdftex.def Info: images/subdomain_overlapping_region.png  used on input
+ line 1467.
+(pdftex.def)             Requested size: 476.25812pt x 379.17567pt.
+
+Overfull \hbox (9.39452pt too wide) in paragraph at lines 1467--1468
+ [][] 
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[44]
+Underfull \hbox (badness 10000) in paragraph at lines 1484--1485
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[45 <./images/subdomain_overlapping_region.png (PNG copy)>]
+Underfull \hbox (badness 10000) in paragraph at lines 1515--1516
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[46]
+
+LaTeX Warning: Citation `FfmpegDocs' on page 47 undefined on input line 1529.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1529--1530
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1531--1532
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1537--1538
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[47]
+Overfull \hbox (22.16234pt too wide) in paragraph at lines 1550--1572
+ [][] 
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[48]
+Underfull \hbox (badness 10000) in paragraph at lines 1614--1615
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1619--1620
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[49]
+
+LaTeX Warning: Citation `Mota2017' on page 50 undefined on input line 1626.
+
+
+LaTeX Warning: Citation `PythonDocs' on page 50 undefined on input line 1626.
+
+
+LaTeX Warning: Citation `CppDocs' on page 50 undefined on input line 1629.
+
+
+LaTeX Warning: Citation `PythonDocs' on page 50 undefined on input line 1629.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1629--1630
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[50]
+Underfull \hbox (badness 10000) in paragraph at lines 1647--1648
+
+ []
+
+
+LaTeX Warning: Citation `Ramadan2017' on page 51 undefined on input line 1656.
+
+
+LaTeX Warning: Citation `Zheng2016' on page 51 undefined on input line 1656.
+
+
+LaTeX Warning: Citation `Lin2013' on page 51 undefined on input line 1656.
+
+
+LaTeX Warning: Citation `Hoffmann1993' on page 51 undefined on input line 1663.
+
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1665--1667
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[51]
+
+LaTeX Warning: Citation `Hoffmann1993' on page 52 undefined on input line 1678.
+
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1680--1682
+
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[52]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[53]
+Chapter 7.
+<images/no_source_prelim.jpg, id=223, 1576.9314pt x 893.2572pt>
+File: images/no_source_prelim.jpg Graphic file (type jpg)
+<use images/no_source_prelim.jpg>
+Package pdftex.def Info: images/no_source_prelim.jpg  used on input line 1708.
+(pdftex.def)             Requested size: 466.8636pt x 264.44905pt.
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[54
+
+
+]
+<images/hard_source_prelim.jpg, id=227, 1576.9314pt x 893.2572pt>
+File: images/hard_source_prelim.jpg Graphic file (type jpg)
+<use images/hard_source_prelim.jpg>
+Package pdftex.def Info: images/hard_source_prelim.jpg  used on input line 1717
+.
+(pdftex.def)             Requested size: 466.8636pt x 264.44905pt.
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[55 <./images/no_source_prelim.jpg>]
+<images/soft_source_prelim.jpg, id=232, 1576.9314pt x 893.2572pt>
+File: images/soft_source_prelim.jpg Graphic file (type jpg)
+<use images/soft_source_prelim.jpg>
+Package pdftex.def Info: images/soft_source_prelim.jpg  used on input line 1726
+.
+(pdftex.def)             Requested size: 466.8636pt x 264.44905pt.
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[56 <./images/hard_source_prelim.jpg>]
+<images/soft_source__pabc_prelim.jpg, id=236, 1576.9314pt x 893.2572pt>
+File: images/soft_source__pabc_prelim.jpg Graphic file (type jpg)
+<use images/soft_source__pabc_prelim.jpg>
+Package pdftex.def Info: images/soft_source__pabc_prelim.jpg  used on input lin
+e 1735.
+(pdftex.def)             Requested size: 466.8636pt x 264.44905pt.
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[57 <./images/soft_source_prelim.jpg>]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[58 <./images/soft_source__pabc_prelim.jpg>]
+Chapter 8.
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[59
+
+
+]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[60]
+Chapter 9.
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[61
+
+
+]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[62]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[63]
+:<+ EEE190proposalTemplate.bbl
+(./EEE190proposalTemplate.bbl
+Underfull \hbox (badness 1038) in paragraph at lines 11--16
+[][]\OT1/cmr/m/n/10.95 Raymond Rumpf.  For-mu-la-tion of one-dimensional fdtd. 
+ $[]\OT1/cmtt/m/n/10.95 https : / / empossible . net /
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 39--44
+[][]\OT1/cmr/m/n/10.95 Janvic Ma-teo.  Tech woes among top con-cerns for dis-ta
+nce learn-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 39--44
+\OT1/cmr/m/n/10.95 ing.  $[]\OT1/cmtt/m/n/10.95 https : / / www . philstar . co
+m / headlines / 2020 / 08 / 02 / 2032336 /
+ []
+
+
+Underfull \hbox (badness 7981) in paragraph at lines 46--52
+[][]\OT1/cmr/m/n/10.95 CNN Philip-pines.  Sws: Over 5 out of 10 en-rolled fil-i
+pino stu-dents use
+ []
+
+
+Underfull \hbox (badness 5908) in paragraph at lines 46--52
+\OT1/cmr/m/n/10.95 de-vices for dis-tance learn-ing.  $[]\OT1/cmtt/m/n/10.95 ht
+tps : / / www . cnnphilippines . com / news / 2021 / 3 / 2 /
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 54--60
+[][]\OT1/cmr/m/n/10.95 Sofia Ab-rogar.  Over 5,000 up stu-dents may be un-able 
+to con-tinue un-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 54--60
+\OT1/cmr/m/n/10.95 der re-mote learn-ing.  $[]\OT1/cmtt/m/n/10.95 https : / / w
+ww . tinigngplaridel . net / news / 2020 /
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[64
+
+
+]
+Underfull \hbox (badness 2134) in paragraph at lines 69--72
+[][]\OT1/cmr/m/n/10.95 Amazon Web Ser-vices.  What is cloud com-put-ing?  $[]\O
+T1/cmtt/m/n/10.95 https : / / aws . amazon . com /
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[65]
+Underfull \hbox (badness 10000) in paragraph at lines 152--157
+\OT1/cmtt/m/n/10.95 www . youtube . com / watch ? v = jlPXKXKSXfs & list = PLLY
+QF5WvJdJWoU9uEeWJ6-[]MRzDSziNnGt &
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[66]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[67]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[68]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[69]
+Underfull \hbox (badness 2875) in paragraph at lines 459--463
+[][]\OT1/cmr/m/n/10.95 IBM.  Iaas (infrastructure-as-a-service).  $[]\OT1/cmtt/
+m/n/10.95 https : / / www . ibm . com / cloud / learn / iaas #
+ []
+
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[70]
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[71]
+Underfull \hbox (badness 3965) in paragraph at lines 603--606
+[][]\OT1/cmr/m/n/10.95 The FFm-peg de-vel-op-ers.  Stream se-lec-tion.  $[]\OT1
+/cmtt/m/n/10.95 https : / / ffmpeg . org / ffmpeg . html #
+ []
+
+
+Underfull \hbox (badness 2435) in paragraph at lines 613--616
+[][]\OT1/cmr/m/n/10.95 The C++ Re-sources Net-work.  std::numeric[]limits.  $[]
+\OT1/cmtt/m/n/10.95 https : / / www . cplusplus . com /
+ []
+
+)
+:<-
+
+Overfull \vbox (7.05666pt too high) has occurred while \output is active []
+
+
+[72] (./EEE190proposalTemplate.aux)
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 40440 strings out of 481239
+ 1054452 string characters out of 5920376
+ 1570835 words of memory out of 5000000
+ 55123 multiletter control sequences out of 15000+600000
+ 542795 words of font info for 60 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 69i,17n,98p,1381b,1018s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/
+public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
+r6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><
+/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/sha
+re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/share/tex
+live/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/share/texlive
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/f
+onts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmtt10.pfb>
+Output written on EEE190proposalTemplate.pdf (78 pages, 2847764 bytes).
+PDF statistics:
+ 355 PDF objects out of 1000 (max. 8388607)
+ 238 compressed objects within 3 object streams
+ 0 named destinations out of 1000 (max. 500000)
+ 78 words of extra memory for PDF output out of 10000 (max. 10000000)
+
