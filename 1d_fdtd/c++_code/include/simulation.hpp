@@ -806,12 +806,14 @@ class Simulation
             Meaning, all of the pre-processing for both serial and parallel versions are done in this method.
             The only data transferred to the subdomain class are the simulation parameters and the
             computational domain vectors
-            
             */
+
             unsigned long int row = sim_param.Nt;
             unsigned long int col = sim_param.Nz;
             
             cout << "Multithread: " << sim_param.multithread << " | Algorithm: " << sim_param.algorithm << endl;
+
+
             //FDTD Basic Version (Serial)
             if(sim_param.algorithm == "fdtd")
             {
@@ -1028,7 +1030,6 @@ class Simulation
             return 1;
 
         }
-
 
 
         int compute_source()
@@ -1369,7 +1370,7 @@ class Simulation
             return output;
         }
 
-        //FDTD Schwarz 
+        //FDTD-Schwarz 
         void simulate_fdtd_schwarz(string direction = "right",string boundary_condition = "", string excitation = "")
         {
             cout << "==========================================================" << endl;
@@ -1536,6 +1537,7 @@ class Simulation
                 {
                     //Similar to the old algorithm but the FDTD time loop is inside the convergence loop...
                     //Loop the FDTD-Schwarz until the data has converged...
+
                     unsigned int numLoops = 0; //Used to count the number of while loop repeats
                     bool isConverged = false;
                     while(isConverged == false)
@@ -1549,11 +1551,11 @@ class Simulation
                         numLoops++;
 
                         //FDTD Time Loop
-                        for(int curr_iter=0;curr_iter < sim_param.Nt/5;curr_iter++)
+                        for(int curr_iter=0; curr_iter < sim_param.Nt/5; curr_iter++)
                         {
                             //Iterate through the subdomain objects...
                             //While loop and dependent on the return value of the convergence function...
-                            for(int subdom_index=0;subdom_index<sim_param.num_subdomains;subdom_index++)
+                            for(int subdom_index=0; subdom_index < sim_param.num_subdomains; subdom_index++)
                             {
                                 //Transfer ghost cells here
                                 /*
@@ -1646,8 +1648,10 @@ class Simulation
 
                         //Check for convergence here....
                         //cout << "Checking for convergence..." << endl;
+
                         isConverged = check_convergence(); 
                         cout << "Convergence after the FDTD-Schwarz Loop: " << isConverged << endl;
+
                         //Continue the loop if not converged...
                         cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
                     }
@@ -1659,11 +1663,12 @@ class Simulation
 
 
                 }
+
                 /*
-                                    * Wait for all subdomain to finish before going here.
-                                    * In this way, we can use the left or right direction in openMP since
-                                    * this guarantees that all subdomains MUST BE FINISHED BEFORE executing the method below
-                                    */
+                Wait for all subdomain to finish before going here.
+                In this way, we can use the left or right direction in openMP since
+                this guarantees that all subdomains MUST BE FINISHED BEFORE executing the method below
+                */
             }
             else if(sim_param.multithread == true)
             {
@@ -1773,6 +1778,7 @@ class Simulation
         {
             bool isConverged = false;
             //cout << "Subtracting the overlapping values and getting the L2 norm" << endl;
+
             // Subtracts the two vectors (A - B) and gets the norm; checks each element if <= epsilon
             
             // Initialize the xtensors of errors based on the num_subdomains -1
