@@ -1537,7 +1537,7 @@ class Simulation
                     //Similar to the old algorithm but the FDTD time loop is inside the convergence loop...
                     //Loop the FDTD-Schwarz until the data has converged...
                     unsigned int numLoops = 0; //Used to count the number of while loop repeats
-                     bool isConverged = false;
+                    bool isConverged = false;
                     while(isConverged == false)
                     {
 
@@ -1547,6 +1547,7 @@ class Simulation
                             update_sim_param(init_N_lambda + numLoops, init_N_d + numLoops);
                         }
                         numLoops++;
+
                         //FDTD Time Loop
                         for(int curr_iter=0;curr_iter < sim_param.Nt/5;curr_iter++)
                         {
@@ -1587,64 +1588,62 @@ class Simulation
                                 //view(subdomains[subdom_index].s_fields.H,all()) = linspace<double>(1,26,26)+ subdom_index;
                                 
                             }
-                            //Transfer boundary data ONLY when the subdomains have finished updating the fields
-                            for(int subdom_index=0;subdom_index < sim_param.num_subdomains; subdom_index++)
-                            {
-                    
-                                //Toggle here if you want the direction to be left or right in transferring the boundary data...
-                                if (direction == "right")
-                                {
+                        }
 
-                                    if(subdom_index == sim_param.num_subdomains -1)
-                                    {
-                                        //Skip the last subdomain (since there is no adjacent subdomain in the right side)
-                                        //cout << "Skipping this subdomain..." << endl;
-                                        continue;
-                                    }
-                                    cout << "|-------";
-                                    cout << "Current subdomain: " << subdom_index +1 << endl;
-                                    //Transfer the internal boundary data of the adjacent subdomains here....
-                                    cout << "----> Current field values (before transferring boundary data):" << endl 
-                                    << "E: " << subdomains[subdom_index].s_fields.E << endl
-                                    << "H: " << subdomains[subdom_index].s_fields.H << endl;
-                                    cout << "|-------";
-                                    cout << "Adjacent subdomain: " << subdom_index +2 << endl;
-                                    //Transfer the internal boundary data of the adjacent subdomains here....
-                                    cout << "----> Current field values (before transferring boundary data):" << endl 
-                                    << "E: " << subdomains[subdom_index+1].s_fields.E << endl
-                                    << "H: " << subdomains[subdom_index+1].s_fields.H << endl;
-                                    //cout << "Transferring boundary data..." << endl;
-                                    subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index + 1],direction,method);
-
-                                    cout << "|-------";
-                                    cout << "Current subdomain: " << subdom_index +1 << endl;
-                                    cout << "----> Current field values (after transferring boundary data):" << endl 
-                                    << "E: " << subdomains[subdom_index].s_fields.E << endl
-                                    << "H: " << subdomains[subdom_index].s_fields.H << endl;
-                                    cout << "|-------";
-                                    cout << "Adjacent subdomain: " << subdom_index +2 << endl;
-                                    //Transfer the internal boundary data of the adjacent subdomains here....
-                                    cout << "----> Current field values (after transferring boundary data):" << endl 
-                                    << "E: " << subdomains[subdom_index+1].s_fields.E << endl
-                                    << "H: " << subdomains[subdom_index+1].s_fields.H << endl;
-                                }
-                                else if(direction == "left")
-                                {
-
-                                    if(subdom_index == 0)
-                                    {   
-                                        //Skip the first subdomain (since there is no adjacent subdomain in the left side)
-                                        continue;
-                                    }
-                                    //cout << "Transferring boundary data..." << endl;
-                                    subdomains[subdom_index].transfer_boundary_data(subdomains[subdom_index - 1],direction,method);
-                                    //cout << "Successfully transferred boundary data!" << endl;
-                                }
+                        //Transfer boundary data ONLY when the FDTD algorithm is done
+                        for(int subdom_index=0;subdom_index < sim_param.num_subdomains; subdom_index++)
+                        {
                             
+                            /*
+                                Transferring the boundary data of each 2D matrices of the subdomains
+                                Left side index = overlap - 1 (since index starts at 0)
+                                Right side index = Subdom size - overlap
+                                Convention: We will always GET the data from the RIGHT ADJACENT SUBDOMAIN so the last subdomain is not included
+                            */
+                           if (subdom_index < sim_param.num_subdomains -1) //Ignore the last subdomain...
+                            {
+                                
+                                // For the Electric field....
+                                xtensor<double,1> buffer_E_curr = col(subdomains[subdom_index].s_fields.E, sim_param.subdomain_size - sim_param.overlap_size );
+                                xtensor<double,1> buffer_E_right = col(subdomains[subdom_index + 1].s_fields.E, sim_param.overlap_size - 1 );
+
+                                // Transfer the field values 
+                                view(subdomains[subdom_index].s_fields.E,all(),sim_param.subdomain_size - sim_param.overlap_size) = view(subdomains[subdom_index + 1].s_fields.E,all(),0);
+
+                                view(subdomains[subdom_index + 1].s_fields.E,all(),sim_param.overlap_size - 1) = view(subdomains[subdom_index].s_fields.E,all(),-1);
+
+
+                                view(subdomains[subdom_index].s_fields.E,all(),-1) = buffer_E_right;
+
+                                view(subdomains[subdom_index + 1].s_fields.E,all(),0) = buffer_E_curr;
+                                
+
+                                // For the Magnetic field....
+                                xtensor<double,1> buffer_H_curr = col(subdomains[subdom_index].s_fields.H, sim_param.subdomain_size - sim_param.overlap_size );
+                                xtensor<double,1> buffer_H_right = col(subdomains[subdom_index + 1].s_fields.H, sim_param.overlap_size - 1 );
+
+                                // Transfer the field values 
+                                view(subdomains[subdom_index].s_fields.H,all(),sim_param.subdomain_size - sim_param.overlap_size) = view(subdomains[subdom_index + 1].s_fields.H,all(),0);
+
+                                view(subdomains[subdom_index + 1].s_fields.H,all(),sim_param.overlap_size - 1) = view(subdomains[subdom_index].s_fields.H,all(),-1);
+
+
+                                view(subdomains[subdom_index].s_fields.H,all(),-1) = buffer_E_right;
+
+                                view(subdomains[subdom_index + 1].s_fields.H,all(),0) = buffer_E_curr;
+                                
+
+
+
                             }
                             
-                            
+                           
+                        
                         }
+
+
+
+
                         //Check for convergence here....
                         //cout << "Checking for convergence..." << endl;
                         isConverged = check_convergence(); 
@@ -1772,64 +1771,36 @@ class Simulation
 
         bool check_convergence()
         {
-            // Initialize matrices of overlapping region values 
-           // cout << "Initializing overlaping region buffers..." << endl;
-            xtensor<double,2> A_E = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size}); 
-            xtensor<double,2> B_E = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size});
-            xtensor<double,2> A_H = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size}); 
-            xtensor<double,2> B_H = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size});
-
-            // Initialize matrices that will store (A - B)
-            xtensor<double,2> E_sub = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size});
-            xtensor<double,2> H_sub = zeros<double>({sim_param.num_subdomains-1, sim_param.overlap_size});
-
-            // Initialize error vectors
-            xtensor<double,1> E_error = zeros<double>({sim_param.num_subdomains-1}); 
-            xtensor<double,1> H_error = zeros<double>({sim_param.num_subdomains-1});
-
-            // Initialize a vector that will store the truth values for each comparison
-            xtensor<bool,1> truth_vec;
-            truth_vec.resize({sim_param.num_subdomains-1}); 
-
-            bool isConverged = true; 
-
-            /* 
-            Gets the values of the CURRENT subdomain's RIGHT overlapping region and the  
-            NEXT subdomain's LEFT overlapping region
-             */ 
-            //cout << "Getting the values in the overlapping regions" << endl;
-            for(int count =  0; count < sim_param.num_subdomains-1; count++)
-            {
-                row(A_E, count) = subdomains[count].getOverlapValues('E',"right");
-                row(A_H, count) = subdomains[count].getOverlapValues('H',"right");
-
-                row(B_E, count) = subdomains[count + 1].getOverlapValues('E', "left"); 
-                row(B_H, count) = subdomains[count + 1].getOverlapValues('H', "left");
-            }
+            bool isConverged = false;
             //cout << "Subtracting the overlapping values and getting the L2 norm" << endl;
             // Subtracts the two vectors (A - B) and gets the norm; checks each element if <= epsilon
-            for(int n =  0; n < sim_param.num_subdomains-1; n++)
+            
+            // Initialize the xtensors of errors based on the num_subdomains -1
+            output.E_error = zeros<double>({sim_param.num_subdomains - 1})
+            output.H_error = zeros<double>({sim_param.num_subdomains - 1})
+
+            
+            for(int subdom_index=0; subdom_index < sim_param.num_subdomains-1; subdom_index++)
             {
-                view(E_sub, n, all()) = view(A_E, n, all()) - view(B_E, n, all()); 
-                view(H_sub, n, all()) = view(A_H, n, all()) - view(B_H, n, all()); 
 
-                E_error(n) = linalg::norm(view(E_sub, n, all()),2); 
-                H_error(n) = linalg::norm(view(H_sub, n, all()),2);  
+                xtensor<double,2> E_sub = view(subdomains[subdom_index].s_fields.E,all(),range(sim_param.subdomain_size-sim_param.overlap_size,_)) - view(subdomains[subdom_index + 1].s_fields.E,all(),range(_,sim_param.overlap_size));
+                xtensor<double,2> H_sub = view(subdomains[subdom_index].s_fields.H,all(),range(sim_param.subdomain_size-sim_param.overlap_size,_)) - view(subdomains[subdom_index + 1].s_fields.H,all(),range(_,sim_param.overlap_size));
+               
+              
+                // Get the errors by saving into a 1D array
+                output.E_error(subdom_index) = (linalg::norm(E_sub,2)); 
+                output.H_error(subdom_index) = (linalg::norm(H_sub,2));  
 
-                if (E_error(n) <= numeric_limits<double>::epsilon() && 
-                    H_error(n) <= numeric_limits<double>::epsilon()   )
-                {
-                    truth_vec(n) = true; 
-                } else
-                {
-                    truth_vec(n) = false; 
-                }  
-
-                if (truth_vec(n) == false)
-                {
-                    isConverged = false; 
-                }
+                
+              
             }
+
+            // Save the error tensor into the 2D save matrix
+            output.E_error_list = vstack(xtuple(output.E_error_list,atleast_2d(output.E_error)));
+            output.H_error_list = vstack(xtuple(output.H_error_list,atleast_2d(output.H_error)));
+
+            // Check the convergence here by using the determined error threshold
+
             return isConverged;
         }
 

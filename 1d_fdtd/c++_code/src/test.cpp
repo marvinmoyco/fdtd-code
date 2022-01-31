@@ -155,25 +155,57 @@ bool check_convergence()
 int main()
 {
 
-    xtensor<double,1> A = linspace(0,10,11);
-    cout << view(A,all()) << endl;
-    cout << view(A,range(0,-2)) << endl;
-    cout << view(A,range(1,-1)) << endl;
-    cout << view(A,range(1,_)) << endl;
-    view(A,range(-1,_)) = 99.9;
-    cout << view(A,all()) << endl;
-    // cout << view(A, 0, all()) - view(B, 0, all()) << endl;
-    // cout << B << endl; 
-    cout << view(A,range(0,A.shape(0)));
-    cout << A.shape(0) << "  " << A.size() << endl;
-    //bool isConverged; 
-    //isConverged = check_convergence(); 
-    //cout << check_convergence() << endl; 
+    int overlap_size = 3;
+    int subdomain_size = 8;
+    xtensor<double,2> X = zeros<double>({2,8});
+    xtensor<double,2> Y = zeros<double>({2,8});
+    
+    view(X,all(),all()) = 99.999;
+    view(Y,all(),all()) = 44.444;
+
+    cout << X << endl;
+
+    cout << Y << endl;
+
+    xtensor<double,1> bufferY = col(Y,overlap_size - 1);
+    xtensor<double,1> bufferX = col(X,subdomain_size - overlap_size);
+
+    cout << "Buffer values:" << endl;
+
+    cout << bufferX << endl;
+
+    cout << bufferY << endl;
+
+    cout << view(Y,all(),0).shape(0) << "," << view(Y,all(),0).shape(1) << endl;
+    cout << bufferY.shape(0) << "," << bufferY.shape(1) << endl;
+    view(Y,all(),overlap_size - 1) = view(X,all(),-1);
+
+    view(X,all(),subdomain_size - overlap_size) = view(Y,all(),0);
+
+    view(X,all(),-1) = bufferY;
+     
+    view(Y,all(),0) = bufferX;
+
+    cout << "After transferring..." << endl;
+  
+    cout << X << endl;
+
+    cout << Y << endl;
+
+    cout << "Getting Norm" << endl;
+    cout << view(X,all(),range(subdomain_size-overlap_size,_)) << endl;
+    cout << view(Y,all(),range(_,overlap_size)) << endl;
 
 
+    xtensor<double,2> Z = view(X,all(),range(subdomain_size-overlap_size,_)) - view(Y,all(),range(_,overlap_size));
+    vector<double> error;
 
-
+    error.push_back(linalg::norm(Z,2));
 
     
+     
+    cout << Z << endl;
+    
+    cout << "Computed norm: " << linalg::norm(Z,2) << endl;
     return 0;
 }

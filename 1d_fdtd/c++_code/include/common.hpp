@@ -201,6 +201,13 @@ typedef struct Save_Data{
 
     bool simulation_success = false;
 
+    xtensor<double,1> E_error;
+    xtensor<double,1> H_error;
+
+    xtensor<double,2> E_error_list;
+    xtensor<double,2> H_error_list;
+
+
     double algo_time =0;
     double overall_time = 0;
 
