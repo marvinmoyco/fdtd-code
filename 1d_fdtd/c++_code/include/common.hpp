@@ -56,10 +56,10 @@ double  mu_0 = 1.25663706212E-6;
 //Struct declarations...
 typedef struct Subdomain_data
 {
-    unsigned int subdomain_id;
-    unsigned int subdomain_size;
-    unsigned int overlap;
-    unsigned int non_overlap_size;
+    unsigned int subdomain_id = 0;
+    unsigned int subdomain_size = 0;
+    unsigned int overlap = 0;
+    unsigned int non_overlap_size = 0;
     unsigned int num_subdomains = 0;
     bool source_inject = false;
     bool preprocessed = false;
@@ -207,17 +207,21 @@ typedef struct Save_Data{
     xtensor<double,2> E_error_list;
     xtensor<double,2> H_error_list;
 
-
-    double algo_time =0;
-    double overall_time = 0;
+    //Algo time = Time duration when the algorithm (fdtd or fdtd-schwarz finishes)
+    double algo_time = 0.0;
+    
+    //Overall time - Time duration from the start of the program to the end (without the time it takes to save data)
+    double overall_time = 0.0;
 
 } save_data;
 
 typedef struct Save_Data_Subdomain{
     xtensor<double,2> E;
     xtensor<double,2> H;
-    double algo_time =0;
-    double wall_time = 0;
+
+    //Subdom time = Time duration for each subdomain to finish main action (fdtd-schwarz)
+    double subdom_time = 0.0;
+    
 
     bool simulation_success = false;
 

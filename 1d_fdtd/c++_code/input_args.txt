@@ -1,5 +1,5 @@
-dirichlet
-hard
+pabc
+tfsf
 graphene-glass1_001
 hdf5
 fdtd

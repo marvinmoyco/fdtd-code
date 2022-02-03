@@ -222,5 +222,10 @@ int main()
     cout << "Computed norm: " << linalg::norm(Z,2) << endl;
 
     cout << error_list << endl;
+
+    vector<double> v = {0.,1.,2.,3.,4.,5.};
+    auto x = adapt(v,{v.size()});
+    cout << "x: " << x << endl;
+    cout << view(Z,all(),0) << endl;
     return 0;
 }
