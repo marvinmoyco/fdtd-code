@@ -44,23 +44,9 @@ int main(int argc, char* argv[])
   {
     if(i % 500 == 0)
     {
-
-
-
-
-
-
-
       int y = i;
       cout << "Reached " << y << endl;
 
-
-
-
-
-
-
-      
     }
     sim.update_sim_param(i,i+1);
     //printing dz and dt...
@@ -82,11 +68,8 @@ int main(int argc, char* argv[])
   auto end_time = chrono::high_resolution_clock::now();
 
   chrono::duration<double, std::milli> sim_duration = end_time - start_time;
-  //Get the algo time in milliseconds
-  sim.output.algo_time = sim_duration.count();
+ 
 
-  cout << "Electric field shape: (" << output.E.shape()[0] << "," << output.E.shape()[1] << ")" << endl;
-  cout << "Magnetic field shape: (" << output.H.shape()[0] << "," << output.H.shape()[1] << ")" << endl;
 
   auto overall_end = chrono::high_resolution_clock::now();
   chrono::duration<double, std::milli> overall_duration = overall_end - overall_start;
