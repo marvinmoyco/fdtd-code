@@ -1,11 +1,11 @@
-dirichlet
-hard
+pabc
+tfsf
 simple-10_001
 hdf5
-fdtd
-1
+fdtd-schwarz
+4
 0
 5
 1
 marvin
-Simulation results of 1D FDTD Basic Algorithm for 1st device model (10 layer simple device model). 
+Simulation results of 1D FDTD-Schwarz Algorithm for 1st device model (10 layer simple device model). 

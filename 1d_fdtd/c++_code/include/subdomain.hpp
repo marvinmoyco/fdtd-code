@@ -53,10 +53,10 @@ class Subdomain
             cout << "Injection point: " << subdomain_param.injection_point << endl;
             //Initializing the fields and vectors
             
-            s_fields.E.resize(subdomain.epsilon.shape());
-            s_fields.H.resize(subdomain.epsilon.shape());
-            s_fields.m_E.resize(subdomain.epsilon.shape());
-            s_fields.m_H.resize(subdomain.epsilon.shape());
+            s_fields.E = zeros<double>(subdomain.epsilon.shape());
+            s_fields.H = zeros<double>(subdomain.epsilon.shape());
+            s_fields.m_E = zeros<double>(subdomain.epsilon.shape());
+            s_fields.m_H = zeros<double>(subdomain.epsilon.shape());
             cout << "Field shapes: " << endl;
             cout << "E shape: (" <<  s_fields.E.shape()[0] << ",) | H shape: (" << s_fields.H.shape()[0] << ",)" << endl; 
             //s_fields.m_E = (c_0*sim_param.dt)/(comp_domain.epsilon*sim_param.dz);
@@ -122,27 +122,32 @@ class Subdomain
                 //Start of the FDTD Space....
             //
             //Initialize variable indices
+            cout << " Subdom " << subdomain_param.subdomain_id  << ": " << endl;
+
+            cout << "E: " << s_fields.E << endl;
+            cout << "H: " << s_fields.H << endl;
+
             unsigned int start = 0;
             unsigned int stop = 0;
-                if(subdomain_param.subdomain_id == 0) //If the subdomain is the 1st one...
-                {
-                    start = subdomain_param.overlap;
-                    stop = s_fields.E.shape(0);
-                }
-                else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) // If it is the last..
-                {
-                    start = 0;
-                    stop = s_fields.E.shape(0) - subdomain_param.overlap;
-                }
-                else{ //If it is in between the 1st and last subdomain...
+            if(subdomain_param.subdomain_id == 0) //If the subdomain is the 1st one...
+            {
+                start = subdomain_param.overlap;
+                stop = s_fields.E.shape(0);
+            }
+            else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) // If it is the last..
+            {
+                start = 0;
+                stop = s_fields.E.shape(0) - subdomain_param.overlap;
+            }
+            else{ //If it is in between the 1st and last subdomain...
 
-                    start = 0;
-                    stop = s_fields.E.shape(0);
+                start = 0;
+                stop = s_fields.E.shape(0);
 
-                }
-                //cout << "Indices (start,stop): (" << start << "," << stop << ")" << endl;
+            }
+            //cout << "Indices (start,stop): (" << start << "," << stop << ")" << endl;
 
-            //Store boundary data for 1st subdomain...
+            // Step 1: Store boundary data for the 1st subdomain (for the external boundary data) 
             if(subdomain_param.subdomain_id == 0)
             {
                 if(boundary_condition == "pabc")
@@ -158,18 +163,16 @@ class Subdomain
                 
             }
             else{ 
-                //Use Dirichlet boundary method on all LEFT internal boundary of subdomains that
-                //are not the 1st subdomain...
-
-                //s_fields.E(start) = 0;
+                // For the left INT boundary of all subdomains except the 1st
+                // Use the ghost cells here by updating the leftmost index (0) using the update equation
+        
                 s_fields.E(start) = s_fields.E(start) + (s_fields.m_E(start)*(s_fields.H(start) - left_ghost_cell ));
             }
-            //cout << "Updating H from E..." << endl;
-            //cout << "LHS shape: " << view(s_fields.H,range(start,stop-1)).shape()[0] << " | RHS Shape: " << (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1))).shape()[0] << endl;
-            //Update H from E...
+           
+            // Step 2: Update the H vector from E
             view(s_fields.H,range(start,stop-1)) = view(s_fields.H,range(start,stop-1)) + (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1)));
 
-
+            // Step 3: Update source excitation (applicable only when the subdom is the 1st one)
             if(subdomain_param.subdomain_id == 0) //Insert the Hsrc when  you are at the 1st subdomain...
             {
                 if(subdomain_param.excitation_method == "tfsf")
@@ -180,7 +183,7 @@ class Subdomain
             }
 
 
-            //Store boundary terms at the end of the domain (last subdomain)...
+            // Step 4: Store H boundary terms
             if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
             {
                 if(subdomain_param.boundary_condition == "pabc")
@@ -197,16 +200,16 @@ class Subdomain
             }
             else
             {
-                //Use Dirichlet Method on all RIGHT internal boundary of subdomains
-                //that is not the last subdomain...
-                //s_fields.H(stop-1) = 0;
+                // For the right INT boundary of all subdomains except the last
+                // Use the ghost cells here by updating the rightmost index (n) using the update equation
+
                 s_fields.H(stop-1) = s_fields.H(stop-1) + (s_fields.m_H(stop-1)*( right_ghost_cell - s_fields.E(stop-1)));
             }
 
-            //Update E from H...
+            // Step 5: Update E from H
             view(s_fields.E,range(start+1,stop)) =  view(s_fields.E,range(start+1,stop)) + (view(s_fields.m_E,range(start+1,stop))*(view(s_fields.H,range(start+1,stop))-view(s_fields.H,range(start,stop-1))));
 
-            //Insert the Esrc component in the 1st subdomain...
+            // Step 6: Update E source excitaiton
             if(subdomain_param.subdomain_id == 0)
             {
                 if(subdomain_param.excitation_method == "hard")
@@ -229,7 +232,8 @@ class Subdomain
                 }   
             }
             
-            //Save to 2D matrix...
+            // Step 7/8: Saving the current snapshot in time in the output matrices
+       
             if(curr_iteration > 0)
             {
                 //If this is not the first iteration, use vstack to stack the data vertically
@@ -256,6 +260,7 @@ class Subdomain
             //Intermediary variable for transferring data
             double boundary_data_E[2] = {0.0,0.0}; //1st element = This subdomain, 2nd element = Adjacent subdomain
             double boundary_data_H[2] = {0.0,0.0};
+            
             if(side == "left")
             {
                  //Transfer the boundary data ONLY IF the subdomains are not the first one.
@@ -292,7 +297,7 @@ class Subdomain
                     }
                     else if(method == "new")
                     {
-                        //col(subdomain_output.E,0)
+                        //boundary_data_E[1] = subdomain_output.E
                     }
                     
                     
