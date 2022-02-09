@@ -260,6 +260,7 @@ class Subdomain
             //Intermediary variable for transferring data
             double boundary_data_E[2] = {0.0,0.0}; //1st element = This subdomain, 2nd element = Adjacent subdomain
             double boundary_data_H[2] = {0.0,0.0};
+            
             if(side == "left")
             {
                  //Transfer the boundary data ONLY IF the subdomains are not the first one.
@@ -296,7 +297,7 @@ class Subdomain
                     }
                     else if(method == "new")
                     {
-                        //col(subdomain_output.E,0)
+                        //boundary_data_E[1] = subdomain_output.E
                     }
                     
                     
