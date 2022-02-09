@@ -498,8 +498,8 @@ class Simulation
                 auto padded_epsilon = pad(comp_domain.epsilon,sim_param.overlap_size,pad_mode::constant,0);
 
                 
-                cout << "Padded mu: " << padded_mu << endl
-                     << "Padded epsilon: " << padded_epsilon << endl;
+                //cout << "Padded mu: " << padded_mu << endl
+                //     << "Padded epsilon: " << padded_epsilon << endl;
                 
          
                 //Initialize 2D matrices..
@@ -509,8 +509,8 @@ class Simulation
                 //Get the subsets for each subdomain.
                 for(int i=0;i<sim_param.num_subdomains;i++)
                 {   
-                    cout << "=====================================" << endl;
-                    cout << "Start: " << start << " | Stop: " << stop << endl;
+                   // cout << "=====================================" << endl;
+                    //cout << "Start: " << start << " | Stop: " << stop << endl;
 
                     if(i == 0)
                     {
@@ -540,8 +540,8 @@ class Simulation
                     stop += hop_size;
                    // cout << "Stacked MU "<<  i << ": " << endl << mu_2D << endl;
                 }
-                cout << "Stacked MU: " << endl << mu_2D << endl
-                     << "Stacked EPSILON: " << epsilon_2D << endl;
+                //cout << "Stacked MU: " << endl << mu_2D << endl
+                 //    << "Stacked EPSILON: " << epsilon_2D << endl;
                 //Find out which subdomain to to insert the source.
                 //At this point, we can just assume that the source will always be injected into the 1st subdomain (center position)
 
@@ -924,8 +924,8 @@ class Simulation
                 auto padded_epsilon = pad(comp_domain.epsilon,sim_param.overlap_size,pad_mode::constant,0);
 
                 
-                cout << "Padded mu: " << padded_mu << endl
-                     << "Padded epsilon: " << padded_epsilon << endl;
+                //cout << "Padded mu: " << padded_mu << endl
+                //     << "Padded epsilon: " << padded_epsilon << endl;
                 
          
                 //Initialize 2D matrices..
@@ -935,8 +935,8 @@ class Simulation
                 //Get the subsets for each subdomain.
                 for(int i=0;i<sim_param.num_subdomains;i++)
                 {   
-                    cout << "=====================================" << endl;
-                    cout << "Start: " << start << " | Stop: " << stop << endl;
+                   // cout << "=====================================" << endl;
+                   // cout << "Start: " << start << " | Stop: " << stop << endl;
 
                     if(i == 0)
                     {
@@ -966,10 +966,13 @@ class Simulation
                     stop += hop_size;
                    // cout << "Stacked MU "<<  i << ": " << endl << mu_2D << endl;
                 }
-                cout << "Stacked MU: " << endl << mu_2D << endl
-                     << "Stacked EPSILON: " << epsilon_2D << endl;
+                //cout << "Stacked MU: " << endl << mu_2D << endl
+               //     << "Stacked EPSILON: " << epsilon_2D << endl;
                 //Find out which subdomain to to insert the source.
                 //At this point, we can just assume that the source will always be injected into the 1st subdomain (center position)
+
+                //Clear the list in each update_sim_param()
+                subdomains.clear();
 
                 //Call the preprocess subdomain to create the subdomain objects.
                 preprocess_subdomain(mu_2D,epsilon_2D,sim_param.num_subdomains,sim_param.subdomain_size,sim_param.overlap_size,sim_param.non_overlap_size);
@@ -1113,10 +1116,10 @@ class Simulation
 
                 //Modify the preprocessed flag
                 subdomains[sdomain_index].subdomain_param.preprocessed = true;
-                cout << "============================================" << endl;
-                cout << "Subdomain " << sdomain_index + 1 << endl;
-                cout << "Mu: " << endl << subdomains[sdomain_index].subdomain.mu << endl;
-                cout << "Epsilon: " << endl << subdomains[sdomain_index].subdomain.epsilon << endl;
+                //cout << "============================================" << endl;
+                //cout << "Subdomain " << sdomain_index + 1 << endl;
+                //cout << "Mu: " << endl << subdomains[sdomain_index].subdomain.mu.shape(0) << endl;
+                //cout << "Epsilon: " << endl << subdomains[sdomain_index].subdomain.epsilon.shape(0) << endl;
             }
             return 0;
         }
@@ -1405,6 +1408,8 @@ class Simulation
                 bool isConverged = false;
                 while(isConverged == false)
                 {
+                    auto fdtd_schwarz_start_conv_time = chrono::high_resolution_clock::now();
+
                     /*
                     
                         The while loop is the Schwarz method loop for checking convergence.
@@ -1424,6 +1429,7 @@ class Simulation
                     }
                     numLoops++;
 
+                    cout << "numLoops: " << numLoops << endl; 
                     //FDTD Time Loop
                     for(int curr_iter=0; curr_iter < sim_param.Nt; curr_iter++)
                     {
@@ -1440,20 +1446,20 @@ class Simulation
                                 Left Ghost Cell = Magnetic Field Value
                                 Right Ghost Cell = Electric Field Value
                             */
-                            cout << "Current iteration: " << curr_iter + 1 << "/" << sim_param.Nt << endl;
+                            //cout << "Current iteration: " << curr_iter + 1 << "/" << sim_param.Nt << endl;
                             if(subdom_index == 0)
                             {
                                 
                                 //If it is the 1st subdomain, only transfer from the right ghost cell
                                 subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size + 1);
-                                cout << "Transferring ghost cell in subdom " << subdom_index << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
+                               // cout << "Transferring ghost cell in subdom " << subdom_index << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
                             }
                             else if(subdom_index == sim_param.num_subdomains - 1)
                             {
                                 //If it is the last subdomain, only transfer from the left ghost cell
                                 unsigned long end = subdomains[subdom_index -1].s_fields.H.shape(0);
                                 subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size - 1);
-                                cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell << endl;
+                                //cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell << endl;
                             
                             }
                             else{
@@ -1461,7 +1467,7 @@ class Simulation
                                 unsigned long end = subdomains[subdom_index -1].s_fields.H.shape(0);
                                 subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size - 1);
                                 subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size + 1);
-                                cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell  << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
+                                //cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell  << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
                             
                             }
                                 //Printing the field values
@@ -1549,8 +1555,8 @@ class Simulation
 
 
 
-                    cout << "Output data: " << endl;
-                    cout << "E: " << output.E << endl;
+                    //cout << "Output data: " << endl;
+                    //cout << "E: " << output.E << endl;
 
 
                     //Check for convergence here....
@@ -1561,9 +1567,11 @@ class Simulation
 
                     //Continue the loop if not converged...
                     cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
-                    isConverged = true;
+                    //isConverged = true;
                 }
                 
+
+               
                 //If converged, reconstruct the whole comp domain here...
                 reconstruct_comp_domain();
 
@@ -1719,6 +1727,7 @@ class Simulation
             // Subtracts the two vectors (A - B) and gets the norm; checks each element if <= epsilon
             
             // Initialize the xtensors of errors based on the num_subdomains -1
+            cout << "Initializing error vectors" << endl;
             output.E_error = zeros<double>({sim_param.num_subdomains - 1});
             output.H_error = zeros<double>({sim_param.num_subdomains - 1});
 
@@ -1727,6 +1736,7 @@ class Simulation
             {
                 
                 // Getting the difference between the overlapping regions
+                cout << "Subtracting the overlapping regions" << endl;
                 xtensor<double,2> E_sub = view(subdomains[subdom_index].subdomain_output.E,all(),range(sim_param.subdomain_size-sim_param.overlap_size,_)) - view(subdomains[subdom_index + 1].subdomain_output.E,all(),range(_,sim_param.overlap_size));
                 xtensor<double,2> H_sub = view(subdomains[subdom_index].subdomain_output.H,all(),range(sim_param.subdomain_size-sim_param.overlap_size,_)) - view(subdomains[subdom_index + 1].subdomain_output.H,all(),range(_,sim_param.overlap_size));
                
