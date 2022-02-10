@@ -1406,11 +1406,12 @@ class Simulation
                 while(isConverged == false)
                 {
                     /*
-                    
                         The while loop is the Schwarz method loop for checking convergence.
                         Variable numLoop indicates the number of loops that the program has done
                     */
+
                     //cout << "Entering Schwarz loop...." << endl;
+
                     //Update the simulation parameter if the loop repeats after the first run....
                     if(numLoops > 0 )
                     {
@@ -1422,6 +1423,7 @@ class Simulation
                         // Temporary break code to prevent high memory usage and crash the program
                         break;
                     }
+
                     numLoops++;
 
                     //FDTD Time Loop
@@ -1430,7 +1432,7 @@ class Simulation
                     
                         //Iterate through the subdomain objects...
                         //While loop and dependent on the return value of the convergence function...
-                        for(int subdom_index=0; subdom_index < sim_param.num_subdomains; subdom_index++)
+                        for(int subdom_index = 0; subdom_index < sim_param.num_subdomains; subdom_index++)
                         {
                             auto fdtd_schwarz_sub_start_time = chrono::high_resolution_clock::now();
                         
@@ -1440,20 +1442,21 @@ class Simulation
                                 Left Ghost Cell = Magnetic Field Value
                                 Right Ghost Cell = Electric Field Value
                             */
-                            cout << "Current iteration: " << curr_iter + 1 << "/" << sim_param.Nt << endl;
+                           
+                            //cout << "Current iteration: " << curr_iter + 1 << "/" << sim_param.Nt << endl;
                             if(subdom_index == 0)
                             {
                                 
                                 //If it is the 1st subdomain, only transfer from the right ghost cell
                                 subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size + 1);
-                                cout << "Transferring ghost cell in subdom " << subdom_index << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
+                                //cout << "Transferring ghost cell in subdom " << subdom_index << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
                             }
                             else if(subdom_index == sim_param.num_subdomains - 1)
                             {
                                 //If it is the last subdomain, only transfer from the left ghost cell
                                 unsigned long end = subdomains[subdom_index -1].s_fields.H.shape(0);
                                 subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size - 1);
-                                cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell << endl;
+                                //cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell << endl;
                             
                             }
                             else{
@@ -1461,7 +1464,7 @@ class Simulation
                                 unsigned long end = subdomains[subdom_index -1].s_fields.H.shape(0);
                                 subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size - 1);
                                 subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size + 1);
-                                cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell  << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
+                                //cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell  << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
                             
                             }
                                 //Printing the field values
@@ -1486,7 +1489,9 @@ class Simulation
 
                         
                     }
+                    
 
+                    // Transferring of boundary data
                     for(int subdom_index=0; subdom_index < sim_param.num_subdomains; subdom_index++)
                     {
                         /*
@@ -1549,9 +1554,10 @@ class Simulation
 
 
 
-                    cout << "Output data: " << endl;
-                    cout << "E: " << output.E << endl;
+                    //cout << "Output data: " << endl;
+                    //cout << "E: " << output.E << endl;
 
+                    cout << "numLoops: " << numLoops << endl; 
 
                     //Check for convergence here....
                     cout << "Checking for convergence..." << endl;
@@ -1561,7 +1567,7 @@ class Simulation
 
                     //Continue the loop if not converged...
                     cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
-                    isConverged = true;
+                    //isConverged = true;
                 }
                 
                 //If converged, reconstruct the whole comp domain here...
@@ -1714,7 +1720,7 @@ class Simulation
 
              */
             bool isConverged = false;
-            //cout << "Subtracting the overlapping values and getting the L2 norm" << endl;
+            cout << "Subtracting the overlapping values and getting the L2 norm..." << endl;
 
             // Subtracts the two vectors (A - B) and gets the norm; checks each element if <= epsilon
             
@@ -1725,7 +1731,6 @@ class Simulation
             
             for(int subdom_index=0; subdom_index < sim_param.num_subdomains-1; subdom_index++)
             {
-                
                 // Getting the difference between the overlapping regions
                 xtensor<double,2> E_sub = view(subdomains[subdom_index].subdomain_output.E,all(),range(sim_param.subdomain_size-sim_param.overlap_size,_)) - view(subdomains[subdom_index + 1].subdomain_output.E,all(),range(_,sim_param.overlap_size));
                 xtensor<double,2> H_sub = view(subdomains[subdom_index].subdomain_output.H,all(),range(sim_param.subdomain_size-sim_param.overlap_size,_)) - view(subdomains[subdom_index + 1].subdomain_output.H,all(),range(_,sim_param.overlap_size));
@@ -1735,9 +1740,10 @@ class Simulation
                 output.E_error(subdom_index) = (linalg::norm(E_sub,2)); 
                 output.H_error(subdom_index) = (linalg::norm(H_sub,2));  
 
-                
-              
             }
+
+            cout << "E error: " << output.E_error << endl; 
+            cout << "H error: " << output.H_error << endl;
 
             // Save the error tensor into the 2D save matrix
             if(output.E_error_list.size() == 0 || output.H_error_list.size() == 0)
@@ -1750,7 +1756,11 @@ class Simulation
                 output.H_error_list = vstack(xtuple(output.H_error_list,atleast_2d(output.H_error)));
             }
 
+            cout << "E error 2D matrix: " << output.E_error_list << endl; 
+            cout << "H error 2D matrix: " << output.H_error_list << endl;
+
             // Check the convergence here by using the determined error threshold
+            // isConverged = true; 
 
             return isConverged;
         }

@@ -121,11 +121,12 @@ class Subdomain
                 //
                 //Start of the FDTD Space....
             //
-            //Initialize variable indices
-            cout << " Subdom " << subdomain_param.subdomain_id  << ": " << endl;
 
-            cout << "E: " << s_fields.E << endl;
-            cout << "H: " << s_fields.H << endl;
+            //Initialize variable indices
+            //cout << " Subdom " << subdomain_param.subdomain_id  << ": " << endl;
+
+            //cout << "E: " << s_fields.E << endl;
+            //cout << "H: " << s_fields.H << endl;
 
             unsigned int start = 0;
             unsigned int stop = 0;

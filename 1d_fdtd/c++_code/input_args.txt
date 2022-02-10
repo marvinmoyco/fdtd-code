@@ -1,11 +1,11 @@
 pabc
 tfsf
-graphene-glass1_001
+test_input
 hdf5
-fdtd
-1
+fdtd-schwarz
+4
 0
-5
+0.25
 1
-marvin
-Simulation results of 1D FDTD Basic Algorithm for Bragg Grating (1 layer model). 
+karlo
+Simulation results of 1D FDTD Basic Algorithm for test_input. 
