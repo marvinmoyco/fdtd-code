@@ -76,6 +76,10 @@ int main(int argc, char* argv[])
 
   sim.output.overall_time = overall_duration.count();
   //Save the simulation data....
+
+  //Print out the output matrices
+  cout << "E shape: (" << sim.output.E.shape(0) << "," << sim.output.E.shape(1) << ")" << endl;
+  cout << "H shape: (" << sim.output.H.shape(0) << "," << sim.output.H.shape(1) << ")" << endl;
   sim.save_to_file(argv[4],argv[5],argv[6],argv[11],argv[12],argv[13]);
 
   cout << "END OF SIMULATION" << endl;

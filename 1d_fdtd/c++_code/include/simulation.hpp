@@ -1567,7 +1567,10 @@ class Simulation
 
                     //Continue the loop if not converged...
                     cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
-                    //isConverged = true;
+                    if(numLoops > 2){
+                        isConverged = true;
+                    }
+                    
                 }
                 
 
@@ -1676,6 +1679,7 @@ class Simulation
             //Iterate through the subdomains...
             for(int subdom_index=0;subdom_index < sim_param.num_subdomains; subdom_index++)
             {
+                //cout << subdomains[subdom_index].subdomain_output.E << endl;
                 if(subdom_index == 0)
                 {
                     //Start to get some value on the sim_fields by saving the data of the 1st subdomain..

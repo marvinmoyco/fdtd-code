@@ -1,11 +1,11 @@
-dirichlet
-hard
-simple-20_001
+pabc
+tfsf
+input
 hdf5
-fdtd
-1
+fdtd-schwarz
+4
 0
 5
 1
 marvin
-Simulation results of 1D FDTD Basic Algorithm for Simple-20.
+Simulation results of 1D FDTD Schwarz Sample algorithm.
