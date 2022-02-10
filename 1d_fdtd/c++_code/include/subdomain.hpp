@@ -49,16 +49,16 @@ class Subdomain
              //Store the computed mu and epsilon for each subdomain (for computation of update coeff)...
             subdomain.mu = mu;
             subdomain.epsilon = epsilon;
-            cout << "Created a new subdomain!" << endl;
-            cout << "Injection point: " << subdomain_param.injection_point << endl;
+            //cout << "Created a new subdomain!" << endl;
+            //cout << "Injection point: " << subdomain_param.injection_point << endl;
             //Initializing the fields and vectors
             
             s_fields.E = zeros<double>(subdomain.epsilon.shape());
             s_fields.H = zeros<double>(subdomain.epsilon.shape());
             s_fields.m_E = zeros<double>(subdomain.epsilon.shape());
             s_fields.m_H = zeros<double>(subdomain.epsilon.shape());
-            cout << "Field shapes: " << endl;
-            cout << "E shape: (" <<  s_fields.E.shape()[0] << ",) | H shape: (" << s_fields.H.shape()[0] << ",)" << endl; 
+            //cout << "Field shapes: " << endl;
+            //cout << "E shape: (" <<  s_fields.E.shape()[0] << ",) | H shape: (" << s_fields.H.shape()[0] << ",)" << endl; 
             //s_fields.m_E = (c_0*sim_param.dt)/(comp_domain.epsilon*sim_param.dz);
             //s_fields.m_H = (c_0*sim_param.dt)/(comp_domain.mu*sim_param.dz);
 

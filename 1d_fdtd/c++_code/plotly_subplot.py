@@ -55,6 +55,8 @@ dz = float(np.array(data['sim param']['dz']))
 spacer = int(np.array(data['sim param']['left spacer']))*dz
 #print(z.shape,E.shape,Nt)
 input_layer = data['input']['layer size'][:]
+mu = data['input']['magnetic permeability'][:]
+epsilon = data['input']['electric permittivity'][:]
 #print(input_layer,spacer)
 new_Nt = 0
 #Adjust the frames here
@@ -89,6 +91,7 @@ x_start = spacer
 x_end = spacer
 for index in range(len(input_layer)):
     x_end += input_layer[index]
+
     # Add shapes
     #fig.add_shape(type="rect",
     #    xref="x", yref="y",
@@ -110,7 +113,7 @@ for index in range(len(input_layer)):
                 fill = 'toself',
                 opacity=0.3,
                 #line_color= 'rgb(255, 79, 38)',
-                text= f'Layer {index + 1} \n Refractive index: {n[index]}',
+                text= f'Layer {index + 1} \n Refractive index: {np.sqrt(mu[index]*epsilon[index]):.03f}',
                 showlegend= False), row=1, col=1)
 
     x_start = x_end
