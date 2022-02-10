@@ -121,6 +121,7 @@ class Subdomain
                 //
                 //Start of the FDTD Space....
             //
+
             //Initialize variable indices
             //cout << " Subdom " << subdomain_param.subdomain_id  << ": " << endl;
 

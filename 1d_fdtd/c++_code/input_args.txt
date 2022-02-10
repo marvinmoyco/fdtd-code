@@ -5,7 +5,7 @@ hdf5
 fdtd-schwarz
 4
 0
-5
+0.25
 1
 marvin
 Simulation results of 1D FDTD Schwarz Sample algorithm.
