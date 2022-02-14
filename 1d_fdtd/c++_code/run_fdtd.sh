@@ -11,7 +11,7 @@ echo Directory of compiled source code: $fdtd_bin
 input_file=inputs.csv
 #input_dir=../inputs/$input_file
 input_dir=../../../inputs/$input_file
-#input_dir=manual
+#input_dir=manualputs
 
 echo Directory of input file: $input_dir
 

@@ -227,5 +227,16 @@ int main()
     auto x = adapt(v,{v.size()});
     cout << "x: " << x << endl;
     cout << view(Z,all(),0) << endl;
+
+    unsigned int overlap = 3;
+    
+    xtensor<double,1> A = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,123890,1,2,55555};
+    unsigned int sizeA = A.shape(0); 
+    cout << "A: " << A << endl;
+    cout << "A(stop - overlap): " << A(sizeA - overlap) << endl;
+    cout << "A(stop - overlap-1): " << A(sizeA - overlap-1) << endl;
+    cout << "A(stop): " << A(sizeA) << endl;
+    cout << "A(stop-1): " << A(sizeA-1) << endl;
+    cout << "A.size() = " << A.size() << " | A.shape(0) = " << A.shape(0) << endl;
     return 0;
 }

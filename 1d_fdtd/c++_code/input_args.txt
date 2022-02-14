@@ -1,11 +1,11 @@
 pabc
 tfsf
-input
+input_normal1
 hdf5
 fdtd-schwarz
 4
 0
-0.25
+5
 1
 marvin
-Simulation results of 1D FDTD Schwarz Sample algorithm.
+Simulation results of 1D FDTD Basic Algorithm using the input "increasing_n.csv"

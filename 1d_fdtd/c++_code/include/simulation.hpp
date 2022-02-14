@@ -1417,19 +1417,24 @@ class Simulation
 
                     //cout << "Entering Schwarz loop...." << endl;
 
+                    //Break the loop first before proceeding to update the sim param
+                    if (numLoops == 2)
+                    {
+                        // Temporary break code to prevent high memory usage and crash the program
+                        break;
+                    }
+                     numLoops++;
+
+
                     //Update the simulation parameter if the loop repeats after the first run....
                     if(numLoops > 0 )
                     {
                         update_sim_param(init_N_lambda + numLoops, init_N_d + numLoops);
                     }
                     
-                    if (numLoops == 10)
-                    {
-                        // Temporary break code to prevent high memory usage and crash the program
-                        break;
-                    }
+                   
 
-                    numLoops++;
+                   
 
                     cout << "numLoops: " << numLoops << endl; 
                     //FDTD Time Loop
@@ -1453,22 +1458,22 @@ class Simulation
                             {
                                 
                                 //If it is the 1st subdomain, only transfer from the right ghost cell
-                                subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size + 1);
+                                subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size-1);
                                // cout << "Transferring ghost cell in subdom " << subdom_index << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
                             }
                             else if(subdom_index == sim_param.num_subdomains - 1)
                             {
                                 //If it is the last subdomain, only transfer from the left ghost cell
                                 unsigned long end = subdomains[subdom_index -1].s_fields.H.shape(0);
-                                subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size - 1);
+                                subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size);
                                 //cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell << endl;
                             
                             }
                             else{
                                 //Else, get the left and right ghost cells (if it is in the middle)
                                 unsigned long end = subdomains[subdom_index -1].s_fields.H.shape(0);
-                                subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size - 1);
-                                subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size + 1);
+                                subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size);
+                                subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size-1);
                                 //cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell  << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
                             
                             }
