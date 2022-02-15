@@ -236,7 +236,6 @@ class Subdomain:
             return None
 
         
-
         self.subdom_param = sim_param
         self.source = sources
         self.comp_dom = comp_domain
@@ -245,9 +244,7 @@ class Subdomain:
         self.E_boundary_terms = [0.0,0.0]
         self.H_boundary_terms = [0.0,0.0]
         self.output = {}
-        
-
-
+      
         #Initialize ghost cells
         self.l_ghost = 0.0
         self.r_ghost = 0.0
@@ -269,11 +266,11 @@ class Subdomain:
         print(f"E shape: {self.subdom_fields['E'].shape} | H shape: {self.subdom_fields['H'].shape}")
         print(f"m_E shape: {self.subdom_fields['m_E'].shape} | m_H shape: {self.subdom_fields['m_H'].shape}")
         print(f"Mu: {self.comp_dom['mu'].shape} | Epsilon: {self.comp_dom['epsilon'].shape}")
-        
+        print(f"ID: {id}")
         
         
         if self.subdom_param['id'] == 0:
-
+           
             # Check if the 1st subdomain has left spacer region
             if self.subdom_param['subdomain_size'] < self.subdom_param['inj_point']:
                 self.subdom_param['inj_point'] = np.floor(self.subdom_param['subdomain_size']/4)
@@ -320,7 +317,7 @@ class Subdomain:
             print("ERROR: Invalid input arguments detected")
             return None
 
-        
+        #print(f"Simulating in Subdomain {self.subdom_param['id']}")
         # Store the parameters in the subdom_param dict
         self.subdom_param['boundary_condition'] = boundary_condition
         self.subdom_param['excitation_method'] = excitation_method
@@ -328,7 +325,9 @@ class Subdomain:
         # Initialize array indices
         start = 0
         stop = 0
+        
         if self.subdom_param['id'] == 0:
+            
             start = int(self.subdom_param['overlap'])
             end = int(self.comp_dom['mu'].shape[0])
 
@@ -363,9 +362,9 @@ class Subdomain:
 
         # Step 3: Update source excitation (applicable only when the subdom is the 1st one)
         if self.subdom_param['id'] == 0:
-            print("Updating Hsrc")
+            #print("Updating Hsrc")
             if self.subdom_param['excitation_method'] == "tfsf":
-                self.subdom_fields['H'][self.subdom_param['inj_point'] -1 ] -=  self.subdom_fields['m_H'][self.subdom_param['inj_point'] - 1]*self.source['Hsrc'][curr_iter]
+                self.subdom_fields['H'][int(self.subdom_param['inj_point']) -1 ] -=  self.subdom_fields['m_H'][int(self.subdom_param['inj_point']) - 1]*self.source['Hsrc'][curr_iter]
 
         # Step 4: Store H boundary terms
         if self.subdom_param['id'] == 0: #For the left EXT boundary of last subdomain
@@ -388,15 +387,15 @@ class Subdomain:
 
         # Step 6: Update E source excitaiton
         if self.subdom_param['id'] == 0:
-            print("Updating Esrc")
+            #print("Updating Esrc")
             if self.subdom_param['excitation_method'] == "hard":
-                self.subdom_fields['E'][self.subdom_param['inj_point']] = self.source['Esrc'][curr_iter]
+                self.subdom_fields['E'][int(self.subdom_param['inj_point'])] = self.source['Esrc'][curr_iter]
 
             elif self.subdom_param['excitation_method'] == "soft":
-                self.subdom_fields['E'][self.subdom_param['inj_point']] += self.source['Esrc'][curr_iter]
+                self.subdom_fields['E'][int(self.subdom_param['inj_point'])] += self.source['Esrc'][curr_iter]
 
             elif self.subdom_param['excitation_method'] == "tfsf":
-                self.subdom_fields['E'][self.subdom_param['inj_point']] -= (self.subdom_fields['m_E'][self.subdom_param['inj_point']]*self.source['Esrc'][curr_iter])
+                self.subdom_fields['E'][int(self.subdom_param['inj_point'])] -= (self.subdom_fields['m_E'][int(self.subdom_param['inj_point'])]*self.source['Esrc'][curr_iter])
 
 
         # Step 7: Store the data of the EXT boundaries for FFT computations in 1st and last subdomains
@@ -1225,12 +1224,13 @@ class Simulation:
             subdomain['epsilon'] = epsilon_2D[i,:]
             subdomain['z'] = z_2D[i,:]
             #print(f"Shapes: Mu: {subdomain['mu'].shape} | Epsilon: {subdomain['epsilon'].shape}")
-            self.subdomains.append(Subdomain( self.sim_param,
+            
+            self.subdomains.append(Subdomain( self.sim_param.copy(),
                                               self.sim_source,
                                               subdomain,
                                               i
                                                 ))
-
+           # print(f"Initializing: Subdomain {self.subdomains[i].subdom_param['id']}")
             #print_breaker('minor')
             #print(f"Subdomain {i}:")
             #print(f"Mu shape: {self.subdomains[i].comp_dom['mu'].shape} | Epsilon shape: {self.subdomains[i].comp_dom['epsilon'].shape} ")
@@ -1440,7 +1440,8 @@ class Simulation:
                         # Ghost cell transfer
                         # Left side = Magnetic Field Value
                         # Right side = Electric Field Value
-
+                        #print(self.subdomains)
+                        #print(f"Index: {subdom_index}  | Current subdom: {self.subdomains[subdom_index].subdom_param['id']}")
                         if subdom_index == 0:
                             
                             self.subdomains[subdom_index].r_ghost = self.subdomains[subdom_index + 1].subdom_fields['E'][ self.sim_param['overlap'] + 1]
@@ -1468,6 +1469,7 @@ class Simulation:
                         # Measure the execution time and append it to the output 
                         subdom_duration = subdom_end_time - subdom_start_time
                         self.subdomains[subdom_index].output['subdom_time'] += subdom_duration
+
                 print(f"E: {self.subdomains[0].output['E']}" )
                 self.plot_fields()
                 print()

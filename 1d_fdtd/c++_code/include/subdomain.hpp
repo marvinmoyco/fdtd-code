@@ -122,6 +122,9 @@ class Subdomain
             
             //cout << "Start of the FDTD Space Loop..." << endl;  
             
+                
+            //Start of the FDTD Space....
+        
 
             //Initialize variable indices
             //cout << " Subdom " << subdomain_param.subdomain_id  << ": " << endl;
@@ -138,8 +141,9 @@ class Subdomain
             }
             else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) // If it is the last..
             {
+                //cout << "Getting the indices for the last subdomain..." << endl;
                 start = 0;
-                stop = s_fields.E.shape(0) - subdomain_param.overlap-1;
+                stop = s_fields.E.shape(0) - subdomain_param.overlap -1;
             }
             else{ //If it is in between the 1st and last subdomain...
 
@@ -196,7 +200,7 @@ class Subdomain
                 }
                 else if(subdomain_param.boundary_condition == "dirichlet")
                 {
-                    s_fields.H(stop-1) = 0;
+                    s_fields.H(stop) = 0;
                 }
                 
             }
@@ -205,7 +209,7 @@ class Subdomain
                 // For the right INT boundary of all subdomains except the last
                 // Use the ghost cells here by updating the rightmost index (n) using the update equation
 
-                s_fields.H(stop-1) = s_fields.H(stop-1) + (s_fields.m_H(stop-1)*( right_ghost_cell - s_fields.E(stop-1)));
+                s_fields.H(stop) = s_fields.H(stop) + (s_fields.m_H(stop)*( right_ghost_cell - s_fields.E(stop)));
             }
 
             // Step 5: Update E from H
