@@ -1394,7 +1394,7 @@ class Simulation
             
             if(sim_param.multithread == false)
             {
-                cout << "Entering FDTD-Schwarz with no multithreading..." << endl;
+                cout << "Start of FDTD-Schwarz with no multithreading..." << endl;
                 /*
                 * Part of the code when OpenMP is not implemented (FDTD-Schwarz in Serial configuration)
                 * Iterates through every subdomain so concurrent simulation will not be possible.
@@ -1410,12 +1410,12 @@ class Simulation
                 {
                     auto fdtd_schwarz_start_conv_time = chrono::high_resolution_clock::now();
 
+                    cout << "Start of Schwarz loop no. " << numLoops << endl;
                     /*
                         The while loop is the Schwarz method loop for checking convergence.
                         Variable numLoop indicates the number of loops that the program has done
                     */
 
-                    //cout << "Entering Schwarz loop...." << endl;
 
                     //Update the simulation parameter if the loop repeats after the first run....
                     if(numLoops > 0 )
@@ -1423,19 +1423,19 @@ class Simulation
                         update_sim_param(init_N_lambda + numLoops, init_N_d + numLoops);
                     }
                     
-                    if (numLoops == 10)
+                    if (numLoops == 3)
                     {
                         // Temporary break code to prevent high memory usage and crash the program
                         break;
                     }
 
-                    numLoops++;
 
-                    cout << "numLoops: " << numLoops << endl; 
                     //FDTD Time Loop
                     for(int curr_iter=0; curr_iter < sim_param.Nt; curr_iter++)
                     {
-                    
+                        
+                        //cout << "Start of FDTD Time Loop no. " << curr_iter << endl;
+
                         //Iterate through the subdomain objects...
                         //While loop and dependent on the return value of the convergence function...
                         for(int subdom_index = 0; subdom_index < sim_param.num_subdomains; subdom_index++)
@@ -1472,7 +1472,11 @@ class Simulation
                                 //cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell  << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
                             
                             }
-                                //Printing the field values
+                            
+                            //cout << "Left ghost cell of subdomain " << subdom_index << ": " << subdomains[subdom_index].left_ghost_cell << endl;
+                            //cout << "Right ghost cell of subdomain " << subdom_index << ": " << subdomains[subdom_index].left_ghost_cell << endl;
+
+                            //Printing the field values
                                 
                         
                             //At this point, the ghost cells should be filled...
@@ -1492,6 +1496,7 @@ class Simulation
                             subdomains[subdom_index].subdomain_output.subdom_time += fdtd_schwarz_sub_duration.count();
                         }
 
+                        //cout << "End of FDTD Time Loop no. " << curr_iter << endl;
                         
                     }
                     
@@ -1505,6 +1510,7 @@ class Simulation
                             Right side index = Subdom size - overlap
                             Convention: We will always GET the data from the RIGHT ADJACENT SUBDOMAIN so the last subdomain is not included
                         */
+                       
                         auto fdtd_schwarz_sub_start_time = chrono::high_resolution_clock::now();
                         if (subdom_index < sim_param.num_subdomains -1) //Ignore the last subdomain...
                         {
@@ -1534,9 +1540,9 @@ class Simulation
                             view(subdomains[subdom_index + 1].subdomain_output.H,all(),sim_param.overlap_size - 1) = view(subdomains[subdom_index].subdomain_output.H,all(),-1);
 
 
-                            view(subdomains[subdom_index].subdomain_output.H,all(),-1) = buffer_E_right;
+                            view(subdomains[subdom_index].subdomain_output.H,all(),-1) = buffer_H_right;
 
-                            view(subdomains[subdom_index + 1].subdomain_output.H,all(),0) = buffer_E_curr;
+                            view(subdomains[subdom_index + 1].subdomain_output.H,all(),0) = buffer_H_curr;
                             
 
 
@@ -1556,13 +1562,7 @@ class Simulation
 
 
                     }
-
-
-
-                    //cout << "Output data: " << endl;
-                    //cout << "E: " << output.E << endl;
-
-                    cout << "numLoops: " << numLoops << endl; 
+                    
 
                     //Check for convergence here....
                     cout << "Checking for convergence..." << endl;
@@ -1571,11 +1571,14 @@ class Simulation
                     cout << "Convergence after the FDTD-Schwarz Loop: " << isConverged << endl;
 
                     //Continue the loop if not converged...
-                    cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
+                    
                     if(numLoops > 2){
                         isConverged = true;
+                        cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
                     }
-                    
+
+                    cout << "End of Schwarz loop no. " << numLoops << endl;
+                    numLoops++;
                 }
                 
 
@@ -1773,7 +1776,7 @@ class Simulation
             cout << "H error 2D matrix: " << output.H_error_list << endl;
 
             // Check the convergence here by using the determined error threshold
-            // isConverged = true; 
+            isConverged = true; 
 
             return isConverged;
         }

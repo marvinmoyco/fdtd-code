@@ -118,9 +118,10 @@ class Subdomain
             subdomain_param.boundary_condition = boundary_condition;
             subdomain_param.excitation_method = excitation_method;
             //cout << "Boundary condition" << subdomain_param.boundary_condition << " | Excitation method: " << subdomain_param.excitation_method << endl;
-                //
-                //Start of the FDTD Space....
-            //
+            
+            
+            //cout << "Start of the FDTD Space Loop..." << endl;  
+            
 
             //Initialize variable indices
             //cout << " Subdom " << subdomain_param.subdomain_id  << ": " << endl;
@@ -133,17 +134,17 @@ class Subdomain
             if(subdomain_param.subdomain_id == 0) //If the subdomain is the 1st one...
             {
                 start = subdomain_param.overlap;
-                stop = s_fields.E.shape(0);
+                stop = s_fields.E.shape(0)-1;
             }
             else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) // If it is the last..
             {
                 start = 0;
-                stop = s_fields.E.shape(0) - subdomain_param.overlap;
+                stop = s_fields.E.shape(0) - subdomain_param.overlap-1;
             }
             else{ //If it is in between the 1st and last subdomain...
 
                 start = 0;
-                stop = s_fields.E.shape(0);
+                stop = s_fields.E.shape(0)-1;
 
             }
             //cout << "Indices (start,stop): (" << start << "," << stop << ")" << endl;

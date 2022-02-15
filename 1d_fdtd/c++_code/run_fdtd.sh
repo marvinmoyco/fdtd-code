@@ -9,8 +9,8 @@ echo Directory of compiled source code: $fdtd_bin
 
 #Set the directory and filename of the input file
 input_file=inputs.csv
-#input_dir=../inputs/$input_file
-input_dir=../../../inputs/$input_file
+input_dir=../inputs/$input_file
+#input_dir=../../../inputs/$input_file
 #input_dir=manual
 
 echo Directory of input file: $input_dir
