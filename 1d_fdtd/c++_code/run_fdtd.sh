@@ -62,7 +62,7 @@ echo Running the compiled program.....
 log_file=$(date '+%Y-%m-%d')_$custom_name.log
 
 $fdtd_bin $input_dir $boundary_cond $excitation_method $custom_name $output_file_type $output_dir $algorithm $num_subdomains $multithreading $overlap_size $comprehensive $user_name $sim_description |& tee $output_dir/$log_file
-echo Check the simulation logs in $output_dir/$log_file to check the simulation details
+echo Check the simulation logs in $output_dir$log_file to check the simulation details
 echo ================================================================
 
 #Execute the python script

@@ -1136,6 +1136,7 @@ class Simulation
             }
             else if(sim_param.algorithm == "fdtd-schwarz")
             {
+                cout << "Calling fdtd-schwarz" << endl;
                 //Call the fdtd-schwarz method if the 
                 simulate_fdtd_schwarz("right",boundary_condition,excitation_method);
             }
@@ -1410,7 +1411,7 @@ class Simulation
                 {
                     auto fdtd_schwarz_start_conv_time = chrono::high_resolution_clock::now();
 
-                    cout << "Start of Schwarz loop no. " << numLoops << endl;
+                    
                     /*
                         The while loop is the Schwarz method loop for checking convergence.
                         Variable numLoop indicates the number of loops that the program has done
@@ -1425,26 +1426,20 @@ class Simulation
                     }
                      numLoops++;
 
-
+                    cout << "numLoops: " << numLoops << endl;
                     //Update the simulation parameter if the loop repeats after the first run....
                     if(numLoops > 0 )
                     {
                         update_sim_param(init_N_lambda + numLoops, init_N_d + numLoops);
                     }
                     
-                    if (numLoops == 3)
-                    {
-                        // Temporary break code to prevent high memory usage and crash the program
-                        break;
-                    }
 
 
                     //FDTD Time Loop
                     for(int curr_iter=0; curr_iter < sim_param.Nt; curr_iter++)
                     {
                         
-                        //cout << "Start of FDTD Time Loop no. " << curr_iter << endl;
-
+                       
                         //Iterate through the subdomain objects...
                         //While loop and dependent on the return value of the convergence function...
                         for(int subdom_index = 0; subdom_index < sim_param.num_subdomains; subdom_index++)
@@ -1457,7 +1452,7 @@ class Simulation
                                 Left Ghost Cell = Magnetic Field Value
                                 Right Ghost Cell = Electric Field Value
                             */
-                            //cout << "Current iteration: " << curr_iter + 1 << "/" << sim_param.Nt << endl;
+                            cout << "Current iteration: " << curr_iter + 1 << "/" << sim_param.Nt << endl;
                             if(subdom_index == 0)
                             {
                                 

@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
     cout << " ]" << endl;
   }*/
 
-
+  //cout << "Starting simulation " << endl;
   //Start the simulation...
   auto start_time = chrono::high_resolution_clock::now();
   output = sim.simulate(argv[2],argv[3]);
