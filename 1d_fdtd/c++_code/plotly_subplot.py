@@ -53,6 +53,7 @@ Nt = int(np.ceil(np.array(data['sim param']['Nt'])))
 freq_axis = data['/output/freq_range'][:]
 dz = float(np.array(data['sim param']['dz']))
 spacer = int(np.array(data['sim param']['left spacer']))*dz
+algo = np_to_str(data['sim param']['algorithm'])
 #print(z.shape,E.shape,Nt)
 input_layer = data['input']['layer size'][:]
 mu = data['input']['magnetic permeability'][:]
@@ -197,11 +198,16 @@ fig.add_trace(go.Scatter(
 
 print(len(fig.data))
 
-
+multithreading = ""
+if data['sim param']['multithreading'][()] == 0:
+    multithreading = "False"
+elif data['sim param']['multithreading'][()] == 1:
+    multithreading = "True"
 
 #width=1024, height=720,
 print("Setting the titles for the plots....")
-fig.update_layout(title_text=f"FDTD Simulation [Date: {sim_date} | Source Type: {source_type} | Boundary Condition: {boundary_cond} | Excitation Method: {excitation_method}]")
+
+fig.update_layout(title_text=f"FDTD Simulation [Date: {sim_date} | Algorithm: {algo} | Multithreading: {multithreading} | Source Type: {source_type} | Boundary Condition: {boundary_cond} | Excitation Method: {excitation_method}]")
 #Adjust the axes of the three subplots
 fig.update_xaxes(title_text="Computational Domain (m)", row=1,col=1)
 fig.update_xaxes(title_text="Frequency (Hz)",row=2,col=1)

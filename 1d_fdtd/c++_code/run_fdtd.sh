@@ -7,19 +7,22 @@ fdtd_bin=./src/bin/$fdtd_out
 echo ================================================================
 echo Directory of compiled source code: $fdtd_bin
 
-#Set the directory and filename of the input file
-input_file=inputs.csv
-input_dir=../inputs/$input_file
-#input_dir=../../../inputs/$input_file
-#input_dir=manual
 
-echo Directory of input file: $input_dir
 
 #Set the output directory
 output_dir=../../../outputs/
 
 #The code here has no exception handling so be careful!!
 echo ================================================================
+#Input file: name of csv file
+read -p 'Enter the filename (with the file extension): ' input_file
+#Set the directory and filename of the input file
+input_dir=../inputs/$input_file
+#input_dir=../../../inputs/$input_file
+#input_dir=manual
+
+echo Directory of input file: $input_dir
+
 #Boundary condition: either 'pabc' or 'dirichlet'
 read -p 'Select the Boundary Condition [pabc/dirichlet]: ' boundary_cond
 

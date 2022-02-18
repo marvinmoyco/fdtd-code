@@ -282,7 +282,7 @@ class Simulation
             }
             cout << "Injection point (index/position): " << sim_param.injection_point << "-th cell" <<endl;
             cout << "Spacer cells (Left): " << sim_param.left_spacers << " cells" 
-                 << "Spacer cells (Right): " << sim_param.right_spacers << " cells" << endl;
+                 << " | Spacer cells (Right): " << sim_param.right_spacers << " cells" << endl;
             cout << "Total number of cells (model + spacers): " << sim_param.Nz << " cells" << endl;
             cout << "Total length (in m) of the computational domain: " << sim_param.Nz*sim_param.dz << " m" << endl;
             
@@ -1048,11 +1048,11 @@ class Simulation
                     for simple-10.csv - GaussianSource(3,12,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
                     for simple-20.csv - GaussianSource(2,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
                 */
-                sim_source->GaussianSource(3,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->GaussianSource(3,2,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "sinusoidal")
             {
-                sim_source->SinusoidalSource(3,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->SinusoidalSource(3,4,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "square")
             {
@@ -1326,7 +1326,9 @@ class Simulation
                 row(output.Con_of_Energy,curr_iteration) = real(sim_fields.Con_of_Energy);
 
                 //cout << endl;
-                cout << "\rCurrent Iteration: "<<curr_iteration + 1<<"/"<<sim_param.Nt ;
+                if(curr_iteration % 100 == 0){
+                    cout << "\rCurrent Iteration: "<<curr_iteration + 1<<"/"<<sim_param.Nt ;
+                }
             }
             //cout << endl << "Post-processing Fourier Transform" << endl;
             //sim_fields.Reflectance = pow(abs(sim_fields.Reflectance/sim_fields.Source_FFT),2);
@@ -1615,15 +1617,17 @@ class Simulation
                     {
                         break; //Break the loop to prevent high memory usage...
                     }
-
-                    //Increment numLoops by 1
-                    numLoops++;
-
-                    //Update simulation parameters if the loop repeats after the initial run
+                    
+                     //Update simulation parameters if the loop repeats after the initial run
                     if(numLoops > 0)
                     {
                         update_sim_param(init_N_lambda + numLoops, init_N_d + numLoops);
                     }
+                    
+                    //Increment numLoops by 1
+                    numLoops++;
+
+                   
 
                     //FDTD Time Loop
                     for(int curr_iter = 0; curr_iter < sim_param.Nt; curr_iter++)
@@ -1631,7 +1635,7 @@ class Simulation
                         //In this part, we can now use concurrency to process all subdomains at once
                         //since there is no values required that is in the preceeding time iteration
 
-                        cout << "Current iteration: " << curr_iter + 1 << "/" << sim_param.Nt << endl;
+                        cout << "Current iteration: " << curr_iter + 1 << "/" << sim_param.Nt << "\r" ;
                         //openMP part by creating a parallel region
                         #pragma omp parallel
                         {
@@ -1742,8 +1746,8 @@ class Simulation
                         }
                     }
 
-
-                    cout << "Checking for convergence..." << endl;
+                    
+                    cout << endl << "Checking for convergence..." << endl;
                     isConverged = check_convergence();
                     cout << "Convergence after the run: " << isConverged << " | numLoops: " << numLoops << endl;
 
@@ -2107,6 +2111,7 @@ class Simulation
                 write_to_hdf5(file, string("/sim param/boundary cond"), sim_param.boundary_cond);
                 write_to_hdf5(file, string("/sim param/excitation method"), sim_param.excitation_method);
                 write_to_hdf5(file, string("/sim param/algorithm"), sim_param.algorithm);
+                write_to_hdf5(file, string("/sim param/multithreading"), sim_param.multithread);
                 write_to_hdf5(file, string("/sim param/num subdomains"), sim_param.num_subdomains);
                 write_to_hdf5(file, string("/sim param/num freqs"), sim_param.n_freq);
                 write_to_hdf5(file, string("/sim param/left spacer"), sim_param.left_spacers);

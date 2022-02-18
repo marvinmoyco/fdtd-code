@@ -229,7 +229,8 @@ class Source{
 
             source_param.t0 = t0_coeff*source_param.tau;
             source_param.t_prop = (nmax*source_param.Nz*source_param.dz)/c_0;
-            double initial_total_time = tau_coeff*source_param.tau +(prop_coeff*source_param.t_prop);
+            //double initial_total_time = tau_coeff*source_param.tau +(prop_coeff*source_param.t_prop);
+            double initial_total_time = (prop_coeff*source_param.t_prop);
             //cout << "initial_total: " << initial_total_time << " vs. simparam_sim_time: " << source_param.sim_time << endl;
             //Get the smaller total sim time to save memory
             source_param.sim_time = initial_total_time;
