@@ -38,8 +38,8 @@ lib_dir_hdf5 = -L/usr/lib/x86_64-linux-gnu/hdf5/serial/ -lhdf5
 XTENSOR_FLAGS = -isystem $(xtensor_dir) -isystem $(xtl_dir) -isystem $(xtensor_io_dir) -isystem $(xtensor_fftw_dir) -isystem $(xtensor_blas_dir)
 HDF5_FLAGS = -isystem $(highfive_dir) -isystem $(libhdf5_dir) 
 
-R_CPPFLAGS= -std=$(STD_VER) -Wall -Werror -fopenmp -isystem $(IDIR) $(XTENSOR_FLAGS) $(HDF5_FLAGS) 
-D_CPPFLAGS= -std=$(STD_VER) -Wall -Werror -Og -ggdb -fopenmp -isystem $(IDIR) $(XTENSOR_FLAGS) $(HDF5_FLAGS) 
+R_CPPFLAGS= -std=$(STD_VER) -Wall -Wextra -Werror -fopenmp -isystem $(IDIR) $(XTENSOR_FLAGS) $(HDF5_FLAGS) 
+D_CPPFLAGS= -std=$(STD_VER) -Wall -Werror -Wextra -Og -ggdb -fopenmp -isystem $(IDIR) $(XTENSOR_FLAGS) $(HDF5_FLAGS) 
 
 source = main.cpp
  

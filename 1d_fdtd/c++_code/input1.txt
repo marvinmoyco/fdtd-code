@@ -1,0 +1,13 @@
+inputs.csv
+pabc
+tfsf
+free_space_multithreading
+hdf5
+fdtd-schwarz
+4
+1
+10
+1
+2
+marvin
+Simulation results of 1D FDTD Algorithm using varying_length.csv

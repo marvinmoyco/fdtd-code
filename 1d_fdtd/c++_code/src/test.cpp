@@ -238,5 +238,14 @@ int main()
     cout << "A(stop): " << A(sizeA) << endl;
     cout << "A(stop-1): " << A(sizeA-1) << endl;
     cout << "A.size() = " << A.size() << " | A.shape(0) = " << A.shape(0) << endl;
+    xtensor<double,1> N;
+    N = A;
+    cout << "N: " << N << endl;
+    N(0) = 121212121212;
+    cout << "X: " << X << endl;
+    cout << "X(0,1): " << X(0,1) << endl << "X(0,5): " << X(0,5) << endl;
+    
+    
+    
     return 0;
 }

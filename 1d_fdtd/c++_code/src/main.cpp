@@ -26,8 +26,9 @@ save_data output;
 * (9) multithread - true for using openMP and false for serial version
 * (10) overlap size - if 0-1, this is a percentage from Nz, if greater than 1, this is number of cells as the overlap
 * (11) comprehensive - will the saved data be comprehensive or not? (boolean value) 
-* (12) username/name - username or name
-* (13) simulation description - short description about the simulation
+* (12) prop_coeff - integer that increases or decreases Nt (higher value = higher Nt)
+* (13) username/name - username or name
+* (14) simulation description - short description about the simulation
 *
 */
 int main(int argc, char* argv[])
@@ -38,7 +39,7 @@ int main(int argc, char* argv[])
   Simulation sim(argv[1]);
   
   //Perform pre-processing...
-  computational_domain check = sim.create_comp_domain(0,0,100,stoul(argv[8]),stod(argv[10]),stoul(argv[9]),argv[7]);
+  computational_domain check = sim.create_comp_domain(0,0,100,stoul(argv[8]),stod(argv[10]),stod(argv[12]),stoul(argv[9]),argv[7]);
 
   /*for(int i = 0; i<1000; i++)
   {
@@ -76,11 +77,11 @@ int main(int argc, char* argv[])
 
   sim.output.overall_time = overall_duration.count();
   //Save the simulation data....
-
+  cout << "Finished simulating..." << endl;
   //Print out the output matrices
-  cout << "E shape: (" << sim.output.E.shape(0) << "," << sim.output.E.shape(1) << ")" << endl;
-  cout << "H shape: (" << sim.output.H.shape(0) << "," << sim.output.H.shape(1) << ")" << endl;
-  sim.save_to_file(argv[4],argv[5],argv[6],argv[11],argv[12],argv[13]);
+ // cout << "E shape: (" << sim.output.E.shape(0) << "," << sim.output.E.shape(1) << ")" << endl;
+  //cout << "H shape: (" << sim.output.H.shape(0) << "," << sim.output.H.shape(1) << ")" << endl;
+  sim.save_to_file(argv[4],argv[5],argv[6],argv[11],argv[13],argv[14]);
 
   cout << "END OF SIMULATION" << endl;
 

@@ -76,6 +76,13 @@ for i in range(Nt):
         new_T = np.vstack((new_T,T[i,:]))
         new_C = np.vstack((new_C,C[i,:]))
         new_Nt += 1
+    elif i == Nt - 1:
+        new_E = np.vstack((new_E,E[i,:]))
+        new_H = np.vstack((new_H,H[i,:]))
+        new_R = np.vstack((new_R,R[i,:]))
+        new_T = np.vstack((new_T,T[i,:]))
+        new_C = np.vstack((new_C,C[i,:]))
+        new_Nt += 1
 
 
 print(f"Field shapes (after adjusting): E: {new_E.shape} | H: {new_H.shape} | R: {new_R.shape} | T: {new_T.shape} | C: {new_C.shape}")
