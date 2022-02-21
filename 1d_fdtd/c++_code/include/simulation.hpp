@@ -883,7 +883,7 @@ class Simulation
                 */
 
                 //Force the overlap size to 1.
-                sim_param.overlap_size = 1;
+                //sim_param.overlap_size = 1;
                 
                 //Computing the size of overlapping region
                 if(sim_param.overlap_size > 0 && sim_param.overlap_size < 1) //If the overlap input is a percentage...
@@ -1424,7 +1424,7 @@ class Simulation
                         // Temporary break code to prevent high memory usage and crash the program
                         break;
                     }
-                     numLoops++;
+                    
 
                     cout << "numLoops: " << numLoops << endl;
                     //Update the simulation parameter if the loop repeats after the first run....
@@ -1452,7 +1452,9 @@ class Simulation
                                 Left Ghost Cell = Magnetic Field Value
                                 Right Ghost Cell = Electric Field Value
                             */
-                            cout << "Current iteration: " << curr_iter + 1 << "/" << sim_param.Nt << endl;
+                            
+                            cout << "\rCurrent Iteration: "<<curr_iter + 1 << "/" <<sim_param.Nt << endl;
+
                             if(subdom_index == 0)
                             {
                                 
@@ -1506,6 +1508,8 @@ class Simulation
                     
 
                     // Transferring of boundary data
+
+                    
                     for(int subdom_index=0; subdom_index < sim_param.num_subdomains; subdom_index++)
                     {
                         /*
@@ -1552,6 +1556,7 @@ class Simulation
 
 
                         }
+                        
                         
                         
                         //Measuring the time duration of the code done by each subdomain

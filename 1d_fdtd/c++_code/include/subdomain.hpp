@@ -158,9 +158,9 @@ class Subdomain
             {
                 if(boundary_condition == "pabc")
                 {
-                        s_fields.E(start) = s_fields.H_start.front();
-                        s_fields.H_start.pop_front();
-                        s_fields.H_start.push_back(s_fields.E(start+1));
+                    s_fields.E(start) = s_fields.H_start.front();
+                    s_fields.H_start.pop_front();
+                    s_fields.H_start.push_back(s_fields.E(start+1));
                 }
                 else if(subdomain_param.boundary_condition == "dirichlet")
                 {
@@ -172,6 +172,12 @@ class Subdomain
                 // For the left INT boundary of all subdomains except the 1st
                 // Use the ghost cells here by updating the leftmost index (0) using the update equation
         
+                
+
+                s_fields.E(start) = s_fields.H_start.front();
+                s_fields.H_start.pop_front();
+                s_fields.H_start.push_back(s_fields.E(start+1));
+
                 s_fields.E(start) = s_fields.E(start) + (s_fields.m_E(start)*(s_fields.H(start) - left_ghost_cell ));
             }
            
@@ -208,6 +214,10 @@ class Subdomain
             {
                 // For the right INT boundary of all subdomains except the last
                 // Use the ghost cells here by updating the rightmost index (n) using the update equation
+
+                s_fields.H(stop-1) = s_fields.E_end.front();
+                s_fields.E_end.pop_front();
+                s_fields.E_end.push_back(s_fields.H(stop-2));
 
                 s_fields.H(stop) = s_fields.H(stop) + (s_fields.m_H(stop)*( right_ghost_cell - s_fields.E(stop)));
             }
