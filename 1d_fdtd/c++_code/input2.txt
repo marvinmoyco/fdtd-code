@@ -1,0 +1,13 @@
+varying_length.csv
+pabc
+tfsf
+varying_length_006
+hdf5
+fdtd
+1
+0
+0.25
+1
+2
+marvin
+Simulation results of 1D FDTD Basic algorithm using varying_n.csv

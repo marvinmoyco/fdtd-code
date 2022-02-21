@@ -19,6 +19,7 @@ class Subdomain
         xtensor<double,1> E_error{0,0};
         xtensor<double,1> H_error{0,0}; 
 
+
         //Constructor
         Subdomain(simulation_parameters sim_param, 
                   source_output_d sources,
@@ -97,7 +98,10 @@ class Subdomain
                 subdomain_param.injection_point += subdomain_param.overlap;
             }
 
-             
+
+            
+            
+
         }
 
 
@@ -248,7 +252,9 @@ class Subdomain
                 }   
             }
             
-            // Step 7/8: Saving the current snapshot in time in the output matrices
+           
+
+            // Step 7: Saving the current snapshot in time in the output matrices
        
             if(curr_iteration > 0)
             {
@@ -259,12 +265,16 @@ class Subdomain
                 subdomain_output.H = vstack(
                                             xtuple(subdomain_output.H,atleast_2d(s_fields.H))
                 );
+
+              
             }
             else
             {
                 //If this is the first iteration, save the data to the xtensor
                 subdomain_output.E = atleast_2d(s_fields.E);
                 subdomain_output.H = atleast_2d(s_fields.H);
+                //In the 1st and last subdomain, get the computed Reflectance and Transmittance respectively
+             
             }
 
 

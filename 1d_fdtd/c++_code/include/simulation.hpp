@@ -165,7 +165,8 @@ class Simulation
                                                 int injection_point = 0, 
                                                 double n_freq = 0, 
                                                 unsigned int num_subdomains=1,
-                                                double overlap=0, 
+                                                double overlap=0,
+                                                double prop_coeff = 2, 
                                                 bool multithread = false, 
                                                 string algorithm = "fdtd-schwarz")
         {
@@ -208,7 +209,7 @@ class Simulation
 
             //Store the number of subdomains in sim_param struct....
             sim_param.num_subdomains = num_subdomains;
-
+            sim_param.prop_coeff = prop_coeff;
             //Computing dz and Nz...
             double n_max =  amax<double>(sqrt(input.magnetic_permeability*input.electric_permittivity))(0);
             
@@ -282,7 +283,7 @@ class Simulation
             }
             cout << "Injection point (index/position): " << sim_param.injection_point << "-th cell" <<endl;
             cout << "Spacer cells (Left): " << sim_param.left_spacers << " cells" 
-                 << "Spacer cells (Right): " << sim_param.right_spacers << " cells" << endl;
+                 << " | Spacer cells (Right): " << sim_param.right_spacers << " cells" << endl;
             cout << "Total number of cells (model + spacers): " << sim_param.Nz << " cells" << endl;
             cout << "Total length (in m) of the computational domain: " << sim_param.Nz*sim_param.dz << " m" << endl;
             
@@ -375,7 +376,7 @@ class Simulation
                     break;
             }
             //Compute the source that will be used in the project.
-            compute_source();
+            compute_source(sim_param.prop_coeff);
             
             /*
             At this point, the code needs to check if it is in serial or parallel mode. 
@@ -565,7 +566,7 @@ class Simulation
             sim_param.n_freq = n_freq;
             sim_param.fmax_fft = 0.5*(1/sim_param.dt); //Upper frequency limit Fs/2
             sim_param.n_freq = sim_param.Nt; //Make sure to match the num of points in other FFT
-            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax_fft,sim_param.n_freq);
+            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax,sim_param.n_freq);
             cout << "Num. of freq. samples: " << sim_param.n_freq << " | Freq_range shape: (" 
                  << sim_fields.Freq_range.shape()[0] << "," << sim_fields.Freq_range.shape()[1] << ")" << endl;
             //Initialize the sizes of refl,trans, and kernal vectors
@@ -602,8 +603,9 @@ class Simulation
                  << " | Kernel: " << sim_fields.Kernel_Freq.size() << endl;
             cout << "fmax_fft: " << sim_param.fmax_fft << endl;
             cout << "Save Matrices Sizes:" << endl;
-            cout << "Reflectance: " << output.Reflectance.size() << " | Transmittance: " 
-                 << output.Transmittance.size() << " | Conservation of Energy: " << output.Con_of_Energy.size() << endl;
+            cout << "Reflectance: (" << output.Reflectance.shape(0) << "," << output.Reflectance.shape(1) << ")" 
+                 << " | Transmittance: (" << output.Transmittance.shape(0) << "," << output.Transmittance.shape(1) 
+                 << ") | Conservation of Energy: (" << output.Con_of_Energy.shape(0) << "," << output.Con_of_Energy.shape(1) << ")" << endl;
         
             return comp_domain;
         }
@@ -799,7 +801,7 @@ class Simulation
                     break;
             }
             //Compute the source that will be used in the project.
-            compute_source();
+            compute_source(sim_param.prop_coeff);
             
             /*
             At this point, the code needs to check if it is in serial or parallel mode. 
@@ -994,7 +996,7 @@ class Simulation
             //sim_param.n_freq = n_freq;
             sim_param.fmax_fft = 0.5*(1/sim_param.dt); //Upper frequency limit Fs/2
             sim_param.n_freq = sim_param.Nt; //Make sure to match the num of points in other FFT
-            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax_fft,sim_param.n_freq);
+            sim_fields.Freq_range = linspace<double>(0,sim_param.fmax,sim_param.n_freq);
             cout << "Num. of freq. samples: " << sim_param.n_freq << " | Freq_range shape: (" 
                  << sim_fields.Freq_range.shape()[0] << "," << sim_fields.Freq_range.shape()[1]  << ") " << endl;
             //Initialize the sizes of refl,trans, and kernal vectors
@@ -1027,15 +1029,16 @@ class Simulation
                  << " | Kernel: " << sim_fields.Kernel_Freq.size() << endl;
             cout << "fmax_fft: " << sim_param.fmax_fft << endl;
             cout << "Save Matrices Sizes:" << endl;
-            cout << "Reflectance: " << output.Reflectance.size() << " | Transmittance: " 
-                 << output.Transmittance.size() << " | Conservation of Energy: " << output.Con_of_Energy.size() << endl;
+            cout << "Reflectance: (" << output.Reflectance.shape(0) << "," << output.Reflectance.shape(1) << ")" 
+                 << " | Transmittance: (" << output.Transmittance.shape(0) << "," << output.Transmittance.shape(1) 
+                 << ") | Conservation of Energy: (" << output.Con_of_Energy.shape(0) << "," << output.Con_of_Energy.shape(1) << ")" << endl;
         
             return 1;
 
         }
 
 
-        int compute_source()
+        int compute_source(double prop_coeff)
         {
             //Create a new Source object
             sim_source = new Source(sim_param,comp_domain);
@@ -1048,11 +1051,11 @@ class Simulation
                     for simple-10.csv - GaussianSource(3,12,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
                     for simple-20.csv - GaussianSource(2,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
                 */
-                sim_source->GaussianSource(3,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->GaussianSource(3,prop_coeff,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "sinusoidal")
             {
-                sim_source->SinusoidalSource(3,6,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
+                sim_source->SinusoidalSource(3,4,2,amax(comp_domain.n)(0),comp_domain.n[sim_param.injection_point]);
             }
             else if(sim_param.source_type == "square")
             {
@@ -1098,7 +1101,8 @@ class Simulation
                 //Create a new object (creating a vector of Subdomain objects)
                 subdomains.push_back(Subdomain(sim_param,
                                                sim_source_fields,
-                                               comp_domain,size,
+                                               comp_domain,
+                                               size,
                                                overlap_size,
                                                non_overlap_size,
                                                sdomain_index,
@@ -1325,8 +1329,9 @@ class Simulation
                 row(output.Transmittance,curr_iteration) = real(sim_fields.Transmittance);
                 row(output.Con_of_Energy,curr_iteration) = real(sim_fields.Con_of_Energy);
 
-                //cout << endl;
-                cout << "\rCurrent Iteration: "<<curr_iteration + 1<<"/"<<sim_param.Nt ;
+              
+                //cout << "\rCurrent Iteration: "<<curr_iteration + 1<<"/"<<sim_param.Nt ;
+                
             }
             //cout << endl << "Post-processing Fourier Transform" << endl;
             //sim_fields.Reflectance = pow(abs(sim_fields.Reflectance/sim_fields.Source_FFT),2);
@@ -1418,13 +1423,8 @@ class Simulation
                     */
 
 
-                    //Break the loop first before proceeding to update the sim param
-                    if (numLoops == 2)
-                    {
-                        // Temporary break code to prevent high memory usage and crash the program
-                        break;
-                    }
-                    
+                  
+                     numLoops++;
 
                     cout << "numLoops: " << numLoops << endl;
                     //Update the simulation parameter if the loop repeats after the first run....
@@ -1576,18 +1576,10 @@ class Simulation
                     //Check for convergence here....
                     cout << "Checking for convergence..." << endl;
 
-                    isConverged = check_convergence(); 
+                    isConverged = check_convergence(numLoops); 
                     cout << "Convergence after the FDTD-Schwarz Loop: " << isConverged << endl;
 
-                    //Continue the loop if not converged...
-                    
-                    if(numLoops > 2){
-                        isConverged = true;
-                        cout << "Finished converging. Total number of loops (in while loop): " << numLoops << endl;
-                    }
-
-                    cout << "End of Schwarz loop no. " << numLoops << endl;
-                    numLoops++;
+                  
                 }
                 
 
@@ -1611,62 +1603,172 @@ class Simulation
                 */
                 cout << "OPENMP PART OF THE CODE...." << endl;
                 omp_set_num_threads(sim_param.num_subdomains);
-                //This is the FDTD Time Loop
-                for(int curr_iter=0;curr_iter<sim_param.Nt;curr_iter++)
+
+                unsigned int numLoops = 0;
+                bool isConverged = false;
+                while(isConverged == false)
                 {
-                    bool isConverged = false;
-                    //Loop the FDTD-Schwarz until the data has converged...
-                    while(isConverged == false)
+                    /*
+                        This is the loop for the Schwarz method, at this point openMP is not yet used since it is not possible
+                        The numLoop variable counts how many times the fdtd-schwarz looped to change the simulation parameters
+                    */
+                   
+                    auto fdtd_schwarz_start_conv_time = chrono::high_resolution_clock::now();
+
+                    cout << "numLoops: " << numLoops << endl;
+                    //Break the loop after n number of loops
+                    
+                    
+                     //Update simulation parameters if the loop repeats after the initial run
+                    if(numLoops > 0)
                     {
-                        //Iterate through the subdomain objects...
-                        //While loop and dependent on the return value of convergence function
-                        #pragma omp parallel //Create a parallel region using OpenMP
+                        update_sim_param(init_N_lambda + numLoops, init_N_d + numLoops);
+                    }
+                    
+                    //Increment numLoops by 1
+                    numLoops++;
+
+                   
+                    cout << "Starting FDTD Algorithm" << endl;
+                    //FDTD Time Loop
+                    for(int curr_iter = 0; curr_iter < sim_param.Nt; curr_iter++)
+                    {
+                        //In this part, we can now use concurrency to process all subdomains at once
+                        //since there is no values required that is in the preceeding time iteration
+
+                        //cout << "Current iteration: " << curr_iter + 1 << "/" << sim_param.Nt << "\r" ;
+                        //openMP part by creating a parallel region
+                        #pragma omp parallel
                         {
-                            //Get the thread id...
+
+                            /*
+                            Transferring the boundary data of each 2D matrices of the subdomains
+                            Left side index = overlap - 1 (since index starts at 0)
+                            Right side index = Subdom size - overlap
+                            Convention: We will always GET the data from the RIGHT ADJACENT SUBDOMAIN so the last subdomain is not included
+                            */
+
+                            //Measure the starting time of the process
+                            auto fdtd_schwarz_sub_start_time = chrono::high_resolution_clock::now();
+
+                            //Get each thread id from each process/subdomain
                             int thread_id = omp_get_thread_num();
 
-                            //In multithread, each thread will call their own subdomain object...
+
+                             //Transfer ghost cells here
+                            /*
+                                In transferring ghost cells,
+                                Left Ghost Cell = Magnetic Field Value
+                                Right Ghost Cell = Electric Field Value
+                            */
+
+                            if(thread_id == 0)
+                            {
+                                
+                                //If it is the 1st subdomain, only transfer from the right ghost cell
+                                subdomains[thread_id].right_ghost_cell = subdomains[thread_id + 1].s_fields.E(sim_param.overlap_size-1);
+                               // cout << "Transferring ghost cell in subdom " << thread_id << " | Right ghost cell: " << subdomains[thread_id].right_ghost_cell << endl;
+                            }
+                            else if(thread_id == sim_param.num_subdomains - 1)
+                            {
+                                //If it is the last subdomain, only transfer from the left ghost cell
+                                unsigned long end = subdomains[thread_id -1].s_fields.H.shape(0);
+                                subdomains[thread_id].left_ghost_cell = subdomains[thread_id - 1].s_fields.H(end - sim_param.overlap_size);
+                                //cout << "Transferring ghost cell in subdom " << thread_id << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell << endl;
+                            
+                            }
+                            else{
+                                //Else, get the left and right ghost cells (if it is in the middle)
+                                unsigned long end = subdomains[thread_id -1].s_fields.H.shape(0);
+                                subdomains[thread_id].left_ghost_cell = subdomains[thread_id - 1].s_fields.H(end - sim_param.overlap_size);
+                                subdomains[thread_id].right_ghost_cell = subdomains[thread_id + 1].s_fields.E(sim_param.overlap_size-1);
+                                //cout << "Transferring ghost cell in subdom " << thread_id << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell  << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
+                            
+                            }
+                            //Call the simulate function in each subdomain...
                             subdomains[thread_id].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
-                        
+                    
+                         
+                            //Make sure that at this point, all threads are finished
                             #pragma omp barrier
 
 
-                            //Transfer the internal boundary data of the adjacent subdomains here....
-                            //Toggle here if you want the direction to be left or right in transferring the boundary data...
+
+                            //Transfer the internal boundary data after ALL subdomains finished...
                             #pragma omp critical
                             {
-                                if (direction == "right")
-                                {
-                                    //Skip the last subdomain (since there is no adjacent subdomain in the right side)
-                                    if(thread_id != sim_param.num_subdomains -1)
-                                    {
-                                        //Make this such that only 1 thread executes this method at a time to prevent race conditions.
-                                        subdomains[thread_id].transfer_boundary_data(subdomains[thread_id + 1],direction);
-                                    } 
+                                /*
+                                Transferring the boundary data of each 2D matrices of the subdomains
+                                Left side index = overlap - 1 (since index starts at 0)
+                                Right side index = Subdom size - overlap
+                                Convention: We will always GET the data from the RIGHT ADJACENT SUBDOMAIN so the last subdomain is not included
+                                */
+
+                               if (thread_id < sim_param.num_subdomains -1) //Ignore the last subdomain...
+                               {
+                                    
+                                    // For the Electric field....
+                                    xtensor<double,1> buffer_E_curr = col(subdomains[thread_id].subdomain_output.E, sim_param.subdomain_size - sim_param.overlap_size );
+                                    xtensor<double,1> buffer_E_right = col(subdomains[thread_id + 1].subdomain_output.E, sim_param.overlap_size - 1 );
+
+                                    // Transfer the field values 
+                                    view(subdomains[thread_id].subdomain_output.E,all(),sim_param.subdomain_size - sim_param.overlap_size) = view(subdomains[thread_id + 1].subdomain_output.E,all(),0);
+
+                                    view(subdomains[thread_id + 1].subdomain_output.E,all(),sim_param.overlap_size - 1) = view(subdomains[thread_id].subdomain_output.E,all(),-1);
+
+
+                                    view(subdomains[thread_id].subdomain_output.E,all(),-1) = buffer_E_right;
+
+                                    view(subdomains[thread_id + 1].subdomain_output.E,all(),0) = buffer_E_curr;
+                                    
+
+                                    // For the Magnetic field....
+                                    xtensor<double,1> buffer_H_curr = col(subdomains[thread_id].subdomain_output.H, sim_param.subdomain_size - sim_param.overlap_size );
+                                    xtensor<double,1> buffer_H_right = col(subdomains[thread_id + 1].subdomain_output.H, sim_param.overlap_size - 1 );
+
+                                    // Transfer the field values 
+                                    view(subdomains[thread_id].subdomain_output.H,all(),sim_param.subdomain_size - sim_param.overlap_size) = view(subdomains[thread_id + 1].subdomain_output.H,all(),0);
+
+                                    view(subdomains[thread_id + 1].subdomain_output.H,all(),sim_param.overlap_size - 1) = view(subdomains[thread_id].subdomain_output.H,all(),-1);
+
+
+                                    view(subdomains[thread_id].subdomain_output.H,all(),-1) = buffer_H_right;
+
+                                    view(subdomains[thread_id + 1].subdomain_output.H,all(),0) = buffer_H_curr;
                                 }
-                                else if(direction == "left")
-                                {
-                                    //Skip the first subdomain (since there is no adjacent subdomain in the left side)
-                                    if(thread_id == 0)
-                                    {   
-                                        //Make this such that only 1 thread executes this method at a time to prevent race conditions.
-                                        subdomains[thread_id].transfer_boundary_data(subdomains[thread_id - 1],direction);
-                                    }
-                                }
-                            } 
+
+                            }
+
+                            // Measuring the time duration which a subdomain has done this block of code
+                            auto fdtd_schwarz_sub_end_time = chrono::high_resolution_clock::now();
+                            chrono::duration<double, std::milli> fdtd_schwarz_sub_duration = fdtd_schwarz_sub_end_time - fdtd_schwarz_sub_start_time;
+                            subdomains[thread_id].subdomain_output.subdom_time += fdtd_schwarz_sub_duration.count();
+                       
                         }
-                        
-                        //Check for convergence here....
-                        isConverged = check_convergence();
-                        //Continue the loop if not converged...
                     }
-                    //If converged, reconstruct the whole comp domain here...
-                    reconstruct_comp_domain();
-                    //Update the FFT here....
+
+                    
+                    cout << endl << "Checking for convergence..." << endl;
+                    isConverged = check_convergence(numLoops);
+                    cout << "Convergence after the run: " << isConverged << " | numLoops: " << numLoops << endl;
+
+                    //Measure the convergence time...
+                    if(isConverged == true)
+                    {
+                        auto fdtd_schwarz_end_conv_time = chrono::high_resolution_clock::now();
+                        chrono::duration<double,std::milli> fdtd_schwarz_conv_duration =  fdtd_schwarz_end_conv_time - fdtd_schwarz_start_conv_time;
+
+                    }
+
                 }
+                cout << "Reconstructing comp domain.." << endl;
+                // If the simulation has successfully converged, reconstruct the whole computational domain...
+                reconstruct_comp_domain();
+
+                
             }
         
-
+            cout << "Measuring time at the end of fdtd-schwarz..." << endl;
             // Measure the overall algorithm execution time of the program
             auto fdtd_schwarz_end_time = chrono::high_resolution_clock::now();
             chrono::duration<double, std::milli> fdtd_schwarz_duration = fdtd_schwarz_end_time - fdtd_schwarz_start_time;
@@ -1702,13 +1804,14 @@ class Simulation
                     //Start to get some value on the sim_fields by saving the data of the 1st subdomain..
                     output.E = view(subdomains[subdom_index].subdomain_output.E,all(),range(start,_));
                     output.H = view(subdomains[subdom_index].subdomain_output.H,all(),range(start,_));
-
+                    
                 }
                 else if(subdom_index == sim_param.num_subdomains -1)
                 {
                     //When at the end of the domain, do not include the extra padding..
                     output.E = hstack(xtuple(output.E,view(subdomains[subdom_index].subdomain_output.E,all(),range(start,stop))));
                     output.H = hstack(xtuple(output.H,view(subdomains[subdom_index].subdomain_output.H,all(),range(start,stop))));
+                    
                 }
                 else{
                     //When the subdomain is in the middle (not leftmost or rightmost), get all values except the overlap region on the left
@@ -1716,12 +1819,61 @@ class Simulation
                     output.H = hstack(xtuple(output.H,view(subdomains[subdom_index].subdomain_output.H,all(),range(start,_))));
                 }
             }
-            
+            cout << "Computing for the Reflectance and Transmittance..." << endl;
+            unsigned long end = sim_param.Nz - 1;
+            xtensor<complex<double>,1> R = zeros<complex<double>>(sim_fields.Kernel_Freq.shape());
+            xtensor<complex<double>,1> T = zeros<complex<double>>(sim_fields.Kernel_Freq.shape());
+        
+            //Compute for the FFT in each time iteration...
+            for(int curr_iter=0;curr_iter < sim_param.Nt; curr_iter++)
+            {
+                //Compute for the Reflectance and Transmittance and Source FFT
+                /*if(curr_iter == 0)
+                {
+                    row(output.Reflectance,curr_iter) =  real(pow(sim_fields.Kernel_Freq,curr_iter)*subdomains[0].subdomain_output.E(curr_iter,1));
+                    row(output.Transmittance,curr_iter) = real(pow(sim_fields.Kernel_Freq,curr_iter)*subdomains[sim_param.num_subdomains - 1].subdomain_output.E(curr_iter,end));
+                    row(output.Source_FFT,curr_iter) = real(pow(sim_fields.Kernel_Freq,curr_iter)*sim_source_fields.Esrc(curr_iter));
+                }
+                else{
+                    row(output.Reflectance,curr_iter) = real(row(output.Reflectance,curr_iter - 1) + (pow(sim_fields.Kernel_Freq,curr_iter)*subdomains[0].subdomain_output.E(curr_iter,1)));
+                    row(output.Transmittance,curr_iter) = real(row(output.Transmittance,curr_iter - 1) + (pow(sim_fields.Kernel_Freq,curr_iter)*subdomains[sim_param.num_subdomains - 1].subdomain_output.E(curr_iter,end)));
+                    row(output.Source_FFT,curr_iter) = real(row(output.Source_FFT,curr_iter-1) + (pow(sim_fields.Kernel_Freq,curr_iter)*sim_source_fields.Esrc(curr_iter)));
+                
+                }*/
+                //Compute for the Fourier Transform of the current simulation window
+                //More cheaper than saving all the data, it will compute at each iteration
+                R = R + (pow(sim_fields.Kernel_Freq,curr_iter)*output.E(curr_iter,1));
+                T = T + (pow(sim_fields.Kernel_Freq,curr_iter)*output.E(curr_iter,end));
+                sim_fields.Source_FFT = sim_fields.Source_FFT  + (pow(sim_fields.Kernel_Freq,curr_iter)*
+                                                                  sim_source_fields.Esrc(curr_iter));
+
+                //Normalize the computed Fourier Transform
+                sim_fields.Reflectance = pow(real(R/sim_fields.Source_FFT ),2);
+                sim_fields.Transmittance = pow(real(T/sim_fields.Source_FFT ),2);
+                sim_fields.Con_of_Energy = sim_fields.Reflectance + sim_fields.Transmittance;
+
+                row(output.Source_FFT,curr_iter) = real(sim_fields.Source_FFT);
+                //for the Fourier Transform
+                row(output.Reflectance,curr_iter) = real(sim_fields.Reflectance);
+                row(output.Transmittance,curr_iter) = real(sim_fields.Transmittance);
+                row(output.Con_of_Energy,curr_iter) = real(sim_fields.Con_of_Energy);
+
+            }
+
+            /*cout << "Computing the normalized values" << endl;
+            //Compute for the normalized values
+            for(int curr_iter=0;curr_iter < sim_param.Nt; curr_iter++)
+            {
+                row(output.Reflectance,curr_iter) = real(pow(real(row(output.Reflectance,curr_iter)/row(output.Source_FFT,curr_iter)),2));
+                row(output.Transmittance,curr_iter) = real(pow(real(row(output.Transmittance,curr_iter)/row(output.Source_FFT,curr_iter)),2));
+                row(output.Con_of_Energy,curr_iter) = row(output.Reflectance,curr_iter) + row(output.Transmittance,curr_iter);
+            }*/
+
             return true;
         }
 
 
-        bool check_convergence()
+        bool check_convergence(int numLoops)
         {
 
             /*
@@ -1785,7 +1937,14 @@ class Simulation
             cout << "H error 2D matrix: " << output.H_error_list << endl;
 
             // Check the convergence here by using the determined error threshold
-            isConverged = true; 
+            if(numLoops > 100)
+            {
+                isConverged = true;
+            }
+            else{
+                isConverged = false; 
+            }
+            
 
             return isConverged;
         }
@@ -2009,6 +2168,7 @@ class Simulation
                 write_to_hdf5(file, string("/sim param/boundary cond"), sim_param.boundary_cond);
                 write_to_hdf5(file, string("/sim param/excitation method"), sim_param.excitation_method);
                 write_to_hdf5(file, string("/sim param/algorithm"), sim_param.algorithm);
+                write_to_hdf5(file, string("/sim param/multithreading"), sim_param.multithread);
                 write_to_hdf5(file, string("/sim param/num subdomains"), sim_param.num_subdomains);
                 write_to_hdf5(file, string("/sim param/num freqs"), sim_param.n_freq);
                 write_to_hdf5(file, string("/sim param/left spacer"), sim_param.left_spacers);
@@ -2044,7 +2204,7 @@ class Simulation
                 write_to_hdf5(file, string("/comp domain/n"), comp_domain.n);
                 cout << "---> Saved!" << endl;
 
-                cout << "Saving Output Data-----" << endl;
+                cout << "Saving Output Data-----" ;
                 
                 if(sim_param.algorithm == "fdtd-schwarz")
                 {

@@ -105,6 +105,7 @@ typedef struct Simulation_parameters{
     unsigned int overlap_size = 0;
     unsigned int non_overlap_size = 0;
 
+    double prop_coeff = 2;
     //For changing the sim parameters in Schwarz
     unsigned int n_wavelength = 0;
     unsigned int n_dimension = 0;
