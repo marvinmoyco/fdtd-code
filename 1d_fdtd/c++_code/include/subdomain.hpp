@@ -173,15 +173,12 @@ class Subdomain
                 
             }
             else{ 
-                // For the left INT boundary of all subdomains except the 1st
-                // Use the ghost cells here by updating the leftmost index (0) using the update equation
-        
-                
-
+                // Add PABC boundary conditions to INT boundaries 
                 s_fields.E(start) = s_fields.H_start.front();
                 s_fields.H_start.pop_front();
                 s_fields.H_start.push_back(s_fields.E(start+1));
 
+                // Use the ghost cells here by updating the leftmost index (0) using the update equation
                 s_fields.E(start) = s_fields.E(start) + (s_fields.m_E(start)*(s_fields.H(start) - left_ghost_cell ));
             }
            
@@ -216,13 +213,12 @@ class Subdomain
             }
             else
             {
-                // For the right INT boundary of all subdomains except the last
-                // Use the ghost cells here by updating the rightmost index (n) using the update equation
-
+                // Add PABC boundary conditions to INT boundaries
                 s_fields.H(stop-1) = s_fields.E_end.front();
                 s_fields.E_end.pop_front();
                 s_fields.E_end.push_back(s_fields.H(stop-2));
 
+                // Use the ghost cells here by updating the rightmost index (n) using the update equation
                 s_fields.H(stop) = s_fields.H(stop) + (s_fields.m_H(stop)*( right_ghost_cell - s_fields.E(stop)));
             }
 
