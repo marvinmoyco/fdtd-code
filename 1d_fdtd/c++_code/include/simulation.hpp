@@ -1932,7 +1932,7 @@ class Simulation
             cout << "H error 2D matrix: " << output.H_error_list << endl;
 
             // Check the convergence here by using the determined error threshold
-            if(numLoops > 20)
+            if(numLoops > 100)
             {
                 isConverged = true;
             }
