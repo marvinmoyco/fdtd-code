@@ -160,7 +160,7 @@ class Subdomain
             // Step 1: Store boundary data for the 1st subdomain (for the external boundary data) 
             if(subdomain_param.subdomain_id == 0)
             {
-                if(boundary_condition == "pabc")
+                if(subdomain_param.boundary_condition == "pabc")
                 {
                     s_fields.E(start) = s_fields.H_start.front();
                     s_fields.H_start.pop_front();
