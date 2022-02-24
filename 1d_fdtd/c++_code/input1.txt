@@ -1,12 +1,12 @@
 inputs.csv
-pabc
+dirichlet
 tfsf
-free_space_multithreading
+free_space_multithreading1
 hdf5
 fdtd-schwarz
-8
-1
 4
+1
+10
 1
 4
 marvin
