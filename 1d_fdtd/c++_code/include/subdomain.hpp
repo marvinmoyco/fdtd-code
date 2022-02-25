@@ -147,7 +147,7 @@ class Subdomain
             {
                 //cout << "Getting the indices for the last subdomain..." << endl;
                 start = 0;
-                stop = s_fields.E.shape(0) - subdomain_param.overlap -1;
+                stop = s_fields.E.shape(0) - subdomain_param.overlap ;
             }
             else{ //If it is in between the 1st and last subdomain...
 
@@ -222,7 +222,7 @@ class Subdomain
                 s_fields.E_end.push_back(s_fields.H(stop-2));
 
                 // Use the ghost cells here by updating the rightmost index (n) using the update equation
-                s_fields.H(stop) = s_fields.H(stop) + (s_fields.m_H(stop)*( right_ghost_cell - s_fields.E(stop)));
+                s_fields.H(stop-1) = s_fields.H(stop-1) + (s_fields.m_H(stop-1)*( right_ghost_cell - s_fields.E(stop-1)));
            
             }
 
