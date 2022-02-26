@@ -1,5 +1,5 @@
 inputs.csv
-dirichlet
+pabc
 tfsf
 inputs_FDTD-S_wTransfer
 hdf5
