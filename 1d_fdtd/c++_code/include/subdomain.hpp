@@ -90,7 +90,7 @@ class Subdomain
             
             }
 
-            if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
+            if(subdomain_param.subdomain_id == 0)
             {
                 subdomain_source = sources;
 
@@ -183,7 +183,7 @@ class Subdomain
             view(s_fields.H,range(start,stop-1)) = view(s_fields.H,range(start,stop-1)) + (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1)));
 
             // Step 3: Update source excitation (applicable only when the subdom is the 1st one)
-            if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) //Insert the Hsrc when  you are at the 1st subdomain...
+            if(subdomain_param.subdomain_id == 0) //Insert the Hsrc when  you are at the 1st subdomain...
             {
                 if(subdomain_param.excitation_method == "tfsf")
                 {
@@ -226,7 +226,7 @@ class Subdomain
 
             
             // Step 6: Update E source excitaiton
-            if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
+            if(subdomain_param.subdomain_id == 0)
             {
                 if(subdomain_param.excitation_method == "hard")
                 {
