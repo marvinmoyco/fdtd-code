@@ -1810,8 +1810,6 @@ class Simulation
                 // Measure the starting time for the convergence 
                 auto fdtd_schwarz_start_conv_time = chrono::high_resolution_clock::now();
 
-                // Increment numLoops by 1
-                numLoops++;
                 cout << "numLoops: " << numLoops << endl;
 
                 // Update the simulation parameters after the initial iteration
@@ -1820,14 +1818,20 @@ class Simulation
                     // To update sim param, increment the N_lambda and N_d by numLoops
                     update_sim_param(init_N_lambda + numLoops, init_N_d + numLoops);
                 }
+                // Increment numLoops by 1
+                numLoops++;
+                
+                
 
-                // FDTD Time Loop
-                for(int curr_iter=0; curr_iter < sim_param.Nt; curr_iter++)
+                
+                if(sim_param.multithread == false)
                 {
-                    if(sim_param.multithread == false)
+                    //Iterate through the subdomain objects...
+                    //While loop and dependent on the return value of the convergence function...
+
+                    // FDTD Time Loop
+                    for(int curr_iter=0; curr_iter < sim_param.Nt; curr_iter++)
                     {
-                        //Iterate through the subdomain objects...
-                        //While loop and dependent on the return value of the convergence function...
                         for(int subdom_index = 0; subdom_index < sim_param.num_subdomains; subdom_index++)
                         {
                             auto fdtd_schwarz_sub_start_time = chrono::high_resolution_clock::now();
@@ -1839,14 +1843,14 @@ class Simulation
                                 Right Ghost Cell = Electric Field Value
                             */
                             
-                           // cout << "\rCurrent Iteration: "<<curr_iter + 1 << "/" <<sim_param.Nt << endl;
+                            // cout << "\rCurrent Iteration: "<<curr_iter + 1 << "/" <<sim_param.Nt << endl;
 
                             if(subdom_index == 0)
                             {
                                 
                                 //If it is the 1st subdomain, only transfer from the right ghost cell
                                 subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size-1);
-                               // cout << "Transferring ghost cell in subdom " << subdom_index << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
+                                // cout << "Transferring ghost cell in subdom " << subdom_index << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
                             }
                             else if(subdom_index == sim_param.num_subdomains - 1)
                             {
@@ -1887,19 +1891,22 @@ class Simulation
 
                             subdomains[subdom_index].subdomain_output.subdom_time += fdtd_schwarz_sub_duration.count();
                         }
-
-                        //cout << "End of FDTD Time Loop no. " << curr_iter << endl;
                     }
-                    else if(sim_param.multithread == true)
-                    {
-                        //In this part, we can now use concurrency to process all subdomains at once
-                        //since there is no values required that is in the preceeding time iteration
 
+                    //cout << "End of FDTD Time Loop no. " << curr_iter << endl;
+                }
+                else if(sim_param.multithread == true)
+                {
+                    //In this part, we can now use concurrency to process all subdomains at once
+                    //since there is no values required that is in the preceeding time iteration
+                    // FDTD Time Loop
+                    for(int curr_iter=0; curr_iter < sim_param.Nt; curr_iter++)
+                    {
                         //cout << "Current iteration: " << curr_iter + 1 << "/" << sim_param.Nt << "\r" ;
                         //openMP part by creating a parallel region
                         #pragma omp parallel
                         {
-                             /*
+                                /*
                             Transferring the boundary data of each 2D matrices of the subdomains
                             Left side index = overlap - 1 (since index starts at 0)
                             Right side index = Subdom size - overlap
@@ -1913,7 +1920,7 @@ class Simulation
                             int thread_id = omp_get_thread_num();
 
 
-                             //Transfer ghost cells here
+                                //Transfer ghost cells here
                             /*
                                 In transferring ghost cells,
                                 Left Ghost Cell = Magnetic Field Value
@@ -1925,7 +1932,7 @@ class Simulation
                                 
                                 //If it is the 1st subdomain, only transfer from the right ghost cell
                                 subdomains[thread_id].right_ghost_cell = subdomains[thread_id + 1].s_fields.E(sim_param.overlap_size-1);
-                               // cout << "Transferring ghost cell in subdom " << thread_id << " | Right ghost cell: " << subdomains[thread_id].right_ghost_cell << endl;
+                                // cout << "Transferring ghost cell in subdom " << thread_id << " | Right ghost cell: " << subdomains[thread_id].right_ghost_cell << endl;
                             }
                             else if(thread_id == sim_param.num_subdomains - 1)
                             {
@@ -1951,14 +1958,15 @@ class Simulation
                             auto fdtd_schwarz_sub_end_time = chrono::high_resolution_clock::now();
                             chrono::duration<double, std::milli> fdtd_schwarz_sub_duration = fdtd_schwarz_sub_end_time - fdtd_schwarz_sub_start_time;
                             subdomains[thread_id].subdomain_output.subdom_time += fdtd_schwarz_sub_duration.count();
-                       
-                         
+                        
+                            
                             //Make sure that at this point, all threads are finished
                             #pragma omp barrier
                         }
-
                     }
+
                 }
+                
                 /*
                 // Transferring overlapping region
                 if(sim_param.multithread == false)

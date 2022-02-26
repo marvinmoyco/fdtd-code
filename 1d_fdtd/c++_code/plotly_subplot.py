@@ -500,4 +500,4 @@ if algo == "fdtd-schwarz":
     #fig.show('chrome') #in jupyter notebook
     #fig.show('browser') # in browser (the former offline.plot)
     print("Writing to html....")
-    subdom_fig.write_html(filename[:-5]+f"_{num_subdom}_subdomains"+".html")
+    subdom_fig.write_html(filename[:-5]+f"_{num_subdom}_subdomains"+".html",auto_play=False)

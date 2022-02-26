@@ -1,13 +1,13 @@
-varying_length.csv
+inputs.csv
 pabc
 tfsf
-varying_length_006
+free_space_multithreading2
 hdf5
-fdtd
+fdtd-schwarz
+4
 1
-0
-0.25
+10
 1
-2
+10
 marvin
 Simulation results of 1D FDTD Basic algorithm using varying_n.csv

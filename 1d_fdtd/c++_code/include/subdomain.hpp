@@ -90,7 +90,7 @@ class Subdomain
             
             }
 
-            if(subdomain_param.subdomain_id == 0)
+            if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
             {
                 subdomain_source = sources;
 
@@ -131,28 +131,23 @@ class Subdomain
         
 
             //Initialize variable indices
-            //cout << " Subdom " << subdomain_param.subdomain_id  << ": " << endl;
-
-            //cout << "E: " << s_fields.E << endl;
-            //cout << "H: " << s_fields.H << endl;
-
             unsigned int start = 0;
             unsigned int stop = 0;
             if(subdomain_param.subdomain_id == 0) //If the subdomain is the 1st one...
             {
                 start = subdomain_param.overlap;
-                stop = s_fields.E.shape(0)-1;
+                stop = s_fields.E.shape(0);
             }
             else if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) // If it is the last..
             {
                 //cout << "Getting the indices for the last subdomain..." << endl;
                 start = 0;
-                stop = s_fields.E.shape(0) - subdomain_param.overlap ;
+                stop = subdomain_param.non_overlap_size + subdomain_param.overlap -1;
             }
             else{ //If it is in between the 1st and last subdomain...
 
                 start = 0;
-                stop = s_fields.E.shape(0)-1;
+                stop = s_fields.E.shape(0);
 
             }
             //cout << "Indices (start,stop): (" << start << "," << stop << ")" << endl;
@@ -188,7 +183,7 @@ class Subdomain
             view(s_fields.H,range(start,stop-1)) = view(s_fields.H,range(start,stop-1)) + (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1)));
 
             // Step 3: Update source excitation (applicable only when the subdom is the 1st one)
-            if(subdomain_param.subdomain_id == 0) //Insert the Hsrc when  you are at the 1st subdomain...
+            if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) //Insert the Hsrc when  you are at the 1st subdomain...
             {
                 if(subdomain_param.excitation_method == "tfsf")
                 {
@@ -197,19 +192,22 @@ class Subdomain
                 }
             }
 
+            // Step 4: Update E from H
+            view(s_fields.E,range(start+1,stop)) =  view(s_fields.E,range(start+1,stop)) + (view(s_fields.m_E,range(start+1,stop))*(view(s_fields.H,range(start+1,stop))-view(s_fields.H,range(start,stop-1))));
 
-            // Step 4: Store H boundary terms
+            // Step 5: Store H boundary terms
             if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
             {
                 if(subdomain_param.boundary_condition == "pabc")
                 {
                     s_fields.H(stop-1) = s_fields.E_end.front();
                     s_fields.E_end.pop_front();
-                    s_fields.E_end.push_back(s_fields.H(stop-2));
+                    s_fields.E_end.push_back(s_fields.H(stop-3));
+                    //s_fields.H(stop) = 0;
                 }
                 else if(subdomain_param.boundary_condition == "dirichlet")
                 {
-                    s_fields.H(stop) = 0;
+                    s_fields.H(stop-1) = 0;
                 }
                 
             }
@@ -226,11 +224,9 @@ class Subdomain
            
             }
 
-            // Step 5: Update E from H
-            view(s_fields.E,range(start+1,stop)) =  view(s_fields.E,range(start+1,stop)) + (view(s_fields.m_E,range(start+1,stop))*(view(s_fields.H,range(start+1,stop))-view(s_fields.H,range(start,stop-1))));
-
+            
             // Step 6: Update E source excitaiton
-            if(subdomain_param.subdomain_id == 0)
+            if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
             {
                 if(subdomain_param.excitation_method == "hard")
                 {
