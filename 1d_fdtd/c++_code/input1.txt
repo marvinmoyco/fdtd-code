@@ -5,9 +5,9 @@ free_space_multithreading1
 hdf5
 fdtd-schwarz
 4
-1
-10
+0
+0.25
 1
 3
-marvin
-Simulation results of 1D FDTD Algorithm using varying_length.csv
+karlo
+Simulation results of 1D FDTD-Schwarz Algorithm
