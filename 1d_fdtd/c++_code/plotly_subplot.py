@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import numpy as np
 import h5py
 import sys
+import os
 
 #Converter function from numpy ndarray to str object
 def np_to_str(input):
@@ -108,7 +109,7 @@ for i in range(Nt):
 
 
         new_Nt += 1
-    elif i % 10 == 0:
+    elif i % 2 == 0:
         new_E = np.vstack((new_E,E[i,:]))
         new_H = np.vstack((new_H,H[i,:]))
         new_R = np.vstack((new_R,R[i,:]))
@@ -332,7 +333,19 @@ fig.update_layout(updatemenus=updatemenus,
 #fig.show('chrome') #in jupyter notebook
 #fig.show('browser') # in browser (the former offline.plot)
 print("Writing to html....")
-fig.write_html(filename[:-5]+".html")
+main_plot_name = filename[:-5] + ".html"
+numFile = 1
+while True:
+    isFileExists = os.path.exists(main_plot_name)
+    
+    if isFileExists == False:
+        break
+    numFile += 1
+    num_str = str(numFile).zfill(3)
+    main_plot_name = filename[:-5] + num_str + ".html"
+            
+
+fig.write_html(main_plot_name,auto_play=False)
 
 
 
@@ -500,4 +513,16 @@ if algo == "fdtd-schwarz":
     #fig.show('chrome') #in jupyter notebook
     #fig.show('browser') # in browser (the former offline.plot)
     print("Writing to html....")
-    subdom_fig.write_html(filename[:-5]+f"_{num_subdom}_subdomains"+".html",auto_play=False)
+    subdom_plot_name = filename[:-5]+f"_{num_subdom}_subdomains" + ".html"
+    numFile = 1
+    while True:
+        isFileExists = os.path.exists(subdom_plot_name)
+        
+        if isFileExists == False:
+            break
+        numFile += 1
+        num_str = str(numFile).zfill(3)
+        subdom_plot_name = filename[:-5] + str(numFile).zfill(3) + f"_{num_subdom}_subdomains" + ".html"
+
+
+    subdom_fig.write_html(subdom_plot_name,auto_play=False)

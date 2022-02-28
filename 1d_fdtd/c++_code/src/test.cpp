@@ -245,6 +245,9 @@ int main()
     cout << "X: " << X << endl;
     cout << "X(0,1): " << X(0,1) << endl << "X(0,5): " << X(0,5) << endl;
     
+    xtensor<double,1> V = {1.0,2.0,3.0,4.0,5.0};
+    double meanV = mean(V)(0);
+    cout << "Mean: " << meanV << endl;
     
     
     return 0;

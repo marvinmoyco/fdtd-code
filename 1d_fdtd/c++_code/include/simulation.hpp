@@ -30,7 +30,19 @@ class Simulation
         //Initializing variables in the constructor
         Simulation(string input_file="")
         {
+            //Before loading, check the file first if it exists
+            bool fileExists = filesystem::exists(input_file);
+            if (fileExists == false)
+            {
+                //If the file does not exists, switch the input processing to manual mode.
+                //input_file = "manual";
+                // Print that the file does not exists...
+                cout << "ERROR: File '" << input_file << "' does not exists. Re-run the program with the correct input." << endl;
+                exit(EXIT_FAILURE);
+
+            }
             
+
             if(input_file == "manual")  // If there is no input file path, use terminal or stdin/stdout for input/
             {
                 /*
@@ -101,6 +113,9 @@ class Simulation
 
             }
             else{ //If there is a filename, process it by load_csv()
+
+                
+                
                 ifstream input_stream;
                 input_stream.open(input_file);
                 cout << "Starting to create a simulation object..." << endl;
@@ -1962,6 +1977,39 @@ class Simulation
                             
                             //Make sure that at this point, all threads are finished
                             #pragma omp barrier
+
+                            
+                            /*Transfer internal boundary data of each subdomain...
+                            #pragma omp critical
+                            {
+                                double bufferE1 = 0.0;
+                                double bufferE2 = 0.0;
+                                double bufferH1 = 0.0;
+                                double bufferH2 = 0.0;
+
+                                if(thread_id < sim_param.num_subdomains - 1)
+                                {
+                                    bufferE1 = subdomains[thread_id].s_fields.E(subdomains[thread_id].s_fields.E.shape(0)-1);
+                                    bufferE2 = subdomains[thread_id+1].s_fields.E(0);
+
+                                    subdomains[thread_id].s_fields.E(subdomains[thread_id].s_fields.E.shape(0)-1) = subdomains[thread_id+1].s_fields.E(sim_param.overlap_size - 1);
+                                    subdomains[thread_id+1].s_fields.E(0) = subdomains[thread_id].s_fields.E(subdomains[thread_id].s_fields.E.shape(0)-sim_param.overlap_size);
+                                    //subdomains[thread_id+1].s_fields.E(sim_param.overlap_size - 1) = bufferE1;
+                                    //subdomains[thread_id].s_fields.E(subdomains[thread_id].s_fields.E.shape(0)-sim_param.overlap_size) = bufferE2;
+
+                                    bufferH1 = subdomains[thread_id].s_fields.H(subdomains[thread_id].s_fields.H.shape(0)-1);
+                                    bufferH2 = subdomains[thread_id+1].s_fields.H(0);
+
+                                    subdomains[thread_id].s_fields.H(subdomains[thread_id].s_fields.H.shape(0)-1) = subdomains[thread_id+1].s_fields.H(sim_param.overlap_size - 1);
+                                    subdomains[thread_id+1].s_fields.H(0) = subdomains[thread_id].s_fields.H(subdomains[thread_id].s_fields.H.shape(0)-sim_param.overlap_size);
+                                   // subdomains[thread_id+1].s_fields.H(sim_param.overlap_size - 1) = bufferH1;
+                                    //subdomains[thread_id].s_fields.H(subdomains[thread_id].s_fields.H.shape(0)-sim_param.overlap_size) = bufferH2;
+                                    
+                                
+                                }
+                                
+                       
+                            }*/
                         }
                     }
 
@@ -2268,13 +2316,44 @@ class Simulation
             cout << "H error 2D matrix: " << output.H_error_list << endl;
 
             // Check the convergence here by using the determined error threshold
-            if(numLoops > 3)
+            
+            
+            if(numLoops == 1)
+            {
+                //Store the initial average errors...
+                sim_param.init_E_error =  mean(output.E_error)(0);
+                sim_param.init_H_error =  mean(output.H_error)(0);
+            }
+            else{
+                //If it is not the 1st loop, get the average error by saving it to the averageError variables
+                output.averageE_error =  mean(output.E_error)(0);
+                output.averageH_error =  mean(output.H_error)(0);
+
+                //Check for convergence by comparing the current average error to the set error threshold..
+                //Error threshold = 50% of the initial error; The simulation "converges" if most of the subdomains have less than 50 % error than the initial error.
+
+                isConverged = (output.averageE_error <= (sim_param.init_E_error*0.5)) && (output.averageH_error <= (sim_param.init_H_error*0.8));
+                cout << "Current mean error of overlapping regions:" << endl;
+                cout << "E: " << output.averageE_error << " | " << "H: " << output.averageH_error << endl;
+                cout << "Error Threshold -  " << "E: " << (sim_param.init_E_error*0.5) << " | H: " <<  (sim_param.init_H_error*0.8) << endl;
+            }
+
+            //If the number of loops exceed the set amount, stop the loop, and end the simulation without converging....
+            if(numLoops >= 20)
+            {
+                cout << "Simulation did not converged but REACHED THE MAX NUMBER OF LOOPS. Forcing the converge flag to stop the simulation..." << endl;
+                isConverged = true;
+            }
+
+
+            
+            /*if(numLoops > 2)
             {
                 isConverged = true;
             }
             else{
                 isConverged = false; 
-            }
+            }*/
             
 
             return isConverged;
@@ -2456,6 +2535,37 @@ class Simulation
             {
                 //The format will be similar to a Python Dictionary, using a key-value pair
                 string h5_file_name = output_dir + date_string + "_" + name + ".hdf5";
+
+                // Check the filename if it exists
+                bool out_fileExists = true;
+                string num_str = "";
+                int num = 1;
+                while(out_fileExists == true)
+                {
+                    
+                    out_fileExists = filesystem::exists(h5_file_name);
+
+                    if(out_fileExists == false)
+                    {
+                        break;
+                    }
+
+                    num++;
+                    if(num < 100 && num >= 10)
+                    {
+                        num_str = "0" + to_string(num);
+                    }
+                    else if (num < 10)
+                    {
+                        num_str = "00" + to_string(num);
+                    }
+                    
+
+                    h5_file_name = output_dir + date_string + "_" + name + num_str + ".hdf5";
+                    cout << "New filename: " << h5_file_name << endl;
+                }
+
+
                 cout << "========================================================================" << endl;
                 cout << "Creating HDF5 file...." << endl;
                 HighFive::File file(h5_file_name, HighFive::File::Overwrite);
@@ -2504,6 +2614,10 @@ class Simulation
                 write_to_hdf5(file, string("/sim param/num freqs"), sim_param.n_freq);
                 write_to_hdf5(file, string("/sim param/left spacer"), sim_param.left_spacers);
                 write_to_hdf5(file, string("/sim param/right spacer"), sim_param.right_spacers);
+                write_to_hdf5(file, string("/sim param/init E error"), sim_param.init_E_error);
+                write_to_hdf5(file, string("/sim param/init H error"), sim_param.init_H_error);
+                
+                
                 
                 
 
@@ -2579,10 +2693,10 @@ class Simulation
                 write_to_hdf5(file, string("/output/source_fft"), output.Source_FFT);
                 write_to_hdf5(file, string("/output/E_error_list"), output.E_error_list);
                 write_to_hdf5(file, string("/output/H_error_list"), output.H_error_list);
-                
-                //To be IMPLEMENTED
                 write_to_hdf5(file, string("/output/algo_time"), output.algo_time);
                 write_to_hdf5(file, string("/output/overall_time"), output.overall_time);
+                write_to_hdf5(file, string("/output/averageE_error"), output.averageE_error);
+                write_to_hdf5(file, string("/output/averageH_error"), output.averageH_error);
 
                 if(comprehensive == true)
                 {

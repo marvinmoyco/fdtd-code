@@ -90,7 +90,7 @@ class Subdomain
             
             }
 
-            if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
+            if(subdomain_param.subdomain_id == 0)
             {
                 subdomain_source = sources;
 
@@ -152,14 +152,21 @@ class Subdomain
             }
             //cout << "Indices (start,stop): (" << start << "," << stop << ")" << endl;
 
+            
+            
+           
             // Step 1: Store boundary data for the 1st subdomain (for the external boundary data) 
             if(subdomain_param.subdomain_id == 0)
             {
                 if(boundary_condition == "pabc")
                 {
-                    s_fields.E(start) = s_fields.H_start.front();
+                    s_fields.H(start) = s_fields.H_start.front();
                     s_fields.H_start.pop_front();
-                    s_fields.H_start.push_back(s_fields.E(start+1));
+                    s_fields.H_start.push_back(s_fields.H(start+1));
+
+                    s_fields.E(start) = s_fields.E_start.front();
+                    s_fields.E_start.pop_front();
+                    s_fields.E_start.push_back(s_fields.E(start+1));
                 }
                 else if(subdomain_param.boundary_condition == "dirichlet")
                 {
@@ -169,21 +176,39 @@ class Subdomain
             }
             else{ 
                
+                
                 // Add PABC boundary conditions to LEFT INT boundaries 
-                s_fields.E(start) = s_fields.H_start.front();
-                s_fields.H_start.pop_front();
-                s_fields.H_start.push_back(s_fields.E(start+1));
+               /* s_fields.H(start) = s_fields.L_INT_H_start.front();
+                s_fields.L_INT_H_start.pop_front();
+                s_fields.L_INT_H_start.push_back(s_fields.H(start+1));
 
-                 // Use the ghost cells here by updating the leftmost index (0) using the update equation
+                s_fields.E(start) = s_fields.L_INT_E_start.front();
+                s_fields.L_INT_E_start.pop_front();
+                s_fields.L_INT_E_start.push_back(s_fields.E(start+1));*/
+
+                 s_fields.H(start) = s_fields.H_start.front();
+                s_fields.H_start.pop_front();
+                s_fields.H_start.push_back(s_fields.H(start+1));
+
+                s_fields.E(start) = s_fields.E_start.front();
+                s_fields.E_start.pop_front();
+                s_fields.E_start.push_back(s_fields.E(start+1));
+
+                  // Use the ghost cells here by updating the leftmost index (0) using the update equation
                 s_fields.E(start) = s_fields.E(start) + (s_fields.m_E(start)*(s_fields.H(start) - left_ghost_cell ));
+
+                
+               
            
             }
-           
-            // Step 2: Update the H vector from E
+
+            // Step 2: Update the H vector from E (include update equations for ghost cells)
             view(s_fields.H,range(start,stop-1)) = view(s_fields.H,range(start,stop-1)) + (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1)));
 
-            // Step 3: Update source excitation (applicable only when the subdom is the 1st one)
-            if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1) //Insert the Hsrc when  you are at the 1st subdomain...
+                
+           
+               // Step 3: Update source excitation (applicable only when the subdom is the 1st one)
+            if(subdomain_param.subdomain_id == 0) //Insert the Hsrc when  you are at the 1st subdomain...
             {
                 if(subdomain_param.excitation_method == "tfsf")
                 {
@@ -192,18 +217,27 @@ class Subdomain
                 }
             }
 
-            // Step 4: Update E from H
+            
+            
+            // Step 4: Update E from H (include the update equation from the ghost cells)
             view(s_fields.E,range(start+1,stop)) =  view(s_fields.E,range(start+1,stop)) + (view(s_fields.m_E,range(start+1,stop))*(view(s_fields.H,range(start+1,stop))-view(s_fields.H,range(start,stop-1))));
 
+
+             
+            
             // Step 5: Store H boundary terms
             if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
             {
                 if(subdomain_param.boundary_condition == "pabc")
                 {
-                    s_fields.H(stop-1) = s_fields.E_end.front();
+                    s_fields.E(stop-1) = s_fields.E_end.front();
                     s_fields.E_end.pop_front();
-                    s_fields.E_end.push_back(s_fields.H(stop-3));
-                    //s_fields.H(stop) = 0;
+                    s_fields.E_end.push_back(s_fields.E(stop-2));
+
+                    s_fields.H(stop-1) = s_fields.H_end.front();
+                    s_fields.H_end.pop_front();
+                    s_fields.H_end.push_back(s_fields.H(stop-2));
+                    //s_fields.H(stop-1) = 0;
                 }
                 else if(subdomain_param.boundary_condition == "dirichlet")
                 {
@@ -214,19 +248,32 @@ class Subdomain
             else
             {
                 
-                // Add PABC boundary conditions to RIGHT INT boundaries
-                s_fields.H(stop-1) = s_fields.E_end.front();
+
+                
+                 
+                /*s_fields.E(stop-1) = s_fields.E_end.front();
                 s_fields.E_end.pop_front();
-                s_fields.E_end.push_back(s_fields.H(stop-2));
+                s_fields.E_end.push_back(s_fields.E(stop-2));
+
+                s_fields.H(stop-1) = s_fields.H_end.front();
+                s_fields.H_end.pop_front();
+                s_fields.H_end.push_back(s_fields.H(stop-2));*/
 
                 // Use the ghost cells here by updating the rightmost index (n) using the update equation
                 s_fields.H(stop-1) = s_fields.H(stop-1) + (s_fields.m_H(stop-1)*( right_ghost_cell - s_fields.E(stop-1)));
+                
+
+               
            
             }
 
+         
+           
+
+
             
             // Step 6: Update E source excitaiton
-            if(subdomain_param.subdomain_id == subdomain_param.num_subdomains - 1)
+            if(subdomain_param.subdomain_id == 0)
             {
                 if(subdomain_param.excitation_method == "hard")
                 {

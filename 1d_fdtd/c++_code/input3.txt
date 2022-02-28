@@ -1,13 +1,13 @@
-bragg.csv
+varying_length.csv
 pabc
 tfsf
-bragg
+fdtd-schwarz_no_multithread_varying_length
 hdf5
-fdtd
+fdtd-schwarz
+4
 1
-0
-0.25
+4
 1
-2
+3
 marvin
-Simulation results of 1D FDTD Basic Algorithm using bragg.csv
+Simulation results of 1D FDTD-Schwarz (No OpenMP) using varying_length.csv as the simulation model.

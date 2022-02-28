@@ -1,0 +1,13 @@
+bragg.csv
+pabc
+tfsf
+fdtd-schwarz_no_multithread_bragg
+hdf5
+fdtd-schwarz
+4
+1
+4
+1
+3
+marvin
+Simulation results of 1D FDTD-Schwarz (No OpenMP) using bragg.csv as the simulation model.

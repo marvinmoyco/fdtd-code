@@ -17,6 +17,7 @@
 #include <omp.h>
 #include <mutex>
 #include <assert.h>  
+#include <filesystem>
 
 //Xtensor preprocessor directives
 #include "xtensor/xarray.hpp"
@@ -82,8 +83,18 @@ typedef struct Subdomain_fields
     xtensor<double,1> H;
     xtensor<double,1> m_E;
     xtensor<double,1> m_H;
+
     list<double> E_end {0,0};
+    list<double> E_start {0,0};
     list<double> H_start {0,0};
+    list<double> H_end {0,0};
+
+    list<double> R_INT_E_end {0,0};
+    list<double> L_INT_E_start {0,0};
+    list<double> L_INT_H_start {0,0};
+    list<double> R_INT_H_end {0,0};
+
+
 } subdomain_fields;
 
 typedef struct Simulation_parameters{
@@ -113,6 +124,9 @@ typedef struct Simulation_parameters{
     vector<double> dz_list = {};
     vector<double> dt_list = {};
     bool multithread = false; //To know whether it is serial or parallel
+
+    double init_E_error = 0.0;
+    double init_H_error = 0.0;
     
     string algorithm = "fdtd";
     string source_type = "";
@@ -207,6 +221,9 @@ typedef struct Save_Data{
 
     xtensor<double,2> E_error_list;
     xtensor<double,2> H_error_list;
+
+    double averageE_error = 0.0;
+    double averageH_error = 0.0;
 
     //Algo time = Time duration when the algorithm (fdtd or fdtd-schwarz finishes)
     double algo_time = 0.0;
