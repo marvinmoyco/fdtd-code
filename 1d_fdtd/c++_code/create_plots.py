@@ -212,7 +212,7 @@ def plot_hdf5(data=None,save_plots=True,output_dir=""):
     E = np.array(data['/output/E'])
     H = np.array(data['/output/H'])
     Reflectance = np.array(data['/output/reflectance'])
-    f = np.array(data['/output/freq_axis'])
+    f = np.array(data['/output/freq_range'])
     Transmittance = np.array(data['/output/transmittance'])
     Con_of_Energy = np.array(data['/output/conservation_of_energy'])
 

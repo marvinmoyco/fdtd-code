@@ -60,7 +60,7 @@ Hsrc = data['source']['Hsrc'][:]
 #print(Esrc,Hsrc)
 ##print(R,T)
 #print(C)
-#print(E,H)
+print(E,H)
 
 #Read the config parameters
 sim_date = np_to_str((data['metadata']['date']))
@@ -109,7 +109,7 @@ for i in range(Nt):
 
 
         new_Nt += 1
-    elif i % 2 == 0:
+    elif i % 10 == 0:
         new_E = np.vstack((new_E,E[i,:]))
         new_H = np.vstack((new_H,H[i,:]))
         new_R = np.vstack((new_R,R[i,:]))

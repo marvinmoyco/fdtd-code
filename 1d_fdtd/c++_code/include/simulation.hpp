@@ -1434,7 +1434,6 @@ class Simulation
 
                     //Increment numLoops by 1
                     numLoops++;
-                    cout << "numLoops: " << numLoops << endl;
                     //Update the simulation parameter if the loop repeats after the first run....
                     if(numLoops > 0 )
                     {
@@ -1825,17 +1824,19 @@ class Simulation
                 // Measure the starting time for the convergence 
                 auto fdtd_schwarz_start_conv_time = chrono::high_resolution_clock::now();
 
-                cout << "numLoops: " << numLoops << endl;
 
                 // Update the simulation parameters after the initial iteration
                 if (numLoops > 0)
                 {
+                    numLoops = 19;
                     // To update sim param, increment the N_lambda and N_d by numLoops
                     update_sim_param(init_N_lambda + numLoops, init_N_d + numLoops);
                 }
-                // Increment numLoops by 1
-                numLoops++;
                 
+                
+                // Increment numLoops by 1
+                numLoops ++;
+                cout << "numLoops: " << numLoops << endl;
                 
 
                 

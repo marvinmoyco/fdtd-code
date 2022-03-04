@@ -106,11 +106,11 @@ class Source{
             source_output.Hsrc.resize(source_output.t.shape());
             
             //Computing the electric and magnetic field component of the source before t0
-            //view(source_output.Esrc,range(0,t_condition_size+1)) = exp(-pow(t_E_initial,2))*(sin(2*numeric_constants<double>::PI*source_param.fmax*t_condition));
-            //view(source_output.Hsrc,range(0,t_condition_size+1)) = -exp(-pow(t_H_initial,2))*(sin(2*numeric_constants<double>::PI*source_param.fmax*t_condition));
+            view(source_output.Esrc,range(0,t_condition_size+1)) = exp(-pow(t_E_initial,2))*(sin(2*numeric_constants<double>::PI*source_param.fmax*t_condition));
+            view(source_output.Hsrc,range(0,t_condition_size+1)) = -exp(-pow(t_H_initial,2))*(sin(2*numeric_constants<double>::PI*source_param.fmax*t_condition));
             //Computing the electric field and magnetic field component of the source after t0
-            view(source_output.Esrc,range(0,source_param.Nt)) = (sin(2*numeric_constants<double>::PI*source_param.fmax*view(source_output.t,range(0,source_param.Nt))));
-            view(source_output.Hsrc,range(0,source_param.Nt)) = -sqrt(source_comp_dom.n(source_comp_dom.injection_point))*(sin(2*numeric_constants<double>::PI*source_param.fmax*view(source_output.t,range(0,source_param.Nt))));
+            view(source_output.Esrc,range(t_condition_size,source_param.Nt)) = (sin(2*numeric_constants<double>::PI*source_param.fmax*view(source_output.t,range(t_condition_size,source_param.Nt))));
+            view(source_output.Hsrc,range(t_condition_size,source_param.Nt)) = -sqrt(source_comp_dom.n(source_comp_dom.injection_point))*(sin(2*numeric_constants<double>::PI*source_param.fmax*view(source_output.t,range(t_condition_size,source_param.Nt))));
 
             return 0;
         }

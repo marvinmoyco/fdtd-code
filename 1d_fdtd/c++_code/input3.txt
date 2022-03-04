@@ -1,13 +1,13 @@
-varying_length.csv
-pabc
+inputs.csv
+dirichlet
 tfsf
-fdtd-schwarz_no_multithread_varying_length
+fdtd_inputs003
 hdf5
-fdtd-schwarz
-4
+fdtd
 1
-4
+0
+1
 1
 3
 marvin
-Simulation results of 1D FDTD-Schwarz (No OpenMP) using varying_length.csv as the simulation model.
+Simulation results of 1D FDTD Basic Algorithm using inputs.csv as the simulation model. Boundary Condition: dirichlet, Excitation method: tfsf
