@@ -10,10 +10,10 @@ from scipy import constants
 # refractive index and Concrete with moisture (wet concrete) as the 
 # material with a high refractive index
 
-f = 1E9
+f = 5E9
 wavelength = constants.c/f
 fmax = 5E9
-assert f < fmax
+assert f <= fmax
 print(f"Frequency: {f} Hz | Wavelength: {wavelength} m")
 
 # Create the necessary parameters for the materials
@@ -43,7 +43,7 @@ print(f"n_H = {n_H} | d_H = {d_H} m")
 #The number of layers must be even (since the materials are stacked as a pair)
 num_layers = 10
 
-with open('bragg.csv', 'w', newline='') as csvfile:
+with open('bragg_3GHz.csv', 'w', newline='') as csvfile:
     fieldnames = ["layer size","magnetic permeability","electric permittivity","simulation parameters"]
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames,delimiter=',')
 

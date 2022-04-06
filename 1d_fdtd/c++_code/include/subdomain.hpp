@@ -324,6 +324,9 @@ class Subdomain
             return s_fields;
         }
 
+        /*
+            NOT USED in the NEW FDTD-SCHWARZ algorithm. (using simulate_new_fdtd_schwarz())
+        */
         bool transfer_boundary_data(Subdomain& adj_subdomain,string side = "right",string method = "old")
         {
             //Intermediary variable for transferring data
@@ -433,7 +436,9 @@ class Subdomain
             }
         }
 
-
+         /*
+            NOT USED in the NEW FDTD-SCHWARZ algorithm. (using simulate_new_fdtd_schwarz())
+        */
         bool compute_L2norm(string side="")
         {
             /*
@@ -457,7 +462,9 @@ class Subdomain
         }
 
         
-
+         /*
+            NOT USED in the NEW FDTD-SCHWARZ algorithm. (using simulate_new_fdtd_schwarz())
+        */
         xtensor<double,1> getOverlapValues(char field, string side = "")
         {
             xtensor<double,1> overlapValues = zeros<double>({subdomain_param.overlap});

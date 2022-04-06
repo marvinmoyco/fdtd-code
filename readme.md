@@ -6,8 +6,7 @@
     2. Multiple Sources - Gaussian Pulse, Sine Wave, Square Wave, Modulated Sine Wave.
     3. Multiple Source Excitation Method - Hard Source, Soft Source, and Total Field/Scatter Field
     4. Basic FDTD Algorithm - Conventional algorithm (leap-frog method)
-    5. Schwarz Algorithm - 
-    6. FDTD-Schwarz Method - Combined algorithm of FDTD-Schwarz in serial and parallel mode.
+    5. FDTD-Schwarz Method - Combined algorithm of FDTD-Schwarz in serial and parallel mode (using OpenMP).
 
 
 
@@ -15,17 +14,17 @@
 
 ##### Notes:
 * Libraries used are header-only type so no need to compile them. Just include the directories of the necessary libraries in the makefile before compiling.
-* Migrated the FDTD Code to C++ but still currently using matplotlib for the plotting.
+* Main code uses C++ for generating simulation data but data visualization uses Python 3 (matplotlib/plotly)
 
 ##### Current Issues:
 
 ###### FDTD
-1. Sinusoidal source propagate backwards (towards the left). Mostly fixed? but small energy is still reflected when TFSF is used (similar to all sources except Gaussian pulse).
-2. Numerical dispersion is still present (very evident in Square Wave source).
+1. Sinusoidal source propagate backwards (towards the left) when using TF/SF.
 
-###### Schwarz Method
-1. Integration of code underway.
-2. OpenMP integration underway.
+###### FDTD-Schwarz Method
+1. Sinusoidal source propagate backwards when using TF/SF.
+2. Algorithm limited up to 8 subdomains per simulation only because it causes CPU bottleneck if increased to more than 8 subdomains.
+3. Reflections generated in the internal boundary of each subdomain. This causes errors in the simulation where some energy is generated out of nowhere.
 
 
 #### Libraries Used:

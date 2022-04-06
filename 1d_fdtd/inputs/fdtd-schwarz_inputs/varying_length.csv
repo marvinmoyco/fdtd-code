@@ -1,0 +1,7 @@
+layer size,magnetic permeability,electric permittivity,simulation parameters
+2.00E-03,1.00E+00,1,1E9
+5.00E-03,1.00E+00,1,0
+10.00E-03,1.00000037,1.000536,6
+10.00E-03,0.99999976,8.9,0
+5.00E-03,1.000022,9.3,0
+2.00E-03,1.000022,12,0

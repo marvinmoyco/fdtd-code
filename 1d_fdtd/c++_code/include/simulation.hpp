@@ -1325,19 +1325,19 @@ class Simulation
                                                                   sim_source_fields.Esrc(curr_iteration));
 
                 //Normalize the computed Fourier Transform
-                sim_fields.Reflectance = pow(real(R/sim_fields.Source_FFT ),2);
-                sim_fields.Transmittance = pow(real(T/sim_fields.Source_FFT ),2);
+                sim_fields.Reflectance = pow(abs(R/sim_fields.Source_FFT ),2);
+                sim_fields.Transmittance = pow(abs(T/sim_fields.Source_FFT ),2);
                 sim_fields.Con_of_Energy = sim_fields.Reflectance + sim_fields.Transmittance;
 
                 //Save the computed fields into the save matrix
                 //For the fields...
                 row(output.E,curr_iteration) = sim_fields.E;
                 row(output.H,curr_iteration) = sim_fields.H;
-                row(output.Source_FFT,curr_iteration) = real(sim_fields.Source_FFT);
+                row(output.Source_FFT,curr_iteration) = abs(sim_fields.Source_FFT);
                 //for the Fourier Transform
-                row(output.Reflectance,curr_iteration) = real(sim_fields.Reflectance);
-                row(output.Transmittance,curr_iteration) = real(sim_fields.Transmittance);
-                row(output.Con_of_Energy,curr_iteration) = real(sim_fields.Con_of_Energy);
+                row(output.Reflectance,curr_iteration) = abs(sim_fields.Reflectance);
+                row(output.Transmittance,curr_iteration) = abs(sim_fields.Transmittance);
+                row(output.Con_of_Energy,curr_iteration) = abs(sim_fields.Con_of_Energy);
 
               
                 //cout << "\rCurrent Iteration: "<<curr_iteration + 1<<"/"<<sim_param.Nt ;
@@ -1398,7 +1398,9 @@ class Simulation
         }
 
 
-        //FDTD-Schwarz 
+        /*
+            This is the OLD FDTD-Schwarz (using the old flowchart). This IS NOT USED IN THE PROJECT ANYMORE...
+        */
         double simulate_fdtd_schwarz(string direction = "right",string boundary_condition = "", string excitation = "")
         {
             auto fdtd_schwarz_start_time = chrono::high_resolution_clock::now();
@@ -1490,8 +1492,6 @@ class Simulation
                         
                             //At this point, the ghost cells should be filled...
 
-
-                            //cout << "Calling simulate() on each subdomain" << endl;
 
                             //Call the simulate() method of the Subdomain class to proceed to the FDTD Space loop...
                             subdomains[subdom_index].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
@@ -1782,7 +1782,7 @@ class Simulation
             chrono::duration<double, std::milli> fdtd_schwarz_duration = fdtd_schwarz_end_time - fdtd_schwarz_start_time;
             output.algo_time = fdtd_schwarz_duration.count();
 
-
+            // Printing the algo runtime
             cout << "Calculating algorithm runtime..." << endl;
             cout << "Algorithm: " << sim_param.algorithm << " | Duration: " << output.algo_time << " ms" << endl;
             
@@ -1792,7 +1792,7 @@ class Simulation
         }
 
 
-        //FDTD-Schwarz 
+        //New FDTD-Schwarz Algorithm | This is the algorithm discussed in the documentation and used in this project....
         double simulate_new_fdtd_schwarz(string direction = "right",string boundary_condition = "", string excitation = "")
         {
             auto fdtd_schwarz_start_time = chrono::high_resolution_clock::now();
@@ -1828,7 +1828,6 @@ class Simulation
                 // Update the simulation parameters after the initial iteration
                 if (numLoops > 0)
                 {
-                    numLoops = 19;
                     // To update sim param, increment the N_lambda and N_d by numLoops
                     update_sim_param(init_N_lambda + numLoops, init_N_d + numLoops);
                 }
@@ -2015,129 +2014,7 @@ class Simulation
                     }
 
                 }
-                
-                /*
-                // Transferring overlapping region
-                if(sim_param.multithread == false)
-                {
-                    for(int subdom_index=0; subdom_index < sim_param.num_subdomains; subdom_index++)
-                    {
-                        /*
-                            Transferring the boundary data of each 2D matrices of the subdomains
-                            Left side index = overlap - 1 (since index starts at 0)
-                            Right side index = Subdom size - overlap
-                            Convention: We will always GET the data from the RIGHT ADJACENT SUBDOMAIN so the last subdomain is not included
-                        
-                       
-                        auto fdtd_schwarz_sub_start_time = chrono::high_resolution_clock::now();
-                        if (subdom_index < sim_param.num_subdomains -1) //Ignore the last subdomain...
-                        {
-                            
-                            // For the Electric field....
-                            xtensor<double,1> buffer_E_curr = col(subdomains[subdom_index].subdomain_output.E, sim_param.subdomain_size - sim_param.overlap_size );
-                            xtensor<double,1> buffer_E_right = col(subdomains[subdom_index + 1].subdomain_output.E, sim_param.overlap_size - 1 );
-
-                            // Transfer the field values 
-                            view(subdomains[subdom_index].subdomain_output.E,all(),sim_param.subdomain_size - sim_param.overlap_size) = view(subdomains[subdom_index + 1].subdomain_output.E,all(),0);
-
-                            view(subdomains[subdom_index + 1].subdomain_output.E,all(),sim_param.overlap_size - 1) = view(subdomains[subdom_index].subdomain_output.E,all(),-1);
-
-
-                            view(subdomains[subdom_index].subdomain_output.E,all(),-1) = buffer_E_right;
-
-                            view(subdomains[subdom_index + 1].subdomain_output.E,all(),0) = buffer_E_curr;
-                            
-
-                            // For the Magnetic field....
-                            xtensor<double,1> buffer_H_curr = col(subdomains[subdom_index].subdomain_output.H, sim_param.subdomain_size - sim_param.overlap_size );
-                            xtensor<double,1> buffer_H_right = col(subdomains[subdom_index + 1].subdomain_output.H, sim_param.overlap_size - 1 );
-
-                            // Transfer the field values 
-                            view(subdomains[subdom_index].subdomain_output.H,all(),sim_param.subdomain_size - sim_param.overlap_size) = view(subdomains[subdom_index + 1].subdomain_output.H,all(),0);
-
-                            view(subdomains[subdom_index + 1].subdomain_output.H,all(),sim_param.overlap_size - 1) = view(subdomains[subdom_index].subdomain_output.H,all(),-1);
-
-
-                            view(subdomains[subdom_index].subdomain_output.H,all(),-1) = buffer_H_right;
-
-                            view(subdomains[subdom_index + 1].subdomain_output.H,all(),0) = buffer_H_curr;
-                            
-
-
-
-                        }
-                        
-                        
-                        
-                        //Measuring the time duration of the code done by each subdomain
-                        auto fdtd_schwarz_sub_end_time = chrono::high_resolution_clock::now();
-                        chrono::duration<double, std::milli> fdtd_schwarz_sub_duration = fdtd_schwarz_sub_end_time - fdtd_schwarz_sub_start_time;
-
-                        // All of the measured duration is added on top of the previously computed time duration
-                        subdomains[subdom_index].subdomain_output.subdom_time += fdtd_schwarz_sub_duration.count();
-
-                    }
-                }
-                else if(sim_param.multithread == true)
-                {
-                    //Transfer the internal boundary data after ALL subdomains finished...
-                    #pragma omp parallel
-                    {
-                        /*
-                        Transferring the boundary data of each 2D matrices of the subdomains
-                        Left side index = overlap - 1 (since index starts at 0)
-                        Right side index = Subdom size - overlap
-                        Convention: We will always GET the data from the RIGHT ADJACENT SUBDOMAIN so the last subdomain is not included
-                        
-                        //Measure the starting time of the process
-                        auto fdtd_schwarz_sub_start_time = chrono::high_resolution_clock::now();
-
-                        //Get each thread id from each process/subdomain
-                        int thread_id = omp_get_thread_num();
-                        #pragma omp critical
-                        {
-                            if (thread_id < sim_param.num_subdomains -1) //Ignore the last subdomain...
-                            {
-                                
-                                // For the Electric field....
-                                xtensor<double,1> buffer_E_curr = col(subdomains[thread_id].subdomain_output.E, sim_param.subdomain_size - sim_param.overlap_size );
-                                xtensor<double,1> buffer_E_right = col(subdomains[thread_id + 1].subdomain_output.E, sim_param.overlap_size - 1 );
-
-                                // Transfer the field values 
-                                view(subdomains[thread_id].subdomain_output.E,all(),sim_param.subdomain_size - sim_param.overlap_size) = view(subdomains[thread_id + 1].subdomain_output.E,all(),0);
-
-                                view(subdomains[thread_id + 1].subdomain_output.E,all(),sim_param.overlap_size - 1) = view(subdomains[thread_id].subdomain_output.E,all(),-1);
-
-
-                                view(subdomains[thread_id].subdomain_output.E,all(),-1) = buffer_E_right;
-
-                                view(subdomains[thread_id + 1].subdomain_output.E,all(),0) = buffer_E_curr;
-                                
-
-                                // For the Magnetic field....
-                                xtensor<double,1> buffer_H_curr = col(subdomains[thread_id].subdomain_output.H, sim_param.subdomain_size - sim_param.overlap_size );
-                                xtensor<double,1> buffer_H_right = col(subdomains[thread_id + 1].subdomain_output.H, sim_param.overlap_size - 1 );
-
-                                // Transfer the field values 
-                                view(subdomains[thread_id].subdomain_output.H,all(),sim_param.subdomain_size - sim_param.overlap_size) = view(subdomains[thread_id + 1].subdomain_output.H,all(),0);
-
-                                view(subdomains[thread_id + 1].subdomain_output.H,all(),sim_param.overlap_size - 1) = view(subdomains[thread_id].subdomain_output.H,all(),-1);
-
-
-                                view(subdomains[thread_id].subdomain_output.H,all(),-1) = buffer_H_right;
-
-                                view(subdomains[thread_id + 1].subdomain_output.H,all(),0) = buffer_H_curr;
-                            }
-                        }
-                        // Measuring the time duration which a subdomain has done this block of code
-                        auto fdtd_schwarz_sub_end_time = chrono::high_resolution_clock::now();
-                        chrono::duration<double, std::milli> fdtd_schwarz_sub_duration = fdtd_schwarz_sub_end_time - fdtd_schwarz_sub_start_time;
-                        subdomains[thread_id].subdomain_output.subdom_time += fdtd_schwarz_sub_duration.count();
-                       
-                        #pragma omp barrier
-                    }
-                }*/
-
+              
                 //Check for convergence here....
                 cout << "Checking for convergence..." << endl;
 
@@ -2155,6 +2032,7 @@ class Simulation
             output.algo_time = fdtd_schwarz_duration.count();
 
 
+            //Print the algorithm runtime...
             cout << "Calculating algorithm runtime..." << endl;
             cout << "Algorithm: " << sim_param.algorithm << " | Duration: " << output.algo_time << " ms" << endl;
             
@@ -2223,20 +2101,20 @@ class Simulation
                 //Compute for the Fourier Transform of the current simulation window
                 //More cheaper than saving all the data, it will compute at each iteration
                 R = R + (pow(sim_fields.Kernel_Freq,curr_iter)*output.E(curr_iter,1));
-                T = T + (pow(sim_fields.Kernel_Freq,curr_iter)*output.E(curr_iter,end));
+                T = T + (pow(sim_fields.Kernel_Freq,curr_iter)*output.E(curr_iter,end-1));
                 sim_fields.Source_FFT = sim_fields.Source_FFT  + (pow(sim_fields.Kernel_Freq,curr_iter)*
                                                                   sim_source_fields.Esrc(curr_iter));
 
                 //Normalize the computed Fourier Transform
-                sim_fields.Reflectance = pow(real(R/sim_fields.Source_FFT ),2);
-                sim_fields.Transmittance = pow(real(T/sim_fields.Source_FFT ),2);
+                sim_fields.Reflectance = pow(abs(R/sim_fields.Source_FFT ),2);
+                sim_fields.Transmittance = pow(abs(T/sim_fields.Source_FFT ),2);
                 sim_fields.Con_of_Energy = sim_fields.Reflectance + sim_fields.Transmittance;
 
-                row(output.Source_FFT,curr_iter) = real(sim_fields.Source_FFT);
+                row(output.Source_FFT,curr_iter) = abs(sim_fields.Source_FFT);
                 //for the Fourier Transform
-                row(output.Reflectance,curr_iter) = real(sim_fields.Reflectance);
-                row(output.Transmittance,curr_iter) = real(sim_fields.Transmittance);
-                row(output.Con_of_Energy,curr_iter) = real(sim_fields.Con_of_Energy);
+                row(output.Reflectance,curr_iter) = abs(sim_fields.Reflectance);
+                row(output.Transmittance,curr_iter) = abs(sim_fields.Transmittance);
+                row(output.Con_of_Energy,curr_iter) = abs(sim_fields.Con_of_Energy);
 
             }
 
@@ -2332,7 +2210,6 @@ class Simulation
 
                 //Check for convergence by comparing the current average error to the set error threshold..
                 //Error threshold = 50% of the initial error; The simulation "converges" if most of the subdomains have less than 50 % error than the initial error.
-
                 isConverged = (output.averageE_error <= (sim_param.init_E_error*0.5)) && (output.averageH_error <= (sim_param.init_H_error*0.8));
                 cout << "Current mean error of overlapping regions:" << endl;
                 cout << "E: " << output.averageE_error << " | " << "H: " << output.averageH_error << endl;
@@ -2345,17 +2222,6 @@ class Simulation
                 cout << "Simulation did not converged but REACHED THE MAX NUMBER OF LOOPS. Forcing the converge flag to stop the simulation..." << endl;
                 isConverged = true;
             }
-
-
-            
-            /*if(numLoops > 2)
-            {
-                isConverged = true;
-            }
-            else{
-                isConverged = false; 
-            }*/
-            
 
             return isConverged;
         }

@@ -26,12 +26,63 @@ print(f"Nz: {np.array(data['sim param']['Nz'])}")
 z = data['comp domain']['z']
 algo = np_to_str(data['sim param']['algorithm'])
 
+n = data['comp domain']['n'][:]
+Nt = int(np.ceil(np.array(data['sim param']['Nt'])))
+freq_axis = data['/output/freq_range'][:].T
+dz = float(np.array(data['sim param']['dz']))
+spacer = int(np.array(data['sim param']['left spacer']))*dz
+dt = float(data['sim param']['dt'][()])
+Nz = data['sim param']['Nz'][()]
+t = np.linspace(0,Nt,Nt)
 #Read the main output data
 E = np.nan_to_num(data['output']['E'][:,:])
 H = np.nan_to_num(data['output']['H'][:,:])
-R = np.nan_to_num(data['output']['reflectance'][:,:])
-T = np.nan_to_num(data['output']['transmittance'][:,:])
-C = np.nan_to_num(data['output']['conservation_of_energy'][:,:])
+
+#t = data['source']['t'][:]
+t_E = data['source']['t_E'][:]
+Esrc = data['source']['Esrc'][:]
+t_H = data['source']['t_H'][:]
+Hsrc = data['source']['Hsrc'][:]
+fmax = data['sim param']['fmax'][()]
+#Compute for the FFT here...
+
+#Toggle this variable if you want to recreate the FFT of the simulation...
+recreate_fft = True
+
+if recreate_fft == True:
+    freq_axis = np.linspace(0,fmax,Nt)
+    Kernel_freq = np.exp(-1j*2*np.pi*dt*freq_axis)
+    rowR = np.zeros(Kernel_freq.shape)
+    rowT = np.zeros(Kernel_freq.shape)
+    rowC = np.zeros(Kernel_freq.shape)
+    rowS = np.zeros(Kernel_freq.shape)
+    for i in range(Nt):
+        print(f"Current iteration: {i}/{Nt}")
+        rowR = rowR + np.power(Kernel_freq,i)*E[i,1]
+        rowT = rowT + np.power(Kernel_freq,i)*E[i,-2]
+        rowS = rowS +  np.power(Kernel_freq,i)*Esrc[i]
+
+        rR = np.power(np.abs(rowR/rowS),2)
+        rT = np.power(np.abs(rowT/rowS),2)
+        rC = rR+rT
+
+        if i == 0:
+            R = rR
+            T = rT
+            C = rC
+        #elif i % 10 == 0:
+         #   new_R = np.vstack((new_R,rR))
+          #  new_T = np.vstack((new_T,rT))
+           # new_C = np.vstack((new_C,rC))
+        else:
+            R = np.vstack((R,rR))
+            T = np.vstack((T,rT))
+            C = np.vstack((C,rC))
+else:
+    R = np.nan_to_num(data['output']['reflectance'][:,:])
+    T = np.nan_to_num(data['output']['transmittance'][:,:])
+    C = np.nan_to_num(data['output']['conservation_of_energy'][:,:])
+
 
 #Initialize number of subdomain to 1 (default since fdtd has 1 thread only)
 num_subdom = 1
@@ -52,11 +103,7 @@ if algo == "fdtd-schwarz":
 
 print(f"Field shapes (before adjusting): E: {E.shape} | H: {H.shape} | R: {R.shape} | T: {T.shape} | C: {C.shape}")
 #Read source data
-t = data['source']['t'][:]
-t_E = data['source']['t_E'][:]
-Esrc = data['source']['Esrc'][:]
-t_H = data['source']['t_H'][:]
-Hsrc = data['source']['Hsrc'][:]
+
 #print(Esrc,Hsrc)
 ##print(R,T)
 #print(C)
@@ -70,7 +117,7 @@ excitation_method = np_to_str(data['/sim param/excitation method'])
 
 n = data['comp domain']['n'][:]
 Nt = int(np.ceil(np.array(data['sim param']['Nt'])))
-freq_axis = data['/output/freq_range'][:]
+freq_axis = data['/output/freq_range'][:].T
 dz = float(np.array(data['sim param']['dz']))
 spacer = int(np.array(data['sim param']['left spacer']))*dz
 
@@ -89,7 +136,7 @@ elif data['sim param']['multithreading'][()] == 1:
 
 new_Nt = 0
 new_subdomain_data = []
-#Adjust the frames here
+#Adjust the frames here (We are not getting all of the time iteration since it will result in the HTML file not loading properly. Instead, we opted to get N-th frames based on the set number of frames in the if statements)
 for i in range(Nt):
     if i == 0:
         new_E = E[i,:]
@@ -109,7 +156,7 @@ for i in range(Nt):
 
 
         new_Nt += 1
-    elif i % 10 == 0:
+    elif i % 15 == 0:
         new_E = np.vstack((new_E,E[i,:]))
         new_H = np.vstack((new_H,H[i,:]))
         new_R = np.vstack((new_R,R[i,:]))
@@ -148,7 +195,7 @@ print(f"New Nt (total number of frames to be rendered): {new_Nt}")
 # Only print the subdomain plots (another HTML file) if the algo is fdtd-schwarz
 
     #Create subplots of the main simulation data (E and H), 
-fig = make_subplots(rows=3, cols=1, subplot_titles = ('FDTD Simulation', 'Frequency Response (Reflectance and Transmittance)',f'Source Plot (type: {source_type})'))
+fig = make_subplots(rows=4, cols=1, subplot_titles = ('FDTD Simulation', 'Frequency Response (Reflectance and Transmittance)','Reflectance and Transmittance (Time Domain) Plot' ,f'Source Plot (type: {source_type})'))
 
 #Get the total maximum for E and H fields
 max_point = np.max([np.amax(new_E),np.amax(new_H)])
@@ -184,26 +231,6 @@ for index in range(len(input_layer)):
                 showlegend= False), row=1, col=1)
 
     x_start = x_end
-
-fig.add_trace(go.Scatter(
-                x= t_E,
-                y= Esrc,
-                mode = 'lines',
-                hovertemplate="x: %{x} <br> y: %{y}",
-                legendgroup= 'Input Source (Electric Field)',
-                #line_color= 'rgb(255, 79, 38)',
-                name= 'Input Source (Electric Field)',
-                showlegend= True), row=3, col=1)
-
-fig.add_trace(go.Scatter(
-                x= t_H,
-                y= Hsrc,
-                mode = 'lines',
-                hovertemplate="x: %{x} <br> y: %{y}",
-                legendgroup= 'Input Source (Magnetic Field)',
-                #line_color= 'rgb(255, 79, 38)',
-                name= 'Input Source (Magnetic Field)',
-                showlegend= True), row=3, col=1)
 
 
 #Add traces in subplot 1
@@ -261,7 +288,45 @@ fig.add_trace(go.Scatter(
                 name= 'Conservation of Energy',
                 showlegend= True), row=2, col=1)
 
+fig.add_trace(go.Scatter(
+                x= t,
+                y= E[:,1],
+                mode = 'lines',
+                hovertemplate="x: %{x} <br> y: %{y}",
+                legendgroup= 'Reflectance (Time Domain)',
+                #line_color= 'rgb(255, 79, 38)',
+                name= 'Reflectance (Time Domain)',
+                showlegend= True), row=3, col=1)
 
+fig.add_trace(go.Scatter(
+                x= t,
+                y= E[:,-2],
+                mode = 'lines',
+                hovertemplate="x: %{x} <br> y: %{y}",
+                legendgroup= 'Transmittance (Time Domain)',
+                #line_color= 'rgb(255, 79, 38)',
+                name= 'Transmittance (Time Domain)',
+                showlegend= True), row=3, col=1)
+
+fig.add_trace(go.Scatter(
+                x= t_E,
+                y= Esrc,
+                mode = 'lines',
+                hovertemplate="x: %{x} <br> y: %{y}",
+                legendgroup= 'Input Source (Electric Field)',
+                #line_color= 'rgb(255, 79, 38)',
+                name= 'Input Source (Electric Field)',
+                showlegend= True), row=4, col=1)
+
+fig.add_trace(go.Scatter(
+                x= t_H,
+                y= Hsrc,
+                mode = 'lines',
+                hovertemplate="x: %{x} <br> y: %{y}",
+                legendgroup= 'Input Source (Magnetic Field)',
+                #line_color= 'rgb(255, 79, 38)',
+                name= 'Input Source (Magnetic Field)',
+                showlegend= True), row=4, col=1)
 print(len(fig.data))
 
 
@@ -273,24 +338,29 @@ fig.update_layout(title_text=f"FDTD Simulation [Date: {sim_date} | Algorithm: {a
 #Adjust the axes of the three subplots
 fig.update_xaxes(title_text="Computational Domain (m)", row=1,col=1)
 fig.update_xaxes(title_text="Frequency (Hz)",row=2,col=1)
-fig.update_xaxes(title_text="Time (s)",row=3,col=1)
+fig.update_xaxes(title_text="Time Iteration",row=3,col=1)
+fig.update_xaxes(title_text="Time (s)",row=4,col=1)
 
 
 fig.update_yaxes(title_text="Level",range=[-1,1],row=1,col=1)
 fig.update_yaxes(title_text="Magnitude",range=[0,1],row=2,col=1)
 fig.update_yaxes(title_text="Level",range=[-1,1],row=3,col=1)
-
+fig.update_yaxes(title_text="Level",range=[-1,1],row=4,col=1)
 end_indices = len(input_layer) 
 #Add the frames of each traces
 print("Adding the frames of the plots...")
 frames=[dict(name=i,
-            data=[go.Scatter(y=Esrc),
-            go.Scatter(y=Hsrc),
+            data=[
             go.Scatter(y=new_E[i,:]),#update the E-Field
             go.Scatter(y=new_H[i,:]),#update the H-Field
             go.Scatter(y=new_R[i,:]),
             go.Scatter(y=new_T[i,:]),
-            go.Scatter(y=new_C[i,:])],
+            go.Scatter(y=new_C[i,:]),
+            go.Scatter(y=E[:,1]),
+            go.Scatter(y=E[:,-2]),
+            go.Scatter(y=Esrc),
+            go.Scatter(y=Hsrc)
+            ],
             #Added 4 to the end indices since there 4 traces after (E,H,R,T)
             traces = [x for x in range(end_indices,end_indices+7)] #This is done because the rectangles are traces (to have hover information)
             ) for i in range(new_Nt)] #Iterate from the 2nd row to Nt-th row (now up until 1/3rd of Nt since it is very expensive to compute)
@@ -333,7 +403,7 @@ fig.update_layout(updatemenus=updatemenus,
 #fig.show('chrome') #in jupyter notebook
 #fig.show('browser') # in browser (the former offline.plot)
 print("Writing to html....")
-main_plot_name = filename[:-5] + ".html"
+main_plot_name = filename[:-5] + "_fixedFFTnew" + ".html"
 numFile = 1
 while True:
     isFileExists = os.path.exists(main_plot_name)
@@ -350,7 +420,7 @@ fig.write_html(main_plot_name,auto_play=False)
 
 
 # Only plot the subdomains if the algorithm is fdtd-schwarz...
-if algo == "fdtd-schwarz":
+if algo == "fdtd-schwarz1":
     subplot_titles = ['Whole Computational Domain Plot']
 
     # Initialize x-axis vector for the subdom plots

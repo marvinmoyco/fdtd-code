@@ -1,5 +1,7 @@
 # Instructions to simulate in a terminal
 
+### Note: you can still compile and run the code without the makefile but make sure to include every third-parth library used in the program when compiling.
+
 1. Make sure that the makefile is modified so that the libraries and header files are properly searched by the program.
 2. To run the program, you have two options: (1) run the compiled program located at ./src/bin or (2) use the bash script "run_fdtd.sh".
 3. The compiled program has the following input arguments (in this order):
@@ -18,3 +20,7 @@
 5. The output of the C++ program are composed of 2 files:
     1. Log file - txt file containing the cout commands of the C++ program and the terminal outputs of the Python file.
     2. Output file - Main output file of the simulation that contains the data from the program.
+6. The output of the Python3 script are composed of 1-2 files:
+    1. HTML file - for the main simulation and/or subdomain plots (only when FDTD-Schwarz is used).
+    2. Series of images - when using matplotlib and ffmpeg.
+    3. Video - when using matplotlib and ffmpeg.
