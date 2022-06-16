@@ -1,0 +1,11 @@
+.outer-view{
+    margin: 100px;
+}
+
+#sim_description{
+    height: 100px;
+}
+
+#fmax_div {
+    width: 40%;
+}
