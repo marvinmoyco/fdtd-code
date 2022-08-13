@@ -8,7 +8,9 @@ import h5py
 import os
 import datetime
 import time
-
+from asyncio import new_event_loop
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 
 
 
@@ -459,7 +461,7 @@ class Simulation:
         self.sim_source = {}
         self.output_data = {}
         self.subdomains = []
-
+        self.date_str = ""
 
         if input_filepath == "manual":
             # Guide to indices of simulation_parameter vector
@@ -852,8 +854,9 @@ class Simulation:
         # Initialize the frequency vectors for computing the freq response
         self.sim_param['n_freq'] = self.sim_param['Nt']
         self.sim_param['fmax_fft'] = 0.5*(1/self.sim_param['dt'])
-        self.output_data['Freq_range'] = np.linspace(0,self.sim_param['fmax_fft'],int(self.sim_param['n_freq']))
-        
+        #self.output_data['Freq_range'] = np.linspace(0,self.sim_param['fmax_fft'],int(self.sim_param['n_freq']))
+        self.output_data['Freq_range'] = np.linspace(0,self.sim_param['fmax'],int(self.sim_param['Nt']))
+
         print_breaker('minor')
         print(f"Number of freq. samples: {self.sim_param['n_freq']} | Freq vector shape: {self.output_data['Freq_range'].shape}")
         print(f"df: {self.sim_param['df']}")
@@ -1356,8 +1359,10 @@ class Simulation:
             self.sim_fields['S'] = self.sim_fields['S'] + ((self.sim_fields['Kernel_Freq']**curr_iteration)*self.sim_source['Esrc'][curr_iteration])
 
             # Normalizing the computed frequency respones
-            self.sim_fields['R'] = (R/self.sim_fields['S']).real ** 2
-            self.sim_fields['T'] = (T/self.sim_fields['S']).real ** 2
+            #self.sim_fields['R'] = (R/self.sim_fields['S']).real ** 2
+            #self.sim_fields['T'] = (T/self.sim_fields['S']).real ** 2
+            self.sim_fields['R'] = np.abs(R/self.sim_fields['S']) ** 2
+            self.sim_fields['T'] = np.abs(T/self.sim_fields['S']) ** 2
             self.sim_fields['C'] = self.sim_fields['R'] + self.sim_fields['T']
 
             # Step 8: Saving the current snapshot in time in the output matrices
@@ -1575,7 +1580,6 @@ class Simulation:
             fig.canvas.flush_events()
 
 
-
     def reconstruct_output_matrix(self):
         
         # This function compiles all of the computed field values into a single 1D vector.
@@ -1679,7 +1683,7 @@ class Simulation:
 
         # Getting the current datetime
         now = datetime.datetime.now()
-        date_str = now.strftime("%Y-%m-%d")
+        self.date_str = now.strftime("%Y-%m-%d")
 
         # Verify if the directory exists
         try:

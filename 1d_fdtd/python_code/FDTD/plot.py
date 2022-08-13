@@ -1,6 +1,3 @@
-# Main Reference: https://chart-studio.plotly.com/~empet/15243/animating-traces-in-subplotsbr/#/
-
-
 from asyncio import new_event_loop
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
@@ -9,380 +6,353 @@ import h5py
 import sys
 import os
 
+from FDTD.simulation import *
 #Converter function from numpy ndarray to str object
 def np_to_str(input):
     return np.array_str(np.array(input).astype(str))
 
-filename = ''
-#Check the length of input arguments
-if len(sys.argv) == 3:
-    filename = sys.argv[1] + sys.argv[2]
+class Plot:
+    # This is a Plot object that generates an animated plot (either in video or HTML format)
+    # for the FDTD simulations. The different input parameters are defined as follows:
+    # simulation - simulation object created (simulation must be done before creating a plot object)
+    # type - tells whether the output is a video ("mp4") or browser-based ("html")
+    # n_frame - integer value to get samples from the data (e.g. n_frame=50, getting every 50th sample)
+    # save - boolean flag to tell the object whether to save the generated plot or not
+    # output_path - file path where the generated plot will be saved
+    # read - boolean flag to tell whether the object uses the simulation object (False) or hdf5 file (True)
+    # input - input name of the hdf5 file (used only when read argument is True)
+    # output - output name of the generated plot (used only when the save flag is True)
 
-#Read Electric field
-data = h5py.File(filename,mode='r')
-print(f" HDF5 file keys: {data.keys()}")
-print(f"Nz: {np.array(data['sim param']['Nz'])}")
-#z = np.arange(start=1,stop=34)
-z = data['comp domain']['z']
-algo = np_to_str(data['sim param']['algorithm'])
+    def __init__(self,
+                simulation,
+                type="html",
+                n_frame=5,
+                save=True,
+                output_path="./",
+                read=False,
+                input="",
+                output="output"):
 
-n = data['comp domain']['n'][:]
-Nt = int(np.ceil(np.array(data['sim param']['Nt'])))
-freq_axis = data['/output/freq_range'][:].T
-dz = float(np.array(data['sim param']['dz']))
-spacer = int(np.array(data['sim param']['left spacer']))*dz
-dt = float(data['sim param']['dt'][()])
-Nz = data['sim param']['Nz'][()]
-t = np.linspace(0,Nt,Nt)
-#Read the main output data
-E = np.nan_to_num(data['output']['E'][:,:])
-H = np.nan_to_num(data['output']['H'][:,:])
+        #Initialize instance attributes
+        self.sim_fields = {}
+        self.FFT = {}
+        self.source = {}
+        self.sim_param = {}
+        self.comp_domain = {}
+        self.read = read
+        self.save = save
+        
+        self.new_Nt = 0
 
-#t = data['source']['t'][:]
-t_E = data['source']['t_E'][:]
-Esrc = data['source']['Esrc'][:]
-t_H = data['source']['t_H'][:]
-Hsrc = data['source']['Hsrc'][:]
-fmax = data['sim param']['fmax'][()]
-#Compute for the FFT here...
+        if self.save == True:
+            self.type = type
+            self.output = output
+            self.output_path = output_path
+        
+        if self.read == True:
+            self.input = input
 
-#Toggle this variable if you want to recreate the FFT of the simulation...
-recreate_fft = True
 
-if recreate_fft == True:
-    freq_axis = np.linspace(0,fmax,Nt)
-    Kernel_freq = np.exp(-1j*2*np.pi*dt*freq_axis)
-    rowR = np.zeros(Kernel_freq.shape)
-    rowT = np.zeros(Kernel_freq.shape)
-    rowC = np.zeros(Kernel_freq.shape)
-    rowS = np.zeros(Kernel_freq.shape)
-    for i in range(Nt):
-        print(f"Current iteration: {i}/{Nt}")
-        rowR = rowR + np.power(Kernel_freq,i)*E[i,1]
-        rowT = rowT + np.power(Kernel_freq,i)*E[i,-2]
-        rowS = rowS +  np.power(Kernel_freq,i)*Esrc[i]
 
-        rR = np.power(np.abs(rowR/rowS),2)
-        rT = np.power(np.abs(rowT/rowS),2)
-        rC = rR+rT
+        if read == True:
+            #Read Electric field
+            data = h5py.File(input,mode='r')
+            print(f" HDF5 file keys: {data.keys()}")
+            print(f"Nz: {np.array(data['sim param']['Nz'])}")
+            #z = np.arange(start=1,stop=34)
+            z = data['comp domain']['z']
+            algo = np_to_str(data['sim param']['algorithm'])
 
-        if i == 0:
-            R = rR
-            T = rT
-            C = rC
-        #elif i % 10 == 0:
-         #   new_R = np.vstack((new_R,rR))
-          #  new_T = np.vstack((new_T,rT))
-           # new_C = np.vstack((new_C,rC))
+            n = data['comp domain']['n'][:]
+            Nt = int(np.ceil(np.array(data['sim param']['Nt'])))
+            freq_axis = data['/output/freq_range'][:].T
+            dz = float(np.array(data['sim param']['dz']))
+            spacer = int(np.array(data['sim param']['left spacer']))*dz
+            dt = float(data['sim param']['dt'][()])
+            Nz = data['sim param']['Nz'][()]
+            t = np.linspace(0,Nt,Nt)
+            #Read the main output data
+            E = np.nan_to_num(data['output']['E'][:,:])
+            H = np.nan_to_num(data['output']['H'][:,:])
+
+            #t = data['source']['t'][:]
+            t_E = data['source']['t_E'][:]
+            Esrc = data['source']['Esrc'][:]
+            t_H = data['source']['t_H'][:]
+            Hsrc = data['source']['Hsrc'][:]
+            fmax = data['sim param']['fmax'][()]
+            #Compute for the FFT here...
+            #Toggle this variable if you want to recreate the FFT of the simulation...
+            recreate_fft = True
+
+            if recreate_fft == True:
+                freq_axis = np.linspace(0,fmax,Nt)
+                Kernel_freq = np.exp(-1j*2*np.pi*dt*freq_axis)
+                rowR = np.zeros(Kernel_freq.shape)
+                rowT = np.zeros(Kernel_freq.shape)
+                rowC = np.zeros(Kernel_freq.shape)
+                rowS = np.zeros(Kernel_freq.shape)
+                for i in range(Nt):
+                    print(f"Current iteration: {i}/{Nt}")
+                    rowR = rowR + np.power(Kernel_freq,i)*E[i,1]
+                    rowT = rowT + np.power(Kernel_freq,i)*E[i,-2]
+                    rowS = rowS +  np.power(Kernel_freq,i)*Esrc[i]
+
+                    rR = np.power(np.abs(rowR/rowS),2)
+                    rT = np.power(np.abs(rowT/rowS),2)
+                    rC = rR+rT
+
+                    if i == 0:
+                        R = rR
+                        T = rT
+                        C = rC
+                    #elif i % 10 == 0:
+                    #   new_R = np.vstack((new_R,rR))
+                    #  new_T = np.vstack((new_T,rT))
+                    # new_C = np.vstack((new_C,rC))
+                    else:
+                        R = np.vstack((R,rR))
+                        T = np.vstack((T,rT))
+                        C = np.vstack((C,rC))
+                else:
+                    R = np.nan_to_num(data['output']['reflectance'][:,:])
+                    T = np.nan_to_num(data['output']['transmittance'][:,:])
+                    C = np.nan_to_num(data['output']['conservation_of_energy'][:,:])
         else:
-            R = np.vstack((R,rR))
-            T = np.vstack((T,rT))
-            C = np.vstack((C,rC))
-else:
-    R = np.nan_to_num(data['output']['reflectance'][:,:])
-    T = np.nan_to_num(data['output']['transmittance'][:,:])
-    C = np.nan_to_num(data['output']['conservation_of_energy'][:,:])
+            # Get the simulation parameters that will be used in the plot
+            self.sim_param['Nz'] = simulation.sim_param['Nz']
+            self.sim_param['Nt'] = int(simulation.sim_param['Nt'])
+            self.sim_param['dz'] = simulation.sim_param['dz']
+            self.sim_param['dt'] = simulation.sim_param['dt']
+            
+            # Get the simulation EM fields
+            # self.sim_fields['E'] = simulation.output_data['E']
+            # self.sim_fields['H'] = simulation.output_data['H']
+            self.sim_fields['z'] = simulation.comp_domain['z']
+
+            # Get FFT Response
+            # self.FFT['R'] = simulation.output_data['reflectance']
+            # self.FFT['T'] = simulation.output_data['transmittance']
+            # self.FFT['C'] = simulation.output_data['conservation_of_energy']
+
+            for i in range(self.sim_param['Nt']):
+                if i == 0:
+
+                    self.sim_fields['E'] = simulation.output_data['E'][i,:]
+                    self.sim_fields['H'] = simulation.output_data['H'][i,:]
+                    self.sim_fields['R'] = simulation.output_data['R'][i,:]
+                    self.sim_fields['T'] = simulation.output_data['T'][i,:]
+                    self.sim_fields['C'] = simulation.output_data['C'][i,:]
+                    self.new_Nt += 1
+
+                elif i % n_frame == 0:
+                    
+                    self.sim_fields['E'] = np.vstack((self.sim_fields['E'],simulation.output_data['E'][i,:]))
+                    self.sim_fields['H'] = np.vstack((self.sim_fields['H'],simulation.output_data['H'][i,:]))
+                    self.sim_fields['R'] = np.vstack((self.sim_fields['R'],simulation.output_data['R'][i,:]))
+                    self.sim_fields['T'] = np.vstack((self.sim_fields['T'],simulation.output_data['T'][i,:]))
+                    self.sim_fields['C'] = np.vstack((self.sim_fields['C'],simulation.output_data['C'][i,:]))
+
+                    self.new_Nt += 1
+                elif i == self.sim_param['Nt'] -1:
+                    
+                    self.sim_fields['E'] = np.vstack((self.sim_fields['E'],simulation.output_data['E'][i,:]))
+                    self.sim_fields['H'] = np.vstack((self.sim_fields['H'],simulation.output_data['H'][i,:]))
+                    self.sim_fields['R'] = np.vstack((self.sim_fields['R'],simulation.output_data['R'][i,:]))
+                    self.sim_fields['T'] = np.vstack((self.sim_fields['T'],simulation.output_data['T'][i,:]))
+                    self.sim_fields['C'] = np.vstack((self.sim_fields['C'],simulation.output_data['C'][i,:]))
+
+                    self.new_Nt += 1
+            total_frames,_ = self.sim_fields['E'].shape
+            self.total_frames = total_frames
+            self.l_spacer = simulation.sim_param['left_spacer']*self.sim_param['dz']
+            self.r_spacer = simulation.sim_param['right_spacer']
+            self.input_layers = simulation.input_data['layer_size']
+            self.comp_domain['freq_range'] = simulation.output_data['Freq_range']
 
 
-#Initialize number of subdomain to 1 (default since fdtd has 1 thread only)
-num_subdom = 1
-# Creating an empty list that will contain dictionaries (list of dictionaries where each dictionary is about the data of the subdomain)
-subdomain_data = []
-#Read the 
-if algo == "fdtd-schwarz":
-    num_subdom = data['sim param']['num subdomains'][()]
-    print(f"Number of subdomains in {algo}: {num_subdom} threads/subdomains")
-
-    #Read all of the simulation data in each subdomain
-    for subdom_index in range(num_subdom):
-        subdom  = {}
-        subdom['Subdomain id'] = subdom_index
-        subdom['E'] = np.nan_to_num(data['output']['subdomain'][str(subdom_index)]['E'][:,:])
-        subdom['H'] = np.nan_to_num(data['output']['subdomain'][str(subdom_index)]['H'][:,:])
-        subdomain_data.append(subdom) 
-
-print(f"Field shapes (before adjusting): E: {E.shape} | H: {H.shape} | R: {R.shape} | T: {T.shape} | C: {C.shape}")
-#Read source data
-
-#print(Esrc,Hsrc)
-##print(R,T)
-#print(C)
-print(E,H)
-
-#Read the config parameters
-sim_date = np_to_str((data['metadata']['date']))
-source_type = np_to_str(data['source']['type'])
-boundary_cond = np_to_str(data['/sim param/boundary cond'])
-excitation_method = np_to_str(data['/sim param/excitation method'])
-
-n = data['comp domain']['n'][:]
-Nt = int(np.ceil(np.array(data['sim param']['Nt'])))
-freq_axis = data['/output/freq_range'][:].T
-dz = float(np.array(data['sim param']['dz']))
-spacer = int(np.array(data['sim param']['left spacer']))*dz
+            
+            self.sim_param['sim_date'] = simulation.date_str
+            self.sim_param['boundary_cond'] = simulation.sim_param['boundary_condition']
+            self.sim_param['excitation_method'] = simulation.sim_param['excitation_method']
 
 
-#print(z.shape,E.shape,Nt)
-input_layer = data['input']['layer size'][:]
-mu = data['input']['magnetic permeability'][:]
-epsilon = data['input']['electric permittivity'][:]
-#print(input_layer,spacer)
-
-multithreading = ""
-if data['sim param']['multithreading'][()] == 0:
-    multithreading = "False"
-elif data['sim param']['multithreading'][()] == 1:
-    multithreading = "True"
-
-new_Nt = 0
-new_subdomain_data = []
-#Adjust the frames here (We are not getting all of the time iteration since it will result in the HTML file not loading properly. Instead, we opted to get N-th frames based on the set number of frames in the if statements)
-for i in range(Nt):
-    if i == 0:
-        new_E = E[i,:]
-        new_H = H[i,:]
-        new_R = R[i,:]
-        new_T = T[i,:]
-        new_C = C[i,:]
-        #For the subdomains
-        if algo == "fdtd-schwarz":
-            for subdom_index in range(num_subdom):
-                new_subdom = {}
-                new_subdom['Subdomain id'] = subdomain_data[subdom_index]['Subdomain id']
-                new_subdom['E'] = subdomain_data[subdom_index]['E'][i,:]
-                new_subdom['H'] = subdomain_data[subdom_index]['H'][i,:]
-                new_subdomain_data.append(new_subdom)
+            # Get EM Source
+            self.source['Esrc'] = simulation.sim_source['Esrc']
+            self.source['Hsrc'] = simulation.sim_source['Hsrc']
+            self.source['t'] = simulation.sim_source['t']
+            self.source['t_E'] = simulation.sim_source['t_E']
+            self.source['t_H'] = simulation.sim_source['t_H']
+            self.source['type'] = simulation.sim_param['source_type']
+            
+            # Getting comp domain 
+            #self.comp_domain['mu'] = simulation.comp_domain['mu']
+            #self.comp_domain['epsilon'] = simulation.comp_domain['epsilon']
+            self.comp_domain['n'] = simulation.comp_domain['n']
+            self.comp_domain['z'] = simulation.comp_domain['z']
 
 
 
-        new_Nt += 1
-    elif i % 15 == 0:
-        new_E = np.vstack((new_E,E[i,:]))
-        new_H = np.vstack((new_H,H[i,:]))
-        new_R = np.vstack((new_R,R[i,:]))
-        new_T = np.vstack((new_T,T[i,:]))
-        new_C = np.vstack((new_C,C[i,:]))
-        #For the subdomains
-        if algo == "fdtd-schwarz":
-            for subdom_index in range(num_subdom):
-                
-                new_subdomain_data[subdom_index]['E'] = np.vstack((new_subdomain_data[subdom_index]['E'],
-                                                        subdomain_data[subdom_index]['E'][i,:]))
-                new_subdomain_data[subdom_index]['H'] = np.vstack((new_subdomain_data[subdom_index]['H'],
-                                                        subdomain_data[subdom_index]['H'][i,:]))
-                
-        new_Nt += 1
-    elif i == Nt - 1:
-        new_E = np.vstack((new_E,E[i,:]))
-        new_H = np.vstack((new_H,H[i,:]))
-        new_R = np.vstack((new_R,R[i,:]))
-        new_T = np.vstack((new_T,T[i,:]))
-        new_C = np.vstack((new_C,C[i,:]))
-        #For the subdomains
-        if algo == "fdtd-schwarz":
-            for subdom_index in range(num_subdom):
-                
-                new_subdomain_data[subdom_index]['E'] = np.vstack((new_subdomain_data[subdom_index]['E'],
-                                                        subdomain_data[subdom_index]['E'][i,:]))
-                new_subdomain_data[subdom_index]['H'] = np.vstack((new_subdomain_data[subdom_index]['H'],
-                                                        subdomain_data[subdom_index]['H'][i,:]))
-                
-        new_Nt += 1
+    def plot_html(self):
+        # Plot the data using Plotly.
+
+        # Creating a figure object
+        plot_fig = make_subplots(rows=3, cols=1, subplot_titles = ('FDTD Simulation','Frequency Response', f'Source: { self.source["type"] }'))
+
+        range_vals = [np.max([np.amax(self.sim_fields['E']),np.amax(self.sim_fields['H'])]),np.min([np.amin(self.sim_fields['E']),np.amin(self.sim_fields['H'])])]
+    
+        # Create the layers in the simulation
+        start = self.r_spacer*self.sim_param['dz']
+        end = self.r_spacer*self.sim_param['dz']
+        n_model =len(self.input_layers)
+        for i in range(n_model):
+
+            end += self.input_layers[i]
+
+            plot_fig.add_trace(go.Scatter(
+                            x = [start, start,end,end,start],
+                            y = [range_vals[1],range_vals[0],range_vals[0],range_vals[1],range_vals[1]],
+                            hoverinfo='text',
+                            fill='toself',
+                            opacity=0.3,
+                            text=f'Layer {i+ 1} \n Refractive index: {self.comp_domain["n"][i]:.03f}',
+                            showlegend=False
+            ), row= 1, col = 1)
+
+            start = end
+
+        # Add traces in the 1st plot (FDTD Simulation)
+        # For the Electric Field plot
+        plot_fig.add_trace(go.Scatter(
+                            x = self.comp_domain['z'],
+                            y = self.sim_fields['E'][0,:],
+                            mode = 'lines',
+                            legendgroup = 'Electric Field',
+                            hovertemplate = 'x: %{x} <br> y:%{y}',
+                            name= 'Electric Field',
+                            showlegend=True
+            ), row= 1, col = 1)
+
+        # For the Magnetic Field plot
+        plot_fig.add_trace(go.Scatter(
+                            x = self.comp_domain['z'],
+                            y = self.sim_fields['H'][0,:],
+                            mode = 'lines',
+                            legendgroup = 'Magnetic Field',
+                            hovertemplate = 'x: %{x} <br> y:%{y}',
+                            name= 'Magnetic Field',
+                            showlegend=True
+            ), row= 1, col = 1)
+
+        # Adding traces for the 2nd plot (Frequency response)
+        
+        #For the Reflectance plot
+        plot_fig.add_trace(go.Scatter(
+                            x = self.comp_domain['freq_range'],
+                            y = self.sim_fields['R'][0,:],
+                            mode = 'lines',
+                            legendgroup = 'Reflectance',
+                            hovertemplate = 'x: %{x} <br> y:%{y}',
+                            name= 'Reflectance',
+                            showlegend=True
+            ), row= 2, col = 1)
+
+        #For the Transmittance plot
+        plot_fig.add_trace(go.Scatter(
+                            x = self.comp_domain['freq_range'],
+                            y = self.sim_fields['T'][0,:],
+                            mode = 'lines',
+                            legendgroup = 'Transmittance',
+                            hovertemplate = 'x: %{x} <br> y:%{y}',
+                            name= 'Transmittance',
+                            showlegend=True
+            ), row= 2, col = 1)
+
+        #For the Conservation of energy
+        plot_fig.add_trace(go.Scatter(
+                            x = self.comp_domain['freq_range'],
+                            y = self.sim_fields['C'][0,:],
+                            mode = 'lines',
+                            legendgroup = 'Conservation of Energy',
+                            hovertemplate = 'x: %{x} <br> y:%{y}',
+                            name= 'Conservation of Energy',
+                            showlegend=True
+            ), row= 2, col = 1)
+
+        # For the 3rd subplot (Input Excitation)
+
+        #For the Electric Field plot of the input excitation
+        plot_fig.add_trace(go.Scatter(
+                            x = self.source['t_E'],
+                            y = self.source['Esrc'],
+                            mode = 'lines',
+                            legendgroup = 'Source (Electric Field)',
+                            hovertemplate = 'x: %{x} <br> y:%{y}',
+                            name= 'Source (Electric Field)',
+                            showlegend=True
+            ), row= 3, col = 1)
+    
+        #For the Magnetic Field plot of the input excitation
+        plot_fig.add_trace(go.Scatter(
+                            x = self.source['t_H'],
+                            y = self.source['Hsrc'],
+                            mode = 'lines',
+                            legendgroup = 'Source (Magnetic Field)',
+                            hovertemplate = 'x: %{x} <br> y:%{y}',
+                            name= 'Source (Magnetic Field)',
+                            showlegend=True
+            ), row= 3, col = 1)
+
+        # Create the necessary layout for the plot
+        title = f"FDTD Simulation [Date: {self.sim_param['sim_date']} | Source Type: {self.source['type']} | Boundary Condition: {self.sim_param['boundary_cond']} | Excitation Method: {self.sim_param['excitation_method']}]"
+        plot_fig.update_layout(title_text = title )
+        
+        # Changing the axes labels
+
+        #For x-axis
+        plot_fig.update_xaxes(title_text="Computationaldomain [m]",row=1,col=1)
+        plot_fig.update_xaxes(title_text="Frequency [Hz]",row=2,col=1)
+        plot_fig.update_xaxes(title_text= "Time [s]",row=3,col=1)
+
+        # For y-axis
+        plot_fig.update_yaxes(title_text="Level",row=1,col=1)
+        plot_fig.update_yaxes(title_text="Magnitude",row=2,col=1)
+        plot_fig.update_yaxes(title_text= "Level",row=3,col=1)
 
 
-print(f"Field shapes (after adjusting): E: {new_E.shape} | H: {new_H.shape} | R: {new_R.shape} | T: {new_T.shape} | C: {new_C.shape}")
-print(f"New Nt (total number of frames to be rendered): {new_Nt}")
-# Only print the subdomain plots (another HTML file) if the algo is fdtd-schwarz
+        # Adding 'frames' to each traces
+        end_indices = len(self.input_layers)
+        frames=[dict(name=i,
+                    data=[
+                    go.Scatter(y=self.sim_fields['E'][i,:]),
+                    go.Scatter(y=self.sim_fields['H'][i,:]),
+                    go.Scatter(y=self.sim_fields['R'][i,:]),
+                    go.Scatter(y=self.sim_fields['T'][i,:]),
+                    go.Scatter(y=self.sim_fields['C'][i,:]),
+                    go.Scatter(y=self.source['Esrc']),
+                    go.Scatter(y=self.source['Hsrc'])
+                    ],
+                    #Added 4 to the end indices since there 4 traces after (E,H,R,T)
+                    traces = [x for x in range(end_indices,end_indices+7)]#This is done because the rectangles are traces (to have hover information)
+        ) for i in range(self.new_Nt)]
 
-    #Create subplots of the main simulation data (E and H), 
-fig = make_subplots(rows=4, cols=1, subplot_titles = ('FDTD Simulation', 'Frequency Response (Reflectance and Transmittance)','Reflectance and Transmittance (Time Domain) Plot' ,f'Source Plot (type: {source_type})'))
-
-#Get the total maximum for E and H fields
-max_point = np.max([np.amax(new_E),np.amax(new_H)])
-min_point = np.min([np.amin(new_E),np.amin(new_H)])
-#Get the starting indices for the shapes
-x_start = spacer
-x_end = spacer
-for index in range(len(input_layer)):
-    x_end += input_layer[index]
-
-    # Add shapes
-    #fig.add_shape(type="rect",
-    #    xref="x", yref="y",
-    #    x0=x_start, y0=max_point,
-    #    x1=x_end, y1=min_point,
-    #    line=dict(
-    #        #color="RoyalBlue",
-    #        width=1,
-    #        dash='dashdot'
-    #    ),
-    #    fillcolor="forestgreen",
-    #    layer='below',
-    #    opacity=0.5
-    #)
-    fig.add_trace(go.Scatter(
-                x= [x_start, x_start, x_end, x_end, x_start],
-                y= [min_point, max_point, max_point, min_point, min_point],
-                hoverinfo='text',
-                fill = 'toself',
-                opacity=0.3,
-                #line_color= 'rgb(255, 79, 38)',
-                text= f'Layer {index + 1} \n Refractive index: {np.sqrt(mu[index]*epsilon[index]):.03f}',
-                showlegend= False), row=1, col=1)
-
-    x_start = x_end
-
-
-#Add traces in subplot 1
-fig.add_trace(go.Scatter(
-                x= z,
-                y= new_E[0,:],
-                mode = 'lines',
-                legendgroup= 'Electric Field',
-                hovertemplate="x: %{x} <br> y: %{y}",
-                #line_color= 'rgb(255, 79, 38)',
-                name= 'Electric Field',
-                showlegend= True), row=1, col=1)
-                
-fig.add_trace(go.Scatter(
-                x= z,
-                y= new_H[0,:],
-                mode = 'lines',
-                hovertemplate="x: %{x} <br> y: %{y}",
-                legendgroup= 'Magnetic Field',
-                #line_color= 'rgb(255, 79, 38)',
-                name= 'Magnetic Field',
-                showlegend= True), row=1, col=1)
-
-
-
-#Add traces in subplot 2
-fig.add_trace(go.Scatter(
-                x= freq_axis,
-                y= new_R[0,:],
-                mode = 'lines',
-                hovertemplate="x: %{x} <br> y: %{y}",
-                legendgroup= 'Reflectance',
-                #line_color= 'rgb(255, 79, 38)',
-                name = 'Reflectance',
-                showlegend= True), row=2, col=1)
-
-fig.add_trace(go.Scatter(
-                x= freq_axis,
-                y= new_T[0,:],
-                mode = 'lines',
-                hovertemplate="x: %{x} <br> y: %{y}",
-                legendgroup= 'Transmittance',
-                #line_color= 'rgb(255, 79, 38)',
-                name= 'Transmittance',
-                showlegend= True), row=2, col=1)
-
-fig.add_trace(go.Scatter(
-                x= freq_axis,
-                y= new_C[0,:],
-                mode = 'lines',
-                line=dict(dash='dash'),
-                hovertemplate="x: %{x} <br> y: %{y}",
-                legendgroup= 'Conservation of Energy',
-                #line_color= 'rgb(255, 79, 38)',
-                name= 'Conservation of Energy',
-                showlegend= True), row=2, col=1)
-
-fig.add_trace(go.Scatter(
-                x= t,
-                y= E[:,1],
-                mode = 'lines',
-                hovertemplate="x: %{x} <br> y: %{y}",
-                legendgroup= 'Reflectance (Time Domain)',
-                #line_color= 'rgb(255, 79, 38)',
-                name= 'Reflectance (Time Domain)',
-                showlegend= True), row=3, col=1)
-
-fig.add_trace(go.Scatter(
-                x= t,
-                y= E[:,-2],
-                mode = 'lines',
-                hovertemplate="x: %{x} <br> y: %{y}",
-                legendgroup= 'Transmittance (Time Domain)',
-                #line_color= 'rgb(255, 79, 38)',
-                name= 'Transmittance (Time Domain)',
-                showlegend= True), row=3, col=1)
-
-fig.add_trace(go.Scatter(
-                x= t_E,
-                y= Esrc,
-                mode = 'lines',
-                hovertemplate="x: %{x} <br> y: %{y}",
-                legendgroup= 'Input Source (Electric Field)',
-                #line_color= 'rgb(255, 79, 38)',
-                name= 'Input Source (Electric Field)',
-                showlegend= True), row=4, col=1)
-
-fig.add_trace(go.Scatter(
-                x= t_H,
-                y= Hsrc,
-                mode = 'lines',
-                hovertemplate="x: %{x} <br> y: %{y}",
-                legendgroup= 'Input Source (Magnetic Field)',
-                #line_color= 'rgb(255, 79, 38)',
-                name= 'Input Source (Magnetic Field)',
-                showlegend= True), row=4, col=1)
-print(len(fig.data))
-
-
-
-#width=1024, height=720,
-print("Setting the titles for the plots....")
-
-fig.update_layout(title_text=f"FDTD Simulation [Date: {sim_date} | Algorithm: {algo} | Multithreading: {multithreading} | Source Type: {source_type} | Boundary Condition: {boundary_cond} | Excitation Method: {excitation_method}]")
-#Adjust the axes of the three subplots
-fig.update_xaxes(title_text="Computational Domain (m)", row=1,col=1)
-fig.update_xaxes(title_text="Frequency (Hz)",row=2,col=1)
-fig.update_xaxes(title_text="Time Iteration",row=3,col=1)
-fig.update_xaxes(title_text="Time (s)",row=4,col=1)
-
-
-fig.update_yaxes(title_text="Level",range=[-1,1],row=1,col=1)
-fig.update_yaxes(title_text="Magnitude",range=[0,1],row=2,col=1)
-fig.update_yaxes(title_text="Level",range=[-1,1],row=3,col=1)
-fig.update_yaxes(title_text="Level",range=[-1,1],row=4,col=1)
-end_indices = len(input_layer) 
-#Add the frames of each traces
-print("Adding the frames of the plots...")
-frames=[dict(name=i,
-            data=[
-            go.Scatter(y=new_E[i,:]),#update the E-Field
-            go.Scatter(y=new_H[i,:]),#update the H-Field
-            go.Scatter(y=new_R[i,:]),
-            go.Scatter(y=new_T[i,:]),
-            go.Scatter(y=new_C[i,:]),
-            go.Scatter(y=E[:,1]),
-            go.Scatter(y=E[:,-2]),
-            go.Scatter(y=Esrc),
-            go.Scatter(y=Hsrc)
-            ],
-            #Added 4 to the end indices since there 4 traces after (E,H,R,T)
-            traces = [x for x in range(end_indices,end_indices+7)] #This is done because the rectangles are traces (to have hover information)
-            ) for i in range(new_Nt)] #Iterate from the 2nd row to Nt-th row (now up until 1/3rd of Nt since it is very expensive to compute)
-
-#Add the button and slider
-print("Adding the button and sliders...")
-updatemenus = [dict(type='buttons',
-                    buttons=[dict(label='Play',
+        # Adding button and slider
+        updatemenus = [dict(type='buttons',
+                        buttons=[dict(label='Play',
                                 method='animate',
-                                args=[[f'{i}' for i in range(new_Nt)], 
-                                        dict(frame=dict(duration=0, redraw=False), 
-                                            transition=dict(duration=0),
-                                            easing='linear',
-                                            fromcurrent=True,
-                                            mode='immediate'
-                                                                )])],
-                    direction= 'left', 
-                    pad=dict(r= 10, t=85), 
-                    showactive =True, x= 0.1, y= 0, xanchor= 'right', yanchor= 'top')
-            ]
+                                args=[[f'{i}' for i in range(self.new_Nt)],
+                                        dict(frame=dict(duration=0,redraw=False),
+                                        transition=dict(duration=0),
+                                        easing='linear',
+                                        fromcurrent=True,
+                                        mode='immediate')])],
+                        direction='left',
+                        pad=dict(r=10,t=85),
+                        showactive= True,x=0.1,y=0,xanchor='right',yanchor='top'
 
-sliders = [{'yanchor': 'top',
+        )]
+
+        sliders = [{'yanchor': 'top',
             'xanchor': 'left', 
             'currentvalue': {'font': {'size': 16}, 'prefix': 'Iteration: ', 'visible': True, 'xanchor': 'right'},
             'transition': {'duration': 0.0, 'easing': 'linear-in-out'},
@@ -390,209 +360,32 @@ sliders = [{'yanchor': 'top',
             'len': 0.9, 'x': 0.1, 'y': 0, 
             'steps': [{'args': [[i], {'frame': {'duration': 0.0, 'easing': 'linear-in-out', 'redraw': False},
                                     'transition': {'duration': 0, 'easing': 'linear-in-out'}}], 
-                    'label': f"{i}/{new_Nt}", 'method': 'animate'} for i in range(new_Nt)       
+                    'label': f"{i}/{self.new_Nt}", 'method': 'animate'} for i in range(self.new_Nt)       
                     ]}]
 
+        # Update the figure to include the menu and slider
+        plot_fig.update(frames=frames)
+        plot_fig.update_layout(updatemenus=updatemenus,sliders=sliders)
 
-
-
-
-fig.update(frames=frames),
-fig.update_layout(updatemenus=updatemenus,
-                sliders=sliders)
-#fig.show('chrome') #in jupyter notebook
-#fig.show('browser') # in browser (the former offline.plot)
-print("Writing to html....")
-main_plot_name = filename[:-5] + "_fixedFFTnew" + ".html"
-numFile = 1
-while True:
-    isFileExists = os.path.exists(main_plot_name)
-    
-    if isFileExists == False:
-        break
-    numFile += 1
-    num_str = str(numFile).zfill(3)
-    main_plot_name = filename[:-5] + num_str + ".html"
+        # Saving the plot
+        if self.save == True:
+            numFile = 2
+            while True:
+                isFileExists = os.path.exists(self.output_path + self.output + '.' + self.type)
+                if isFileExists ==False:
+                    break
+                numFile += 1
+                num_str = str(numFile).zfill(3)
+                self.output = self.output + '_' + num_str + '.' + self.type
             
+            plot_fig.write_html(self.output_path + self.output,auto_play=False)
 
-fig.write_html(main_plot_name,auto_play=False)
+        else:
 
+            plot_fig.show('browser')
 
-
-# Only plot the subdomains if the algorithm is fdtd-schwarz...
-if algo == "fdtd-schwarz1":
-    subplot_titles = ['Whole Computational Domain Plot']
-
-    # Initialize x-axis vector for the subdom plots
-    _,subdom_z_shape = new_subdomain_data[0]['E'].shape
-    subdom_z = np.linspace(1,subdom_z_shape,subdom_z_shape)
-    spec_list = [[{"colspan": 2}, None]]
-    # Initialize the subplot titles
-    for subdom_index in range(num_subdom):
-        subplot_titles.append(f"Subdomain {subdom_index} Plot")
-        if subdom_index % 2 == 0:
-            spec_list.append([{},{}])
-    
-    #Create a new figure
-    subdom_fig = make_subplots(rows=(int(num_subdom/2)+1), cols=2,specs=spec_list,subplot_titles=subplot_titles)
-
-    # Add the trace for the computational domain...
-    #Add traces in subplot 1
-    subdom_fig.add_trace(go.Scatter(
-                    x= z,
-                    y= new_E[0,:],
-                    mode = 'lines',
-                    legendgroup= 'Comp Domain E-Field',
-                    hovertemplate="x: %{x} <br> y: %{y}",
-                    #line_color= 'rgb(255, 79, 38)',
-                    name= 'Comp Domain E-Field',
-                    showlegend= True), row=1, col=1)
-                    
-    subdom_fig.add_trace(go.Scatter(
-                    x= z,
-                    y= new_H[0,:],
-                    mode = 'lines',
-                    hovertemplate="x: %{x} <br> y: %{y}",
-                    legendgroup= 'Comp Domain H-Field',
-                    #line_color= 'rgb(255, 79, 38)',
-                    name= 'Comp Domain H-Field',
-                    showlegend= True), row=1, col=1)
-
-
-
-    #Add the traces of each subdomain...
-    row_tracker = 2
-
-    for subdom_index in range(num_subdom):
         
-        # If the subdom index is divisible by 2 (it is placed in the left column)
-        if subdom_index % 2 == 0:
-            # Add trace for Electric Field
-            subdom_fig.add_trace(go.Scatter(
-                        x= subdom_z,
-                        y= new_subdomain_data[subdom_index]['E'][0,:],
-                        mode = 'lines',
-                        legendgroup= f'Subdomain {subdom_index} E-Field',
-                        hovertemplate="x: %{x} <br> y: %{y}",
-                        #line_color= 'rgb(255, 79, 38)',
-                        name= f'Subdomain {subdom_index} E-Field',
-                        showlegend= True), row=row_tracker, col=1)
 
-            # Add trace for Magnetic Field
-            subdom_fig.add_trace(go.Scatter(
-                        x= subdom_z,
-                        y= new_subdomain_data[subdom_index]['H'][0,:],
-                        mode = 'lines',
-                        legendgroup= f'Subdomain {subdom_index} H-Field',
-                        hovertemplate="x: %{x} <br> y: %{y}",
-                        #line_color= 'rgb(255, 79, 38)',
-                        name= f'Subdomain {subdom_index} H-Field',
-                        showlegend= True), row=row_tracker, col=1)
-
-        # If the subdom index has a remainder 1 (we need to place it on the right column)
-        elif subdom_index % 2 == 1: 
-            # Add trace for Electric Field
-            subdom_fig.add_trace(go.Scatter(
-                        x= subdom_z,
-                        y= new_subdomain_data[subdom_index]['E'][0,:],
-                        mode = 'lines',
-                        legendgroup= f'Subdomain {subdom_index} E-Field',
-                        hovertemplate="x: %{x} <br> y: %{y}",
-                        #line_color= 'rgb(255, 79, 38)',
-                        name= f'Subdomain {subdom_index} E-Field',
-                        showlegend= True), row=row_tracker, col=2)
-
-            # Add trace for Magnetic Field
-            subdom_fig.add_trace(go.Scatter(
-                        x= subdom_z,
-                        y= new_subdomain_data[subdom_index]['H'][0,:],
-                        mode = 'lines',
-                        legendgroup= f'Subdomain {subdom_index} H-Field',
-                        hovertemplate="x: %{x} <br> y: %{y}",
-                        #line_color= 'rgb(255, 79, 38)',
-                        name= f'Subdomain {subdom_index} H-Field',
-                        showlegend= True), row=row_tracker, col=2)
-            row_tracker += 1
-
-    subdom_fig.update_layout(title_text=f"FDTD Simulation [Date: {sim_date} | Algorithm: {algo} | Multithreading: {multithreading} | Source Type: {source_type} | Boundary Condition: {boundary_cond} | Excitation Method: {excitation_method}]")
-    #Adjust the axes of the three subplots
-    subdom_fig.update_xaxes(title_text="Computational Domain (m)", row=1,col=1)
-    subdom_fig.update_yaxes(title_text="Level",range=[-1,1],row=1,col=1)
-
-    row_tracker = 2
-    for subdom_index in range(num_subdom):
-        if subdom_index % 2 == 0:
-            subdom_fig.update_xaxes(title_text="Cells",row=row_tracker,col=1)
-            subdom_fig.update_yaxes(title_text="Level",range=[-1,1],row=row_tracker,col=1)
-        elif subdom_index % 2 == 1:
-            subdom_fig.update_xaxes(title_text="Cells",row=row_tracker,col=2)
-            subdom_fig.update_yaxes(title_text="Level",range=[-1,1],row=row_tracker,col=2)
-            row_tracker += 1
-
-    print("Adding the frames for the subdomain plots...")
-    # Adding the frames for each traces
-    subdom_frames = []
-
-    for i in range(new_Nt):
-        new_dict = {}
-        new_data = []
-        # Add the data for the E and H
-        new_dict['name'] = i
-        new_data.append(go.Scatter(y=new_E[i,:]))
-        new_data.append(go.Scatter(y=new_H[i,:]))
-        
-        # Add the frames for each subdomain
-        for subdom_index in range(num_subdom):
-            new_data.append(go.Scatter(y=new_subdomain_data[subdom_index]['E'][i,:]))
-            new_data.append(go.Scatter(y=new_subdomain_data[subdom_index]['H'][i,:]))
-
-        new_dict['data'] = new_data
-
-        subdom_frames.append(new_dict)
-
-    #Add the button and slider
-    print("Adding the button and sliders...")
-    subdom_updatemenus = [dict(type='buttons',
-                        buttons=[dict(label='Play',
-                                    method='animate',
-                                    args=[[f'{i}' for i in range(new_Nt)], 
-                                            dict(frame=dict(duration=0, redraw=False), 
-                                                transition=dict(duration=0),
-                                                easing='linear',
-                                                fromcurrent=True,
-                                                mode='immediate'
-                                                                    )])],
-                        direction= 'left', 
-                        pad=dict(r= 10, t=85), 
-                        showactive =True, x= 0.1, y= 0, xanchor= 'right', yanchor= 'top')
-                ]
-
-    subdom_sliders = [{'yanchor': 'top',
-                'xanchor': 'left', 
-                'currentvalue': {'font': {'size': 16}, 'prefix': 'Iteration: ', 'visible': True, 'xanchor': 'right'},
-                'transition': {'duration': 0.0, 'easing': 'linear-in-out'},
-                'pad': {'b': 10, 't': 50}, 
-                'len': 0.9, 'x': 0.1, 'y': 0, 
-                'steps': [{'args': [[i], {'frame': {'duration': 0.0, 'easing': 'linear-in-out', 'redraw': False},
-                                        'transition': {'duration': 0, 'easing': 'linear-in-out'}}], 
-                        'label': f"{i}/{new_Nt}", 'method': 'animate'} for i in range(new_Nt)       
-                        ]}]
-    subdom_fig.update(frames=subdom_frames),
-    subdom_fig.update_layout(updatemenus=subdom_updatemenus,
-                    sliders=subdom_sliders)
-    #fig.show('chrome') #in jupyter notebook
-    #fig.show('browser') # in browser (the former offline.plot)
-    print("Writing to html....")
-    subdom_plot_name = filename[:-5]+f"_{num_subdom}_subdomains" + ".html"
-    numFile = 1
-    while True:
-        isFileExists = os.path.exists(subdom_plot_name)
-        
-        if isFileExists == False:
-            break
-        numFile += 1
-        num_str = str(numFile).zfill(3)
-        subdom_plot_name = filename[:-5] + str(numFile).zfill(3) + f"_{num_subdom}_subdomains" + ".html"
-
-
-    subdom_fig.write_html(subdom_plot_name,auto_play=False)
+    #Converter function from numpy ndarray to str object
+    def np_to_str(input):
+        return np.array_str(np.array(input).astype(str))
