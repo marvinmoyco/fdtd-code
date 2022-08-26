@@ -13,11 +13,11 @@ sim1.init_comp_domain(spacer = 0,
 
 sim1.simulate(boundary_condition="pabc",excitation_method="tfsf")
 
-plot1 = Plot(simulation=sim1,type='html',n_frame=2,save=False,output_path='../../../outputs/',read=False,output="sample_output")
+#plot1 = Plot(simulation=sim1,type='html',n_frame=2,save=False,output_path='../../../outputs/',read=False,output="sample_output")
 
 
-plot1.plot_html()
+#plot1.plot_html()
 
-#sim1.save_sim(name="sample",type="hdf5",output_dir="../../../outputs/",username="marvin",description="sample output data for python version")
+sim1.save_sim(name="sample",type="csv",output_dir="../../../outputs/",username="marvin",description="sample output data for python version")
 
 

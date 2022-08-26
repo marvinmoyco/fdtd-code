@@ -675,7 +675,8 @@ class Simulation:
             return None
         else:
             if inj_point == 0:
-                self.sim_param['inj_point'] = np.floor(self.sim_param['left_spacer']/2)
+                #self.sim_param['inj_point'] = np.floor(self.sim_param['left_spacer']/2)
+                self.sim_param['inj_point'] = np.floor(self.sim_param['Nz']/2)
             else:
                 self.sim_param['inj_point'] = inj_point
 
@@ -1282,17 +1283,7 @@ class Simulation:
         R = np.zeros(self.sim_fields['Kernel_Freq'].shape)
         T = np.zeros(self.sim_fields['Kernel_Freq'].shape)
 
-        # Plot the newly computed fields
-        plt.ion()
-        fig, ax = plt.subplots(figsize=(15,8))
-        ax.set_ylim([-2,2])
-        E_line, = ax.plot(self.comp_domain['z'],self.sim_fields['E'])
-        H_line, = ax.plot(self.comp_domain['z'],self.sim_fields['H'])
-        plt.title(f"FDTD Simulation Iteration: {0}/{int(self.sim_param['Nt'])} [ boundary_cond: {self.sim_param['boundary_condition']} | excitation_method: {self.sim_param['excitation_method']} ]")
-        plt.xlabel("Computational Domain (m)")
-        plt.ylabel("Field Values")
-        ax.legend(handles=[E_line,H_line],labels=["Electric Field", "Magnetic Field"])
-
+      
         # FDTD Time Loop
         for curr_iteration in range(int(self.sim_param['Nt'])):
 
@@ -1335,6 +1326,7 @@ class Simulation:
                 H_boundary_terms.append(self.sim_fields['H'][-2])
             
             elif self.sim_param['boundary_condition'] == "dirichlet":
+
                 self.sim_fields['H'][-1] = 0
 
             # Step 5: Update E field from H field (FDTD Space Loop)
@@ -1391,13 +1383,6 @@ class Simulation:
                 self.output_data['C'] = np.vstack((self.output_data['C'],self.sim_fields['C']))
 
             print(f"\rCurrent iteration: {curr_iteration}/{self.sim_param['Nt']}",end="")
-
-            # Update the plots
-            ax.set(title=f"FDTD Simulation Iteration: {curr_iteration}/{int(self.sim_param['Nt'])} [ boundary_cond: {self.sim_param['boundary_condition']} | excitation_method: {self.sim_param['excitation_method']} ]")
-            E_line.set_ydata(self.sim_fields['E'])
-            H_line.set_ydata(self.sim_fields['H'])
-            fig.canvas.draw()
-            fig.canvas.flush_events()
 
 
 
@@ -1696,17 +1681,17 @@ class Simulation:
             output_dir = os.getcwd()
 
         
-
+        # Saving data in HDF5 format
         if type == "hdf5":
             print_breaker("major")
             print(f"Saving the simulation data. | File type: {type}")
-            filename = output_dir + date_str + "_" + name + ".h5" 
+            filename = output_dir + self.date_str + "_" + name + ".h5" 
             with h5py.File(filename,mode='w') as file:
 
                 # Storing simulation metadata in the input group
                 input_grp = file.create_group("input")
                 print("Saving metadata -----", end="")
-                file['/'].attrs['date'] = date_str
+                file['/'].attrs['date'] = self.date_str
                 file['/'].attrs['user'] = username
                 file['/'].attrs['description'] = description
                 print("---> Saved!")
@@ -1737,3 +1722,75 @@ class Simulation:
                 for key,val in self.output_data.items():
                     output_grp.create_dataset(key,data=val,compression="gzip")
                 print("---> Saved!")
+
+        # Saving data in NPY format
+        elif type == "npy":
+            # 3D matrix total size: (face,row,col) = (5,Nt,Nz)
+            # npy file will save a 3D matrix containing everything from the simulation parameter to the simulated data.
+            # 1st 2D matrix (output[0,:,:]) will contain the simulation parameters (Nz, dz, etc.) and the time and source vectors.
+            # |- In the 1st matrix, the 1st row corresponds to the sim params, specifically in this order from left to right: 
+            # |   |- fmax, Nt, Nz, dz, dt, n_model, l_spacer, r_spacer, inj_point, sim_time
+            # |- the 2nd row corrseponds to the source data (Esrc) and 3rd row to the (Hsrc)
+            # |- 4th row: t_E, 5th row: t_H, 6th row: t
+            # 2nd 2D matrix will contain E field simulation data
+            # 3rd 2D matrix will contain H field simulation data
+            
+            row = int(self.sim_param['Nt'])
+            col = int(self.sim_param['Nz'])
+            output_data = np.zeros((5,row,col))
+            for i in range(5):
+
+                if i == 0:
+                    output_data[i,0,0] = self.sim_param['fmax']
+                    output_data[i,1,0] = self.sim_param['Nt']
+                    output_data[i,2,0] = self.sim_param['Nz']
+                    output_data[i,3,0] = self.sim_param['dz']
+                    output_data[i,4,0] = self.sim_param['dt']
+                    output_data[i,5,0] = self.sim_param['n_model']
+                    output_data[i,6,0] = self.sim_param['left_spacer']
+                    output_data[i,7,0] = self.sim_param['right_spacer']
+                    output_data[i,8,0] = self.sim_param['inj_point']
+                    output_data[i,9,0] = self.sim_param['sim_time']
+
+
+                    output_data[i,:,1] = self.output_data['Esrc']
+                    output_data[i,:,2] = self.output_data['Hsrc']
+                    output_data[i,:,3] = self.output_data['t_E']
+                    output_data[i,:,4] = self.output_data['t_H']
+                    output_data[i,:,5] = self.output_data['t']
+                    
+
+                elif i == 1:
+                    output_data[i,:,:] = self.output_data['E']
+                elif i == 2:
+                    output_data[i,:,:] = self.output_data['H']
+
+            print_breaker("major")
+            print(f"Saving the simulation data. | File type: {type}",end="")
+            filename = output_dir + self.date_str + "_" + name + ".npy"
+            np.save(filename,output_data) 
+            print("---> Saved!")
+
+        # Saving data in CSV format
+        elif type == "csv":
+
+            # Creates several files: electric field, magnetic field, source (E and H), reflectance, and transmittance
+            csv_files = ['electric', 'magnetic', 'source', 'reflectance', 'transmittance']
+            print_breaker("major")
+            print(f"Saving the simulation data. | File type: {type}",end="")
+            for i in range(len(csv_files)):
+                filename = output_dir + self.date_str + "_" + name + "_" + csv_files[i]
+                if i == 0:
+                    np.savetxt(filename,self.output_data['E'],delimiter=',')
+                elif i == 1:
+                    np.savetxt(filename,self.output_data['H'],delimiter=',')
+                elif i == 2:
+                    source_output = np.hstack((self.output_data['Esrc'],self.output_data['Hsrc']))
+                    np.savetxt(filename,source_output,delimiter=',')
+
+                elif i == 3:
+                    np.savetxt(filename,self.output_data['R'],delimiter=',')
+
+                elif i == 4:
+                    np.savetxt(filename,self.output_data['T'],delimiter=',')
+            print("---> Saved!")

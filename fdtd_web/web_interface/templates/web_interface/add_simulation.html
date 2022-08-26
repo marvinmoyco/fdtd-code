@@ -1,0 +1,22 @@
+{% extends "web_interface/layout.html" %}
+{% load static %}
+
+
+{% block body %}
+<script>
+    document.querySelector('#all-simulations-btn').setAttribute('class','nav-link');
+    document.querySelector('#add-simulation-btn').setAttribute('class','nav-link active');
+    document.querySelector('#about-btn').setAttribute('class','nav-link');
+
+</script>
+<div class="col-11" id="add-simulation-view">
+    <h3>New Simulation</h3>
+    <form>
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit">
+    </form>
+
+</div>
+
+{% endblock %}
