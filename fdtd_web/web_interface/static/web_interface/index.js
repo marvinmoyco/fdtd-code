@@ -123,6 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
           fmax.type = "number";
           fmax.min = 0;
           fmax.setAttribute('class','form-control');
+          fmax.required = true;
           fmax.id = "fmax";
           fmax.placeholder = "Frequency in Hz...";
 
@@ -141,10 +142,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
           //Create the source type input
           var source_type = document.createElement('select');
-          source_type.setAttribute('class','form-select form-select-lg mb-3');
+          source_type.setAttribute('class','form-select form-select-lg mb-3 required');
           source_type.id = "source_type";
+          source_type.required = true;
           source_type.innerHTML = `
-                                  <option selected>Select a source excitation...</option>
+                                  <option selected></option>
                                   <option value="gaussian"> Gaussian Pulse Source</option>
                                   <option value="sine"> Sinusoidal Source</option>
                                   <option value="square"> Rectangular Pulse Source</option>
@@ -162,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
           nmodel.type = "number";
           nmodel.min = 1;
           nmodel.setAttribute('class','form-control');
+          nmodel.required = true;
           nmodel.id = "nmodel";
 
           var nmodel_div = document.createElement('div');
@@ -196,6 +199,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 layer_size.type = "number";
                 layer_size.min = 0;
                 layer_size.setAttribute('class','form-control ');
+                layer_size.required = true;
+                layer_size.step = "any";
                 layer_size.id = "layer-" + i;
 
 
@@ -212,6 +217,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 mu.type = "number";
                 mu.min = 0;
                 mu.setAttribute('class','form-control ');
+                mu.required = true;
+                mu.step = "any";
                 mu.id = "mu-" + i;
 
 
@@ -228,6 +235,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 epsilon.type = "number";
                 epsilon.min = 0;
                 epsilon.setAttribute('class','form-control ');
+                epsilon.required = true;
+                epsilon.step = "any";
                 epsilon.id = "epsilon-" + i;
 
 
@@ -425,10 +434,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         //Get the time today
         var d = new Date().toLocaleTimeString();
-        document.querySelector('#toast_time').textContent= d;
+        document.querySelector('#failed_submit_toast').textContent= d;
 
         //Show a toast saying that form validation failed...
-        const toastLiveExample = document.getElementById('liveToast')
+        const toastLiveExample = document.getElementById('failed_submit_toast')
         const toast = new bootstrap.Toast(toastLiveExample)
 
         toast.show()
@@ -437,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
    
 
-
+      return false;
 
     });
 
