@@ -10,7 +10,7 @@ STD_VER = c++17
 IDIR = ../include
 ODIR = obj
 BDIR = bin
-LDIR = ../../../../libs
+LDIR = ../../../../libraries
 
 DBIR = debug
 
