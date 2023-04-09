@@ -4,6 +4,20 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
+        {
+            "name": "Django",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "${workspaceRoot}/fdtd_web/manage.py",
+            "args": [
+                "runserver",
+                "--noreload"
+            ],
+           
+        },
+    
         {
             "name": "g++ build and debug active file",
             "type": "cppdbg",

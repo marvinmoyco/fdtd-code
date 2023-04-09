@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
   function load_simulations(response) {
-
+    console.log("HELLOOOOOOOO");
       // Adjust the buttons in navbar
     document.querySelector('#all-simulations-btn').setAttribute('class','nav-link active');
     document.querySelector('#add-simulation-btn').setAttribute('class','nav-link');

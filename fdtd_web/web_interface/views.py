@@ -11,7 +11,10 @@ from django import forms
 import os
 from .models import *
 import datetime
-
+# fix windows registry stuff
+import mimetypes
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
 # Creating a class for the form submission...
 class New_Simulation(forms.ModelForm):
