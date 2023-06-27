@@ -13,7 +13,7 @@
             "program": "${workspaceRoot}/fdtd_web/manage.py",
             "args": [
                 "runserver",
-                "--noreload"
+                
             ],
            
         },

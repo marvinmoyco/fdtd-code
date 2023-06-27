@@ -272,11 +272,17 @@ document.addEventListener('DOMContentLoaded', function() {
       var subdomains = [1,2,4,8,16,32,64];
       //Get the div for the sim param
       var sim_param_group = document.querySelector('#sim-param-group');
-      document.querySelector('#num_subdomains').value = 1;
+      document.querySelector('#num_subdomains').value = 0;
+      //Disable multithreading and number of subdomains by defauls
+      document.querySelector('#multithreading-swtich').disabled = true;
+      document.querySelector('#num_subdomains').disabled = true;
+      document.querySelector('#currVal').innerHTML = subdomains[document.querySelector('#num_subdomains').value];
       document.querySelector('#algorithm').addEventListener("change",() => {
         var algorithmSelected  = document.querySelector('#algorithm')
                                 .options[document.querySelector('#algorithm').selectedIndex].value;
         //console.log(algorithmSelected);
+        
+        console.log("algorithmSelected: " + algorithmSelected);
         if(algorithmSelected == "fdtd-schwarz")
         {
           //document.querySelector('#multithreading-swtich').checked = false;
@@ -286,11 +292,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         else{
           document.querySelector('#multithreading-swtich').checked = false;
-          document.querySelector('#multithreading-swtich').readonly = true;
+          document.querySelector('#multithreading-swtich').disabled = true;
           document.querySelector('#num_subdomains').value = 0;
-          document.querySelector('#num_subdomains').readonly = true;
+          document.querySelector('#num_subdomains').disabled = true;
           document.querySelector('#currVal').innerHTML = subdomains[document.querySelector('#num_subdomains').value];
-    
+          console.log("currVal: " + document.querySelector('#currVal').innerHTML + " | num_subdomains: " + document.querySelector('#num_subdomains').value);
         }
       });
 
