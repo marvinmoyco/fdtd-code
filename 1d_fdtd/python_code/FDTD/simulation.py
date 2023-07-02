@@ -11,7 +11,7 @@ import time
 from asyncio import new_event_loop
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-
+from utility import *
 
 
 
@@ -448,7 +448,7 @@ class Simulation:
     mu_0 = constants.mu_0
     epsilon_0 = constants.epsilon_0
     
-    def __init__(self,input_filepath=""):
+    def __init__(self,input_filepath="",json_data=None):
         """
         At object creation, the input file (csv) where the simulation parameters are set should be included.
         """
@@ -462,6 +462,9 @@ class Simulation:
         self.output_data = {}
         self.subdomains = []
         self.date_str = ""
+        self.username = ""
+        self.user_email = ""
+        self.sim_description = ""
 
         if input_filepath == "manual":
             # Guide to indices of simulation_parameter vector
@@ -507,7 +510,7 @@ class Simulation:
 
                 except ValueError:
                     print("Invalid input. Try again....")
-
+        
         else:
             # Guide to indices of simulation_parameter vector
             #    -Index 0: fmax
@@ -515,9 +518,9 @@ class Simulation:
             #    -Index 2: n_model
             #    -Index 3: t_sim
 
-            self.input_data['layer_size'] = np.array([])
-            self.input_data["magnetic_permeability"] = np.array([])
-            self.input_data["electric_permittivity"] = np.array([])
+            self.input_data['layer_size'] = parseSimParam(json_data['layer_size'])
+            self.input_data["magnetic_permeability"] = parseSimParam(json_data['magnetic_permeability'])
+            self.input_data["electric_permittivity"] = parseSimParam(json_data['electric_permittivity'])
             
             layer_size = []
             magnetic_perm = []

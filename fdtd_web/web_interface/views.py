@@ -10,29 +10,17 @@ import json
 from django import forms
 import os
 from .models import *
+import csv
+import sys
+from .simulation import *
+from .utility import loadJSONdata
 import datetime
+
+
 # fix windows registry stuff
 import mimetypes
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
-
-# Creating a class for the form submission...
-class New_Simulation(forms.ModelForm):
-
-    class Meta:
-        model = Simulation
-        fields = ['username',
-                  'user_email',
-                  'description',
-                  'is_manualInput',
-                  'input_csv',
-                  'boundary_cond',
-                  'excitation_method',
-                  'custom_name',
-                  'output_type',
-                  'algorithm',
-                  'multithreading',
-                  'num_subdomains']
 
 
 # Create your views here.
@@ -58,6 +46,7 @@ def add_simulation(request):
         # Create a csv file based on the input file if the method is 'manual'
         input_filepath=""
         if data['input_type'] == 'manual':
+            sim = loadJSONdata(data)
             print(f'layer_size: {data["layer_size"]}')
             print(f"mu: {data['mu']}")
             print(f"epsilon: {data['epsilon']}")

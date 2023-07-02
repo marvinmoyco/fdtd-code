@@ -1,4 +1,5 @@
 from django.urls import path
+import sys
 from . import views
 
 app_name='web_interface'
