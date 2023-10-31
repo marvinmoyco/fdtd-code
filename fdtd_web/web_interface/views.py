@@ -25,11 +25,47 @@ mimetypes.add_type('text/css', '.css')
 
 # Create your views here.
 def index(request):
+    if "sim_item" not in request.session:
+        request.session["sim_item"] = None
+    if "sim_list" not in request.session:
+        request.session["sim_list"] = []
     return render(request, "web_interface/index.html")
 
 
-def simulation(request,id):
-    return render(request, "web_interface/simulation.html")
+def simulation(request):
+    # Create a csv file based on the input file if the method is 'manual'
+    input_filepath=""
+    input_data = []
+    if request.session["input_param"] != None:
+        input_data = request.session["input_param"]
+    else:
+        return render(request, "web_interface/simulation.html", {
+            "has_error" : True,
+            "error_message" : "ERROR 001: No input data received from user! Please try again"
+        })
+
+    if input_data["input_type"] == 'manmual':
+        request.session["sim_item"]= loadJSONdata(request.session["input_param"])
+        print(f"Sim object: {request.session['sim_item']}")
+    else:
+        # If the input model is already a file (csv format)
+        pass
+
+    # Check if a session variable of simulation object is created
+    if request.session["sim_item"] == None:
+        #return render(request, "web_interface/simulation.html", {
+         #   "has_error" : True,
+         #   "error_message" : "ERROR 002: No simulation object created during processing."
+        #})
+        return render(request, "web_interface/index.html")
+    #initialize computational domain
+    request.session["sim_item"].init_comp_domain(spacer = 0,
+                        inj_point = 0,
+                        n_subdom = 1,
+                        overlap = 5,
+                        multithread = request.session["sim_item"].sim_param['multithreading_flag'],
+                        algo=request.session["sim_item"].sim_param['algo'])
+    return render(request, "web_interface/index.html")
 
 
 def add_simulation(request):
@@ -40,33 +76,12 @@ def add_simulation(request):
         print("Request.body")
         print(request.body)
         data = json.loads(request.body)
+        request.session["input_param"] = data
         print(data)
         print(f"username: {data['username']} | algo: {data['algorithm']}")
-
-        # Create a csv file based on the input file if the method is 'manual'
-        input_filepath=""
-        if data['input_type'] == 'manual':
-            sim = loadJSONdata(data)
-            print(f'layer_size: {data["layer_size"]}')
-            print(f"mu: {data['mu']}")
-            print(f"epsilon: {data['epsilon']}")
-            
-            
-
-
-
-
-        else:
-            # If the input model is already a file (csv format)
-            pass
-
-        # Create a new model based on the sent data
-        
-
-
         #Store the data into the database
-        #return HttpResponseRedirect(reverse("web_interface:simulation", args=(simulation.id,)))
-        return render(request, "web_interface/simulation.html", {"sim_id": 1})
+        return HttpResponseRedirect(reverse("web_interface:simulation",))
+     
     # When the request is a GET request
     else:
         #return render(request, "web_interface/add_simulation.html")

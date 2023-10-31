@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
   function load_simulations(response) {
-    console.log("HELLOOOOOOOO");
+    
       // Adjust the buttons in navbar
     document.querySelector('#all-simulations-btn').setAttribute('class','nav-link active');
     document.querySelector('#add-simulation-btn').setAttribute('class','nav-link');
@@ -42,12 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
    // history.pushState({section: section},"", `${section}`);
    // showSection(section);
 //
-
-    console.log("HELLOOOOOOOO");
-
-  
-
-
 
 
   };
@@ -70,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
     const section = this.dataset.section;
-    console.log(section);
+   
     history.pushState({section: section},"", `${section}`);
     showSection(section);
 
@@ -159,19 +153,19 @@ document.addEventListener('DOMContentLoaded', function() {
           source_type_div.appendChild(source_type);
           input_param_row.appendChild(source_type_div);
 
-          //Create nmodel input
-          var nmodel = document.createElement('input');
-          nmodel.type = "number";
-          nmodel.min = 1;
-          nmodel.setAttribute('class','form-control');
-          nmodel.required = true;
-          nmodel.id = "nmodel";
+          //Create n_model input
+          var n_model = document.createElement('input');
+          n_model.type = "number";
+          n_model.min = 1;
+          n_model.setAttribute('class','form-control');
+          n_model.required = true;
+          n_model.id = "n_model";
 
           var nmodel_div = document.createElement('div');
           nmodel_div.innerHTML = "<label>Number of Device Layer/s</label>";
           nmodel_div.setAttribute('class','col-3');
 
-          nmodel_div.appendChild(nmodel);
+          nmodel_div.appendChild(n_model);
           input_param_row.appendChild(nmodel_div);
 
           device_model.appendChild(input_param_row);
@@ -179,11 +173,11 @@ document.addEventListener('DOMContentLoaded', function() {
           var layers_div = document.createElement('div');
           layers_div.setAttribute('class','col-10');
 
-          nmodel.addEventListener('input',() => {
+          n_model.addEventListener('input',() => {
 
               //Clear the html info before repeating...
               layers_div.innerHTML="";
-              for(let i = 1; i <= nmodel.value; i++)
+              for(let i = 1; i <= n_model.value; i++)
               {
                 //Create a row for each layer
                 var layer_heading = document.createElement('h6');
@@ -296,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
           document.querySelector('#num_subdomains').value = 0;
           document.querySelector('#num_subdomains').disabled = true;
           document.querySelector('#currVal').innerHTML = subdomains[document.querySelector('#num_subdomains').value];
-          console.log("currVal: " + document.querySelector('#currVal').innerHTML + " | num_subdomains: " + document.querySelector('#num_subdomains').value);
+          //console.log("currVal: " + document.querySelector('#currVal').innerHTML + " | num_subdomains: " + document.querySelector('#num_subdomains').value);
         }
       });
 
@@ -323,7 +317,8 @@ document.addEventListener('DOMContentLoaded', function() {
       event.preventDefault();
 
       //console.log(document.querySelector('#ModelInput').value);
-      console.log("Entering onsubmit....");
+      
+      
       var form_valid = true;
       Array.from(forms).forEach(form => {
       
@@ -345,14 +340,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
       var input_type = dropdown.value
       
-      //var form_data = new FormData(document.getElementById('sim_form'));
-      console.log(document.getElementById('sim_form'));
+     
       
       if (form_valid == true)
       {
         if(input_type == "csv")
         {
-          console.log('Entering csv...');
+          var num_subdom = 0;
+          if(document.querySelector('#algorithm').value == "fdtd")
+            num_subdom = 1;
+          else
+            num_subdom = subdomains[document.querySelector('#currVal').innerHTML];
           fetch('new',{
             method: 'POST',
             body: JSON.stringify({
@@ -367,8 +365,8 @@ document.addEventListener('DOMContentLoaded', function() {
               output_type: document.querySelector('#output_type').value,
               algorithm: document.querySelector('#algorithm').value,
               multithreading: document.querySelector('#multithreading-swtich').checked,
-              num_subdomain: subdomains[document.querySelector('#num_subdomains').value],
-           
+              num_subdomain: num_subdom,
+              creation_datetime:  new Date().today() + " @ " + new Date().timeNow()
               
             })
           })
@@ -377,8 +375,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         else if(input_type == "manual")
         {
-          console.log("Entering manual part");
-          var num_layers = document.querySelector('#nmodel').value;
+          
+          var num_layers = document.querySelector('#n_model').value;
           var layer_sizes = [];
           var mus = [];
           var epsilons = [];
@@ -390,6 +388,11 @@ document.addEventListener('DOMContentLoaded', function() {
             mus.push(document.querySelector(mu_str + i).value);
             epsilons.push(document.querySelector(epsilon_str + i).value);
           }
+          var num_subdom = 0;
+          if(document.querySelector('#algorithm').value == "fdtd")
+            num_subdom = 1;
+          else
+            num_subdom = subdomains[document.querySelector('#currVal').innerHTML];
           //Putting the CSRF token in the headers is a MUST when doing a POST request
           let headers = new Headers();
           headers.append('X-CSRFToken', csrftoken);
@@ -406,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
               input_type: document.querySelector('#ModelInput').value,
               fmax: document.querySelector('#fmax').value,
               source_type: document.querySelector('#source_type').value,
-              nmodel: document.querySelector('#nmodel').value,
+              n_model: document.querySelector('#n_model').value,
               layer_size: layer_sizes,
               mu: mus,
               epsilon: epsilons,
@@ -416,12 +419,13 @@ document.addEventListener('DOMContentLoaded', function() {
               output_type: document.querySelector('#output_type').value,
               algorithm: document.querySelector('#algorithm').value,
               multithreading: document.querySelector('#multithreading-swtich').checked,
-              num_subdomain: subdomains[document.querySelector('#currVal').value],
-              creation_datetime:  new Date().today() + " @ " + new Date().timeNow(),
+              num_subdomain: num_subdom,
+              creation_datetime:  new Date().today() + " @ " + new Date().timeNow()
             })
           })
           .then(response => response.json())
           .then(result => {console.log(result)});
+          
         }
         else{
           console.log("No input values detected");

@@ -522,11 +522,12 @@ class Simulation:
             self.sim_param["source_type"] = json_data['source_type']
             self.sim_param["n_model"] = int(json_data['n_model'])
 
-            self.sim_param['algo'] = json_data['algo']
+            self.sim_param['algo'] = json_data['algorithm']
             self.sim_param['boundary_cond'] = json_data['boundary_cond']
             self.sim_param['multithreading_flag'] = json_data['multithreading']
             self.sim_param['source_excitation'] = json_data['source_excitation']
             self.sim_param['output_type'] = json_data['output_type']
+            self.sim_param['n_subdom'] = json_data['num_subdomain']
 
             self.user_data['username'] = json_data['username']
             self.user_data['user_email'] = json_data['user_email']
@@ -1289,8 +1290,9 @@ class Simulation:
             print(f"Preprocessing is not yet complete/finished incomplete. The simulation will not proceed.")
             return None
 
-        self.sim_param['boundary_condition'] = boundary_condition
-        self.sim_param['excitation_method'] = excitation_method
+        if self.sim_param.get('json_loaded') is None:
+            self.sim_param['boundary_condition'] = boundary_condition
+            self.sim_param['excitation_method'] = excitation_method
 
         # Check the algorithm selected
         if self.sim_param['algo'] == "fdtd":
