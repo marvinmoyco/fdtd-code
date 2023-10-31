@@ -44,7 +44,7 @@ def simulation(request):
             "error_message" : "ERROR 001: No input data received from user! Please try again"
         })
 
-    if input_data["input_type"] == 'manmual':
+    if input_data["input_type"] == 'manual':
         request.session["sim_item"]= loadJSONdata(request.session["input_param"])
         print(f"Sim object: {request.session['sim_item']}")
     else:
@@ -57,7 +57,7 @@ def simulation(request):
          #   "has_error" : True,
          #   "error_message" : "ERROR 002: No simulation object created during processing."
         #})
-        return render(request, "web_interface/index.html")
+        return HttpResponseRedirect(reverse("web_interface:index"))
     #initialize computational domain
     request.session["sim_item"].init_comp_domain(spacer = 0,
                         inj_point = 0,
@@ -65,7 +65,7 @@ def simulation(request):
                         overlap = 5,
                         multithread = request.session["sim_item"].sim_param['multithreading_flag'],
                         algo=request.session["sim_item"].sim_param['algo'])
-    return render(request, "web_interface/index.html")
+    return HttpResponseRedirect(reverse("web_interface:index"))
 
 
 def add_simulation(request):
@@ -84,8 +84,9 @@ def add_simulation(request):
      
     # When the request is a GET request
     else:
-        #return render(request, "web_interface/add_simulation.html")
-        return HttpResponseForbidden()
+        # If the request is a GET request, load the HTML file for the form submission
+        return render(request, "web_interface/add_simulation.html")
+        
         #return JsonResponse({"error": "POST request required"},status=400)
     
     

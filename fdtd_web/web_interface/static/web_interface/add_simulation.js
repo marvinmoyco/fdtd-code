@@ -10,65 +10,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     
     // Use buttons to toggle between views
-    document.querySelector('#all-simulations-btn').addEventListener('click', () => load_simulations(response));
     //document.querySelector('#add-simulation-btn').addEventListener('click', add_simulation);
-    document.querySelector('#about-btn').addEventListener('click', load_about);
     
+    console.log("Entering add_simulation.js....");
     // By default, load the list of simulations
-    load_simulations();
-
+    add_simulation();
+    
   
   });
 
 
-
-  function load_simulations(response) {
-    
-      // Adjust the buttons in navbar
-    document.querySelector('#all-simulations-btn').setAttribute('class','nav-link active');
-    document.querySelector('#add-simulation-btn').setAttribute('class','nav-link');
-    document.querySelector('#about-btn').setAttribute('class','nav-link');
-
-
-    // Show the view where all simulations are shown and hide other views
-    //document.querySelector('#simulation-view').style.display = 'none';
-    document.querySelector('#all-simulations-view').style.display = 'block';
-    document.querySelector('#add-simulation-view').style.display = 'none';
-    document.querySelector('#about-view').style.display = 'none';
-    
-    //Check if the status code is a redirect
-    //const section = this.dataset.section;
-    //console.log(section);
-   // history.pushState({section: section},"", `${section}`);
-   // showSection(section);
-//
-
-
-  };
 
 
   
   
   function add_simulation() {
 
-    // Adjust the buttons in navbar
-    document.querySelector('#all-simulations-btn').setAttribute('class','nav-link');
-    document.querySelector('#add-simulation-btn').setAttribute('class','nav-link active');
-    document.querySelector('#about-btn').setAttribute('class','nav-link');
-
-    // Show the view where all simulations are shown and hide other views
-    //document.querySelector('#simulation-view').style.display = 'none';
-    document.querySelector('#all-simulations-view').style.display = 'none';
-    document.querySelector('#add-simulation-view').style.display = 'block';
-    document.querySelector('#about-view').style.display = 'none';
-
-    
-    const section = this.dataset.section;
-   
-    history.pushState({section: section},"", `${section}`);
-    showSection(section);
-
-
+ 
     var modelInput;
       //Get the value of the select...
       document.querySelector('#ModelInput').addEventListener("input",function(){
