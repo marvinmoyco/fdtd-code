@@ -45,26 +45,29 @@ def simulation(request):
         })
 
     if input_data["input_type"] == 'manual':
-        request.session["sim_item"]= loadJSONdata(request.session["input_param"])
-        print(f"Sim object: {request.session['sim_item']}")
+        #request.session["sim_item"]= loadJSONdata(request.session["input_param"])
+        sim_item = loadJSONdata(request.session["input_param"])
+        print(f"Sim object: {sim_item}")
     else:
         # If the input model is already a file (csv format)
         pass
 
     # Check if a session variable of simulation object is created
-    if request.session["sim_item"] == None:
-        #return render(request, "web_interface/simulation.html", {
-         #   "has_error" : True,
-         #   "error_message" : "ERROR 002: No simulation object created during processing."
-        #})
-        return HttpResponseRedirect(reverse("web_interface:index"))
+    if sim_item == None: #request.session["sim_item"] != None:
+        return render(request, "web_interface/simulation.html", {
+            "has_error" : True,
+            "error_message" : "ERROR 002: No simulation object created during processing."
+        })
+        #return HttpResponseRedirect(reverse("web_interface:index"))
     #initialize computational domain
-    request.session["sim_item"].init_comp_domain(spacer = 0,
+    #request.session["sim_item"].init_comp_domain(spacer = 0,
+    sim_item.init_comp_domain(spacer=0,
                         inj_point = 0,
                         n_subdom = 1,
                         overlap = 5,
-                        multithread = request.session["sim_item"].sim_param['multithreading_flag'],
-                        algo=request.session["sim_item"].sim_param['algo'])
+                        multithread = sim_item.sim_param['multithreading_flag'],#request.session["sim_item"].sim_param['multithreading_flag'],
+                        algo=sim_item.sim_param['algo'])#request.session["sim_item"].sim_param['algo'])
+    render(request, "web_interface/index.html")
     return HttpResponseRedirect(reverse("web_interface:index"))
 
 

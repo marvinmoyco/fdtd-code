@@ -13,28 +13,50 @@
         {% endblock %}
     </head>
     <body>
-        
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="{% url 'web_interface:index' %}">Simulation Interface</a>
-          
-            <div>
-              <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                  <a class="nav-link active" href="{% url 'web_interface:index' %}" id="all-simulations-btn" data-bs-toggle="tab" data-section="home" type="button" role="tab" aria-controls="home" aria-selected="true">All Simulations</a>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="about-btn" data-bs-toggle="tab" data-section="about" type="button" role="tab" aria-controls="contact" aria-selected="false">About</button>
-                </li>
-              </ul>
+
+
+          <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            <div class="container-fluid">
+              <a class="navbar-brand" href="{% url 'web_interface:index' %}"><img src="{% static 'images/android-chrome-512x512.png' %}" alt="Github Repository" style="width:40px;height:40px" ></a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                  <a class="nav-link" aria-current="page" href="{% url 'web_interface:index' %}" id="all-simulations-btn" >Home</a>
+                  <a class="nav-link" href="{% url 'web_interface:add_simulation' %}" id="add-simulation-btn">New Simulation</a>
+                  <a class="nav-link" id="about-btn" data-bs-toggle="modal" href="#" data-section="about" data-bs-target="#staticAbout">About</a>
+                </div>
+              </div>
             </div>
-            <a class="btn btn-primary" href="{% url 'web_interface:add_simulation' %}" id="add-simulation-btn" role="button">Create a new simulation</a>     
-        
           </nav>
           
         <div class="body container">
             {% block body %}
             {% endblock %}
+            
         </div>
+        <!-- Modal -->
+        <div class="modal fade" id="staticAbout" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">About</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p>
+                  Created for ECE 198 project. Simple web interface (integrating with C++ program for FDTD Simulations).
+                </p>
+                <h5>
+                     <a href="https://github.com/marvinmoyco/fdtd-code/tree/main" target="_blank"><img src="{% static 'images/github_logo.png' %}" alt="Github Repository" style="height:30px;width:30px" class="d-inline-block align-text-top"></a>
+                </h5>
+              </div>
+            
+            </div>
+          </div>
+        </div>
+
     </body>
 </html>
 

@@ -11,9 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Use buttons to toggle between views
     document.querySelector('#all-simulations-btn').addEventListener('click', () => load_simulations(response));
-    //document.querySelector('#add-simulation-btn').addEventListener('click', add_simulation);
-    document.querySelector('#about-btn').addEventListener('click', load_about);
-    
+ 
     // By default, load the list of simulations
     load_simulations();
 
@@ -33,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show the view where all simulations are shown and hide other views
     //document.querySelector('#simulation-view').style.display = 'none';
     document.querySelector('#all-simulations-view').style.display = 'block';
-    document.querySelector('#add-simulation-view').style.display = 'none';
+   // document.querySelector('#add-simulation-view').style.display = 'none';
     document.querySelector('#about-view').style.display = 'none';
     
     //Check if the status code is a redirect
@@ -476,25 +474,7 @@ Date.prototype.timeNow = function () {
    return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
 }
 
-  function load_about() {
 
-    // Adjust the buttons in navbar
-    document.querySelector('#all-simulations-btn').setAttribute('class','nav-link');
-    document.querySelector('#add-simulation-btn').setAttribute('class','nav-link');
-    document.querySelector('#about-btn').setAttribute('class','nav-link active');
-
-    // Show the view where all simulations are shown and hide other views
-    //document.querySelector('#simulation-view').style.display = 'none';
-    document.querySelector('#all-simulations-view').style.display = 'none';
-    document.querySelector('#add-simulation-view').style.display = 'none';
-    document.querySelector('#about-view').style.display = 'block';
-
-    const section = this.dataset.section;
-    console.log(section);
-    history.pushState({section: section},"", `${section}`);
-    showSection(section);
-
-  };  
 
   function showSection(section) {
     if(section == 'home'){
@@ -504,21 +484,5 @@ Date.prototype.timeNow = function () {
       document.querySelector('#add-simulation-view').style.display = 'none';
       document.querySelector('#about-view').style.display = 'none';
     }
-    else if(section == 'new') {
-       // Show the view where all simulations are shown and hide other views
-       //document.querySelector('#simulation-view').style.display = 'none';
-       document.querySelector('#all-simulations-view').style.display = 'none';
-       document.querySelector('#add-simulation-view').style.display = 'block';
-       document.querySelector('#about-view').style.display = 'none';
-    }
-    else if(section == 'about') {
-      // Show the view where all simulations are shown and hide other views
-      //document.querySelector('#simulation-view').style.display = 'none';
-      document.querySelector('#all-simulations-view').style.display = 'none';
-      document.querySelector('#add-simulation-view').style.display = 'none';
-      document.querySelector('#about-view').style.display = 'block';
-    }
-    
-    
-    
+
   }
