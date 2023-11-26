@@ -12,37 +12,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Use buttons to toggle between views
     document.querySelector('#all-simulations-btn').addEventListener('click', () => load_simulations(response));
  
-    // By default, load the list of simulations
-    load_simulations();
+   
 
   
   });
 
-
-
-  function load_simulations(response) {
-    
-      // Adjust the buttons in navbar
-    document.querySelector('#all-simulations-btn').setAttribute('class','nav-link active');
-    document.querySelector('#add-simulation-btn').setAttribute('class','nav-link');
-    document.querySelector('#about-btn').setAttribute('class','nav-link');
-
-
-    // Show the view where all simulations are shown and hide other views
-    //document.querySelector('#simulation-view').style.display = 'none';
-    document.querySelector('#all-simulations-view').style.display = 'block';
-   // document.querySelector('#add-simulation-view').style.display = 'none';
-    document.querySelector('#about-view').style.display = 'none';
-    
-    //Check if the status code is a redirect
-    //const section = this.dataset.section;
-    //console.log(section);
-   // history.pushState({section: section},"", `${section}`);
-   // showSection(section);
-//
-
-
-  };
 
 
   

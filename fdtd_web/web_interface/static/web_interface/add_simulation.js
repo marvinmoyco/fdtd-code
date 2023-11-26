@@ -14,10 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log("Entering add_simulation.js....");
     // Show the view where all simulations are shown and hide other views
-    //document.querySelector('#simulation-view').style.display = 'none';
-    document.querySelector('#all-simulations-btn').setAttribute('class','nav-link');;
-    document.querySelector('#add-simulation-btn').setAttribute('class','nav-link');
-    // By default, load the list of simulations
+   
     add_simulation();
     
   

@@ -33,7 +33,12 @@ def index(request):
 
 
 def simulation(request):
-    # Create a csv file based on the input file if the method is 'manual'
+   
+    render(request, "web_interface/index.html")
+    return HttpResponseRedirect(reverse("web_interface:index"))
+
+def load_new_simulation(request):
+     # Create a csv file based on the input file if the method is 'manual'
     input_filepath=""
     input_data = []
     if request.session["input_param"] != None:
@@ -67,8 +72,7 @@ def simulation(request):
                         overlap = 5,
                         multithread = sim_item.sim_param['multithreading_flag'],#request.session["sim_item"].sim_param['multithreading_flag'],
                         algo=sim_item.sim_param['algo'])#request.session["sim_item"].sim_param['algo'])
-    render(request, "web_interface/index.html")
-    return HttpResponseRedirect(reverse("web_interface:index"))
+    return HttpResponseRedirect(reverse("web_interface:simulation",))
 
 
 def add_simulation(request):
