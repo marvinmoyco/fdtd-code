@@ -11,7 +11,7 @@
 
 <div class="col-11" id="add-simulation-view">
     <h3>New Simulation</h3>
-    <form enctype="multipart/form-data" id="sim_form" action="" method="post" class ="needs-validation" novalidate>
+    <form enctype="multipart/form-data" id="sim_form" method="post" class ="needs-validation" >
         {% csrf_token %}
         <script>
         var csrftoken = '{{ csrf_token }}';
@@ -119,19 +119,7 @@
         </div>
         <button id="submit-Btn" class="btn btn-primary" >Submit</button>
     </form>
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="failed_submit_toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-            <img src="..." class="rounded me-2" alt="...">
-            <strong class="me-auto">Form Submission Failed</strong>
-            <small id="failed_submit_toast_time"></small>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-            Please put a valid value on the required fields.
-            </div>
-        </div>
-        </div>
+   
         
 </div>
         

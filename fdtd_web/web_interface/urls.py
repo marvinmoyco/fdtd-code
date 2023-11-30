@@ -8,6 +8,6 @@ urlpatterns = [
     path("", views.index, name="index"),
     
     #API Routes
-    path("simulation",views.simulation,name="simulation"),
+    path("simulation/<str:timestamp>",views.simulation,name="simulation"),
     path("new",views.add_simulation,name="add_simulation"),
 ]

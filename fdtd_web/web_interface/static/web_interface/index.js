@@ -19,8 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-  
-  
+  /*
   function add_simulation() {
 
     // Adjust the buttons in navbar
@@ -436,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
     
     console.log("End of post request...");
-  };
+  };*/
 
  // For todays date;
 Date.prototype.today = function () { 

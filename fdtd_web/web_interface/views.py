@@ -14,7 +14,7 @@ import csv
 import sys
 from .simulation import *
 from .utility import loadJSONdata
-import datetime
+import datetime,subprocess
 
 
 # fix windows registry stuff
@@ -32,10 +32,9 @@ def index(request):
     return render(request, "web_interface/index.html")
 
 
-def simulation(request):
-   
-    render(request, "web_interface/index.html")
-    return HttpResponseRedirect(reverse("web_interface:index"))
+def simulation(request,timestamp):
+    if request.method == 'GET':
+        return render(request, "web_interface/simulation.html", {})
 
 def load_new_simulation(request):
      # Create a csv file based on the input file if the method is 'manual'
@@ -76,24 +75,27 @@ def load_new_simulation(request):
 
 
 def add_simulation(request):
-    
+    datetime_str = datetime.datetime.now()
     #Check the submitted data in the POST request
     if request.method == "POST":
-        datetime_str = datetime.datetime.now()
+        
         print("Request.body")
         print(request.body)
-        data = json.loads(request.body)
-        request.session["input_param"] = data
-        print(data)
-        print(f"username: {data['username']} | algo: {data['algorithm']}")
+        #data = json.loads(request.body)
+       # request.session["input_param"] = data
+      #  print(data)
+       # print(f"username: {data['username']} | algo: {data['algorithm']}")
         #Store the data into the database
-        return HttpResponseRedirect(reverse("web_interface:simulation",))
-     
+        #return HttpResponseRedirect(reverse("web_interface:simulation",))
+        #after POST request is successful, load simulation.html with the data submitted form POST request
+        return HttpResponseRedirect(reverse("web_interface:simulation",kwargs={'timestamp':datetime_str.strftime("%Y%m%d%H%M%S")}))
+        #return render(request, "web_interface/index.html")
     # When the request is a GET request
     else:
         # If the request is a GET request, load the HTML file for the form submission
-        return render(request, "web_interface/add_simulation.html")
         
+        return render(request, "web_interface/add_simulation.html")
+        #return HttpResponseRedirect(reverse("web_interface:simulation",kwargs={'timestamp':datetime_str.strftime("%Y%m%d%H%M%S")}))
         #return JsonResponse({"error": "POST request required"},status=400)
     
     

@@ -1,8 +1,8 @@
-
+/*
 window.onpopstate = function(event) {
   console.log(event.state.section);
   showSection(event.state.section);
-}
+}*/
 
 
 
@@ -352,6 +352,32 @@ document.addEventListener('DOMContentLoaded', function() {
             num_subdom = 1;
           else
             num_subdom = subdomains[document.querySelector('#currVal').innerHTML];
+
+
+
+
+
+          let json_request = JSON.stringify({
+              username: document.querySelector('#username').value,
+              //csrfmiddlewaretoken: csrftoken,
+              user_email: document.querySelector('#user_email').value,
+              sim_description: document.querySelector('#sim_description').value,
+              input_type: document.querySelector('#ModelInput').value,
+              fmax: document.querySelector('#fmax').value,
+              source_type: document.querySelector('#source_type').value,
+              n_model: document.querySelector('#n_model').value,
+              layer_size: layer_sizes,
+              mu: mus,
+              epsilon: epsilons,
+              boundary_cond: document.querySelector('#boundary_cond').value,
+              source_excitation: document.querySelector('#source_excitation').value,
+              custom_name: document.querySelector('#custom_name').value,
+              output_type: document.querySelector('#output_type').value,
+              algorithm: document.querySelector('#algorithm').value,
+              multithreading: document.querySelector('#multithreading-swtich').checked,
+              num_subdomain: num_subdom
+              /*creation_datetime:  new Date().today() + " @ " + new Date().timeNow()*/
+            })
           //Putting the CSRF token in the headers is a MUST when doing a POST request
           let headers = new Headers();
           headers.append('X-CSRFToken', csrftoken);
@@ -379,12 +405,12 @@ document.addEventListener('DOMContentLoaded', function() {
               algorithm: document.querySelector('#algorithm').value,
               multithreading: document.querySelector('#multithreading-swtich').checked,
               num_subdomain: num_subdom,
-              creation_datetime:  new Date().today() + " @ " + new Date().timeNow()
+              //creation_datetime:  new Date().today() + " @ " + new Date().timeNow()
             })
           })
           .then(response => response.json())
           .then(result => {console.log(result)});
-          
+          console.log("End of post request...");
         }
         else{
           console.log("No input values detected");
@@ -422,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   
     
-    console.log("End of post request...");
+    
   };
 
  // For todays date;
