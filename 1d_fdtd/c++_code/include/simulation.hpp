@@ -1864,7 +1864,9 @@ class Simulation
                             {
                                 
                                 //If it is the 1st subdomain, only transfer from the right ghost cell
-                                subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size-1);
+                                // BUG FIX 3: was overlap_size-1. H[stop-1] needs E[stop], which is
+                                // index overlap_size (not overlap_size-1) in the next subdomain.
+                                subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size);
                                 // cout << "Transferring ghost cell in subdom " << subdom_index << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
                             }
                             else if(subdom_index == sim_param.num_subdomains - 1)
@@ -1879,7 +1881,8 @@ class Simulation
                                 //Else, get the left and right ghost cells (if it is in the middle)
                                 unsigned long end = subdomains[subdom_index -1].s_fields.H.shape(0);
                                 subdomains[subdom_index].left_ghost_cell = subdomains[subdom_index - 1].s_fields.H(end - sim_param.overlap_size - 1);
-                                subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size-1);
+                                // BUG FIX 3: same right ghost cell fix for middle subdomains.
+                                subdomains[subdom_index].right_ghost_cell = subdomains[subdom_index + 1].s_fields.E(sim_param.overlap_size);
                                 //cout << "Transferring ghost cell in subdom " << subdom_index << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell  << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
                             
                             }
@@ -1946,25 +1949,42 @@ class Simulation
                             {
                                 
                                 //If it is the 1st subdomain, only transfer from the right ghost cell
-                                subdomains[thread_id].right_ghost_cell = subdomains[thread_id + 1].s_fields.E(sim_param.overlap_size-1);
+                                // BUG FIX 3: was overlap_size-1. The correct E cell just past this
+                                // subdomain's last cell is at index overlap_size in the next subdomain.
+                                subdomains[thread_id].right_ghost_cell = subdomains[thread_id + 1].s_fields.E(sim_param.overlap_size);
                                 // cout << "Transferring ghost cell in subdom " << thread_id << " | Right ghost cell: " << subdomains[thread_id].right_ghost_cell << endl;
                             }
                             else if(thread_id == sim_param.num_subdomains - 1)
                             {
                                 //If it is the last subdomain, only transfer from the left ghost cell
                                 unsigned long end = subdomains[thread_id -1].s_fields.H.shape(0);
-                                subdomains[thread_id].left_ghost_cell = subdomains[thread_id - 1].s_fields.H(end - sim_param.overlap_size);
+                                // BUG FIX 4: was (end - overlap_size). H[-1] relative to this
+                                // subdomain's cell 0 is at index (end - overlap_size - 1) in the
+                                // previous subdomain, not (end - overlap_size).
+                                subdomains[thread_id].left_ghost_cell = subdomains[thread_id - 1].s_fields.H(end - sim_param.overlap_size - 1);
                                 //cout << "Transferring ghost cell in subdom " << thread_id << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell << endl;
                             
                             }
                             else{
                                 //Else, get the left and right ghost cells (if it is in the middle)
                                 unsigned long end = subdomains[thread_id -1].s_fields.H.shape(0);
-                                subdomains[thread_id].left_ghost_cell = subdomains[thread_id - 1].s_fields.H(end - sim_param.overlap_size);
-                                subdomains[thread_id].right_ghost_cell = subdomains[thread_id + 1].s_fields.E(sim_param.overlap_size-1);
+                                // BUG FIX 4 (middle subdomains): same left ghost cell fix.
+                                subdomains[thread_id].left_ghost_cell = subdomains[thread_id - 1].s_fields.H(end - sim_param.overlap_size - 1);
+                                // BUG FIX 3 (middle subdomains): same right ghost cell fix.
+                                subdomains[thread_id].right_ghost_cell = subdomains[thread_id + 1].s_fields.E(sim_param.overlap_size);
                                 //cout << "Transferring ghost cell in subdom " << thread_id << " | Left ghost cell: " << subdomains[subdom_index].left_ghost_cell  << " | Right ghost cell: " << subdomains[subdom_index].right_ghost_cell << endl;
                             
                             }
+
+                            // BUG FIX 5: CRITICAL — ghost cell reads above access neighboring
+                            // subdomains' s_fields (E/H arrays). Without a barrier here, thread 0
+                            // may read subdomains[1].s_fields.E while thread 1 is simultaneously
+                            // writing to it inside simulate(). This is a data race that produces
+                            // wrong ghost cell values and causes the boundary reflections.
+                            // All threads must finish exchanging ghost cells before ANY thread
+                            // is allowed to call simulate().
+                            #pragma omp barrier
+
                             //Call the simulate function in each subdomain...
                             subdomains[thread_id].simulate(curr_iter,sim_param.boundary_cond,sim_param.excitation_method);
                     

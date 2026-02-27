@@ -175,38 +175,35 @@ class Subdomain
                 
             }
             else{ 
-               
-                
-                // Add PABC boundary conditions to LEFT INT boundaries 
-               /* s_fields.H(start) = s_fields.L_INT_H_start.front();
-                s_fields.L_INT_H_start.pop_front();
-                s_fields.L_INT_H_start.push_back(s_fields.H(start+1));
-
-                s_fields.E(start) = s_fields.L_INT_E_start.front();
-                s_fields.L_INT_E_start.pop_front();
-                s_fields.L_INT_E_start.push_back(s_fields.E(start+1));*/
-
-                 s_fields.H(start) = s_fields.H_start.front();
-                s_fields.H_start.pop_front();
-                s_fields.H_start.push_back(s_fields.H(start+1));
-
-                s_fields.E(start) = s_fields.E_start.front();
-                s_fields.E_start.pop_front();
-                s_fields.E_start.push_back(s_fields.E(start+1));
-
-                  // Use the ghost cells here by updating the leftmost index (0) using the update equation
-                s_fields.E(start) = s_fields.E(start) + (s_fields.m_E(start)*(s_fields.H(start) - left_ghost_cell ));
-
-                
-               
-           
+                /*
+                 * BUG FIX 1: Internal subdomain boundaries must NOT apply PABC or any absorbing
+                 * condition. The old code was incorrectly using the PABC deque (H_start / E_start)
+                 * here, which treated every left internal boundary as an absorbing wall —
+                 * exactly causing the reflections observed at subdomain interfaces.
+                 *
+                 * BUG FIX 2: The E[start] ghost-cell update was placed here (before Step 2 updates H),
+                 * meaning it used the STALE H[start] from the previous time step. It has been moved
+                 * to after Step 2 (see below) so it uses the freshly-computed H[start].
+                 *
+                 * Nothing is done here for internal left boundaries; H[start] is updated
+                 * normally by the H-field sweep in Step 2, and E[start] is updated in the
+                 * dedicated ghost-cell block that follows Step 2.
+                 */
             }
 
             // Step 2: Update the H vector from E (include update equations for ghost cells)
             view(s_fields.H,range(start,stop-1)) = view(s_fields.H,range(start,stop-1)) + (view(s_fields.m_H,range(start,stop-1)))*(view(s_fields.E,range(start+1,stop)) - view(s_fields.E,range(start,stop-1)));
 
-                
-           
+            // BUG FIX 2 (placement): Update E[start] using the LEFT ghost cell NOW, after H has
+            // been freshly computed above. For non-first subdomains, E[start] is the leftmost
+            // active cell and requires H[start] (just updated) and left_ghost_cell = H[start-1]
+            // from the adjacent subdomain. The previous code did this before Step 2, using the
+            // stale H from the previous time step.
+            if(subdomain_param.subdomain_id > 0)
+            {
+                s_fields.E(start) = s_fields.E(start) + (s_fields.m_E(start) * (s_fields.H(start) - left_ghost_cell));
+            }
+
                // Step 3: Update source excitation (applicable only when the subdom is the 1st one)
             if(subdomain_param.subdomain_id == 0) //Insert the Hsrc when  you are at the 1st subdomain...
             {

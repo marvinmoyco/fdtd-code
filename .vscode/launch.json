@@ -17,6 +17,7 @@
             ],
            
         },
+
         {
             "name": "Firefox Debugger - launch",
             "type": "firefox",

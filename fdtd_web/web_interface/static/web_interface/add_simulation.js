@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
               algorithm: document.querySelector('#algorithm').value,
               multithreading: document.querySelector('#multithreading-swtich').checked,
               num_subdomain: num_subdom
-              /*creation_datetime:  new Date().today() + " @ " + new Date().timeNow()*/
+              //creation_datetime:  new Date().today() + " @ " + new Date().timeNow()
             })
           //Putting the CSRF token in the headers is a MUST when doing a POST request
           let headers = new Headers();
@@ -408,7 +408,9 @@ document.addEventListener('DOMContentLoaded', function() {
               //creation_datetime:  new Date().today() + " @ " + new Date().timeNow()
             })
           })
-          .then(response => response.json())
+          /*.then(response => {
+            response.json();
+        })*/
           .then(result => {console.log(result)});
           console.log("End of post request...");
         }
@@ -446,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     });
 
-  
+    
     
     
   };

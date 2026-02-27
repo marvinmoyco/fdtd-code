@@ -31,7 +31,7 @@ def index(request):
         request.session["sim_list"] = []
     return render(request, "web_interface/index.html")
 
-
+@csrf_exempt
 def simulation(request,timestamp):
     if request.method == 'GET':
         return render(request, "web_interface/simulation.html", {})
@@ -81,7 +81,7 @@ def add_simulation(request):
         
         print("Request.body")
         print(request.body)
-        #data = json.loads(request.body)
+        data = json.loads(request.body)
        # request.session["input_param"] = data
       #  print(data)
        # print(f"username: {data['username']} | algo: {data['algorithm']}")
